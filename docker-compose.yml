@@ -1,0 +1,35 @@
+networks:
+  default:
+    name: kickoff-net
+  shared-net:
+    external: true
+
+services:
+  api:
+    build:
+      context: ./Kickoff.Api
+    container_name: kickoff-api
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__kickoff: ${KICKOFF_DB_CONNECTION}
+      Admin__SyncApiKey: ${KICKOFF_ADMIN_KEY}
+    networks:
+      - default
+      - shared-net
+
+  web:
+    build:
+      context: ./kickoff-client
+    container_name: kickoff-web
+    restart: unless-stopped
+    ports:
+      - "8090:80"   # hostPort:containerPort — 8088/8089 already taken by Bartender/Budget
+    depends_on:
+      - api
+    networks:
+      - default
+      - shared-net
