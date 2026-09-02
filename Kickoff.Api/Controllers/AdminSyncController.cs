@@ -1,16 +1,19 @@
 using Kickoff.Api.Domain;
 using Kickoff.Api.Integrations.SportsRadar;
+using Kickoff.Api.Services;
 using Kickoff.Api.Services.Sync;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kickoff.Api.Controllers;
 
 /// <summary>
-/// Manual sync triggers. (Unauthenticated for dev — gate behind an admin policy
-/// before any non-local deployment.)
+/// Manual sync triggers. Gated by <see cref="AdminApiKeyFilter"/> — requires an
+/// X-Admin-Key header matching Admin:SyncApiKey wherever that's configured (unset
+/// locally, set via env var in prod).
 /// </summary>
 [ApiController]
 [Route("api/admin/sync")]
+[TypeFilter(typeof(AdminApiKeyFilter))]
 public class AdminSyncController(
     ISportsRadarClient client,
     ScheduleImportService import) : ControllerBase
