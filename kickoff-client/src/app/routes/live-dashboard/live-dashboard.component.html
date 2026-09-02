@@ -1,0 +1,122 @@
+<header class="page-head">
+  <h1>Live</h1>
+  <p class="meta">
+    @if (liveCount() > 0) {
+      <span class="live-dot"></span> {{ liveCount() }} game{{ liveCount() === 1 ? '' : 's' }} in progress
+      · NCAA + NFL · auto-refreshing
+    } @else {
+      No games in progress right now.
+    }
+  </p>
+</header>
+
+<app-my-teams-strip />
+
+@if (games().length === 0) {
+  <div class="empty">
+    <p>Nothing live at the moment.</p>
+    <p class="hint">Import a schedule, then games appear here as they kick off.</p>
+  </div>
+} @else {
+  <div class="grid">
+    @for (game of games(); track trackById($index, game)) {
+      <article
+        class="tile"
+        role="button"
+        tabindex="0"
+        [attr.aria-label]="'Open ' + game.away.displayName + ' at ' + game.home.displayName + ' details'"
+        [class.best]="game.id === bestGameId()"
+        [class.muted]="game.isMuted"
+        [class.peeking]="isPeeking(game)"
+        [class.fav]="fan.isFavorite(game.home.id) || fan.isFavorite(game.away.id)"
+        [class.circled]="fan.isCircled(game.id)"
+        (click)="open(game)"
+        (keydown.enter)="open(game)"
+        (keydown.space)="$event.preventDefault(); open(game)"
+      >
+        <header class="tile-head">
+          <span class="league" [class.nfl]="game.league === 'Nfl'" [class.ncaa]="game.league === 'Ncaa'">
+            {{ game.league === 'Nfl' ? 'NFL' : 'NCAA' }}
+          </span>
+
+          @if (game.id === bestGameId()) {
+            <span class="best-tag" title="Tightest game right now">🔥 Best game</span>
+          }
+
+          <span class="status" [class.live]="game.status === 'Live'">
+            @if (game.status === 'Upcoming') {
+              {{ game.kickoffUtc | date: 'EEE h:mm a' }}
+            } @else {
+              {{ statusLine(game) }}
+            }
+          </span>
+
+          <button
+            type="button"
+            class="icon-btn circle-btn"
+            [class.on]="fan.isCircled(game.id)"
+            [attr.aria-label]="fan.isCircled(game.id) ? 'Remove from Upcoming' : 'Circle this game'"
+            (click)="$event.stopPropagation(); fan.toggleCircle(game.id)"
+          >{{ fan.isCircled(game.id) ? '◉' : '○' }}</button>
+
+          <button
+            type="button"
+            class="icon-btn mute-btn"
+            [attr.aria-label]="game.isMuted ? 'Unmute' : 'Mute (hide score)'"
+            (click)="$event.stopPropagation(); game.isMuted ? unmute(game) : mute(game)"
+          >{{ game.isMuted ? '🔈' : '🔇' }}</button>
+        </header>
+
+        @for (side of [game.away, game.home]; track side.id; let i = $index) {
+          <div class="team">
+            <button
+              type="button"
+              class="star"
+              [class.on]="fan.isFavorite(side.id)"
+              [attr.aria-label]="(fan.isFavorite(side.id) ? 'Unfollow ' : 'Follow ') + side.displayName"
+              (click)="$event.stopPropagation(); fan.toggleFavorite(side.id)"
+            >{{ fan.isFavorite(side.id) ? '★' : '☆' }}</button>
+            <app-team-badge [name]="side.displayName" [logoUrl]="side.logoUrl" [abbreviation]="side.abbreviation" [size]="30" />
+            <span class="team-name">{{ side.displayName }}</span>
+            <span class="score">
+              @if (shownScore(game); as sc) {
+                {{ i === 0 ? sc.awayScore : sc.homeScore }}
+              } @else if (game.isMuted) {
+                <span class="lock">🔒</span>
+              } @else {
+                —
+              }
+            </span>
+          </div>
+        }
+
+        <footer class="tile-foot">
+          @if (game.broadcasts.length) {
+            <span class="net">📺 {{ game.broadcasts[0].network }}</span>
+          }
+
+          @if (homeWinPct(game); as pct) {
+            <span class="winprob" [title]="game.home.abbreviation + ' win probability'">
+              <span class="bar"><span class="fill" [style.width.%]="pct"></span></span>
+              {{ pct }}% {{ game.home.abbreviation }}
+            </span>
+          }
+
+          @if (game.isMuted) {
+            <button
+              type="button"
+              class="peek-btn"
+              aria-label="Hold to peek at the score"
+              (click)="$event.stopPropagation()"
+              (pointerdown)="$event.stopPropagation(); peekStart(game)"
+              (pointerup)="peekEnd(game)"
+              (pointerleave)="peekEnd(game)"
+              (pointercancel)="peekEnd(game)"
+              (contextmenu)="$event.preventDefault()"
+            >{{ isPeeking(game) ? '👁 revealing…' : 'Hold to peek' }}</button>
+          }
+        </footer>
+      </article>
+    }
+  </div>
+}

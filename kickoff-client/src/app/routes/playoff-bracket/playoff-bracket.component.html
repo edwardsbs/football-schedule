@@ -1,0 +1,90 @@
+@if (bracket(); as bracket) {
+  <header class="playoff-head">
+    <div>
+      <span class="eyebrow">{{ bracket.eyebrow }}</span>
+      <h1>{{ bracket.title }}</h1>
+      <p>{{ bracket.subtitle }}</p>
+    </div>
+    <span class="edition-chip">{{ bracket.edition }}</span>
+  </header>
+
+  <aside class="format-ledger" aria-label="Playoff format">
+    <span class="ledger-title">Seeding rules</span>
+    <ol>
+      @for (rule of bracket.rules; track rule) {
+        <li>{{ rule }}</li>
+      }
+    </ol>
+  </aside>
+
+  @for (section of bracket.sections; track section.name) {
+    <section class="bracket-section" [attr.data-accent]="section.accent">
+      <header class="section-title">
+        <span>{{ section.name }}</span>
+        <i aria-hidden="true"></i>
+      </header>
+
+      <div class="bracket-scroll" tabindex="0" [attr.aria-label]="section.name + ' playoff bracket'">
+        <div class="bracket-grid" [style.--round-count]="section.rounds.length">
+          @for (round of section.rounds; track round.name; let isLast = $last) {
+            <article class="bracket-round" [class.last-round]="isLast">
+              <header>
+                <h2>{{ round.name }}</h2>
+                <span>{{ round.detail }}</span>
+              </header>
+
+              <div class="round-games">
+                @for (game of round.games; track game.label) {
+                  <div class="bracket-game">
+                    <span class="game-label">{{ game.label }}</span>
+                    @for (slot of game.slots; track $index) {
+                      <div class="bracket-slot" [class.has-team]="!!slot.team">
+                        @if (slot.seed) {
+                          <span class="seed">{{ slot.seed }}</span>
+                        }
+                        <span class="slot-copy">
+                          @if (slot.team) {
+                            <strong>{{ slot.team }}</strong>
+                          }
+                          <small>{{ slot.rule }}</small>
+                        </span>
+                      </div>
+                    }
+                    @if (game.note) {
+                      <span class="game-note">{{ game.note }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  @if (bracket.championship; as championship) {
+    <section class="super-bowl-final" aria-label="Super Bowl matchup">
+      <span class="trophy" aria-hidden="true">🏆</span>
+      <div class="final-copy">
+        <span class="eyebrow">The final</span>
+        <h2>{{ championship.label }}</h2>
+      </div>
+      <div class="final-slots">
+        @for (slot of championship.slots; track $index) {
+          <div class="bracket-slot" [class.has-team]="!!slot.team">
+            <span class="slot-copy">
+              @if (slot.team) {
+                <strong>{{ slot.team }}</strong>
+              }
+              <small>{{ slot.rule }}</small>
+            </span>
+          </div>
+        }
+      </div>
+      @if (championship.note) {
+        <span class="champion-note">{{ championship.note }}</span>
+      }
+    </section>
+  }
+}

@@ -1,0 +1,118 @@
+/*
+ * Game rows are wide on the timeline, but the same component also lives in the
+ * 460px My Games modal. A container query gives the modal a stable two-line
+ * matchup grid without changing the full-width presentation elsewhere.
+ */
+app-game-row {
+  container-type: inline-size;
+}
+
+@container (max-width: 600px) {
+  app-game-row .row {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(7rem, 1fr) 2rem 4.25rem 5.7rem;
+    grid-template-rows: repeat(2, minmax(32px, auto));
+    grid-template-areas:
+      'league away scores meta actions'
+      'league home scores meta actions';
+    gap: 0 0.35rem;
+    min-height: 72px;
+    padding: 0.35rem 0.4rem;
+
+    .league {
+      grid-area: league;
+      align-self: center;
+      width: 2.6rem;
+    }
+
+    .side {
+      gap: 0.32rem;
+      width: 100%;
+
+      &.away {
+        grid-area: away;
+      }
+
+      &.home {
+        grid-area: home;
+        flex-direction: row;
+        text-align: left;
+      }
+
+      .abbr {
+        overflow: hidden;
+        font-size: 0.88rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .star {
+      min-width: 32px;
+      min-height: 32px;
+      font-size: 1rem;
+    }
+
+    .scores {
+      grid-area: scores;
+      display: grid;
+      grid-template-rows: repeat(2, 1fr);
+      min-width: 0;
+      height: 100%;
+      gap: 0;
+
+      .s {
+        display: grid;
+        place-items: center;
+        font-size: 1rem;
+      }
+
+      .sep {
+        display: none;
+      }
+
+      .lock {
+        grid-row: 1 / -1;
+        align-self: center;
+        text-align: center;
+      }
+    }
+
+    .meta {
+      grid-area: meta;
+      align-self: center;
+      width: auto;
+      font-size: 0.68rem;
+    }
+
+    .actions {
+      grid-area: actions;
+      justify-self: end;
+
+      .icon-btn {
+        min-width: 42px;
+        min-height: 42px;
+      }
+    }
+  }
+}
+
+@container (max-width: 410px) {
+  app-game-row .row {
+    grid-template-columns: 2.4rem minmax(5rem, 1fr) 1.8rem 3.7rem 4.9rem;
+    gap: 0 0.2rem;
+
+    .league {
+      width: 2.35rem;
+      font-size: 0.58rem;
+    }
+
+    .side .abbr {
+      font-size: 0.8rem;
+    }
+
+    .actions .icon-btn {
+      min-width: 36px;
+    }
+  }
+}

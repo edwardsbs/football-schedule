@@ -1,0 +1,198 @@
+<div class="conference-page" [attr.data-palette]="palette()">
+@if (alignment(); as a) {
+  <header class="page-head">
+    <div class="league-toggle">
+      <a routerLink="/conferences/ncaa" [class.active]="league() === 'ncaa'">NCAA</a>
+      <a routerLink="/conferences/nfl" [class.active]="league() === 'nfl'">NFL</a>
+    </div>
+    <h1>{{ a.title }}</h1>
+    <p class="subtitle">{{ a.subtitle }}</p>
+    <p class="meta">{{ teamCount() }} teams</p>
+    <div class="palette-picker" role="group" aria-label="Conference color treatment">
+      <span class="palette-label">Color</span>
+      <button type="button" [class.active]="palette() === 'original'" [attr.aria-pressed]="palette() === 'original'" (click)="setPalette('original')">Original</button>
+      <button type="button" [class.active]="palette() === 'muted'" [attr.aria-pressed]="palette() === 'muted'" (click)="setPalette('muted')">Muted</button>
+      <button type="button" [class.active]="palette() === 'mono'" [attr.aria-pressed]="palette() === 'mono'" (click)="setPalette('mono')">B&amp;W</button>
+    </div>
+  </header>
+
+  @if (a.league === 'nfl') {
+    <section class="nfl-ledger" aria-label="NFL conference alignment">
+      @for (conf of nflConferences(); track conf.shortName) {
+        <article class="conference nfl-conference" [style.--conference-color]="conf.color || '#555'">
+          <header class="conference-head nfl-conference-head">
+            <div class="conference-identity">
+              <span class="badge">{{ conf.shortName }}</span>
+              <div>
+                <span class="conference-kicker">{{ conf.shortName }} Conference</span>
+                <h2 class="conference-name">{{ conf.name }}</h2>
+              </div>
+            </div>
+            <span class="conference-count">16 teams · 4 divisions</span>
+          </header>
+
+          <div class="division-ledgers">
+            @for (div of conf.divisions; track div.name) {
+              <table class="division-ledger">
+                <colgroup>
+                  <col class="club-column" />
+                  <col class="record-column" />
+                  <col class="record-column" />
+                  <col class="record-column" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th scope="col" class="division-label">{{ div.name }}</th>
+                    <th scope="col"><abbr title="Wins">W</abbr></th>
+                    <th scope="col"><abbr title="Losses">L</abbr></th>
+                    <th scope="col"><abbr title="Ties">T</abbr></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (team of div.teams; track team.name) {
+                    <tr>
+                      <th scope="row" class="club">
+                        <app-team-badge
+                          [name]="team.name"
+                          [logoUrl]="team.logoUrl"
+                          [abbreviation]="team.abbreviation"
+                          [size]="26"
+                        />
+                        <span class="team-name">{{ team.name }}</span>
+                      </th>
+                      <td aria-label="Wins unavailable">—</td>
+                      <td aria-label="Losses unavailable">—</td>
+                      <td aria-label="Ties unavailable">—</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </article>
+      }
+    </section>
+
+    <p class="standings-note">W/L/T columns are ready for live standings data.</p>
+  } @else {
+    @for (tier of a.tiers; track tier.title) {
+      <section class="tier">
+        <h2 class="tier-title">{{ tier.title }}</h2>
+
+        <div class="conference-grid">
+          @for (conf of tier.conferences; track conf.shortName) {
+            <article class="conference" [style.--conference-color]="conf.color || '#555'">
+              <header class="conference-head">
+                <span class="badge">{{ conf.shortName }}</span>
+                <span class="conference-name">{{ conf.name }}</span>
+              </header>
+
+              <div class="division-ledgers ncaa-division-ledgers">
+                @for (div of conf.divisions; track div.name) {
+                  <table class="division-ledger ncaa-division-ledger">
+                    <colgroup>
+                      <col class="club-column" />
+                      <col class="record-column" />
+                      <col class="record-column" />
+                      <col class="record-column" />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th scope="col" class="division-label">{{ div.name }}</th>
+                        <th scope="col"><abbr title="Wins">W</abbr></th>
+                        <th scope="col"><abbr title="Losses">L</abbr></th>
+                        <th scope="col"><abbr title="Ties">T</abbr></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (team of div.teams; track team.name) {
+                        <tr>
+                          <th scope="row" class="club">
+                            <app-team-badge
+                              [name]="team.name"
+                              [logoUrl]="team.logoUrl"
+                              [abbreviation]="team.abbreviation"
+                              [size]="26"
+                            />
+                            <span class="team-name">{{ team.name }}</span>
+                          </th>
+                          <td aria-label="Wins unavailable">—</td>
+                          <td aria-label="Losses unavailable">—</td>
+                          <td aria-label="Ties unavailable">—</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <p class="standings-note">W/L/T columns are ready for live standings data.</p>
+  }
+
+  @if (a.independents.length) {
+    <section class="tier">
+      <h2 class="tier-title">Independents</h2>
+      <div class="conference-grid">
+        <article class="conference independents" [style.--conference-color]="'#8a8a8a'">
+          <div class="division-ledgers independent-ledger-wrap">
+            <table class="division-ledger ncaa-division-ledger independent-ledger">
+              <colgroup>
+                <col class="club-column" />
+                <col class="record-column" />
+                <col class="record-column" />
+                <col class="record-column" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col" class="division-label">Independent</th>
+                  <th scope="col"><abbr title="Wins">W</abbr></th>
+                  <th scope="col"><abbr title="Losses">L</abbr></th>
+                  <th scope="col"><abbr title="Ties">T</abbr></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (team of a.independents; track team.name) {
+                  <tr>
+                    <th scope="row" class="club">
+                      <app-team-badge
+                        [name]="team.name"
+                        [logoUrl]="team.logoUrl"
+                        [abbreviation]="team.abbreviation"
+                        [size]="26"
+                      />
+                      <span class="team-name">{{ team.name }}</span>
+                    </th>
+                    <td aria-label="Wins unavailable">—</td>
+                    <td aria-label="Losses unavailable">—</td>
+                    <td aria-label="Ties unavailable">—</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="note">Independent in Football Bowl Subdivision (FBS)</p>
+        </article>
+      </div>
+    </section>
+  }
+
+  <p class="source-note">
+    Membership mirrors the reference alignment (as of May 2026). Placeholder data —
+    will be served from the API once conference endpoints exist.
+  </p>
+} @else {
+  <div class="not-found">
+    <h1>Unknown league</h1>
+    <p>Pick a league to see its conference alignment.</p>
+    <div class="league-toggle">
+      <a routerLink="/conferences/ncaa">NCAA</a>
+      <a routerLink="/conferences/nfl">NFL</a>
+    </div>
+  </div>
+}
+</div>

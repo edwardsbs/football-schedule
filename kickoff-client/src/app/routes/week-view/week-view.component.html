@@ -1,0 +1,67 @@
+<header class="page-head">
+  <div class="nav">
+    <button type="button" class="arrow" (click)="prev()" title="Previous week">‹</button>
+    <h1>{{ weekStart() | date: 'MMM d' }} – {{ weekEnd() | date: 'MMM d' }}</h1>
+    <button type="button" class="arrow" (click)="next()" title="Next week">›</button>
+    <button type="button" class="today" (click)="thisWeek()">This week</button>
+  </div>
+  <p class="meta">
+    {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
+    · NCAA + NFL, merged by kickoff
+  </p>
+</header>
+
+<div class="filter-row">
+  <button
+    type="button"
+    class="filter-chip"
+    [class.on]="onlyMine()"
+    [attr.aria-pressed]="onlyMine()"
+    (click)="toggleMine()"
+  >
+    <span class="ico">★◉</span> My games
+    <span class="badge">{{ followedCount() }}</span>
+  </button>
+</div>
+
+<app-my-teams-strip />
+
+@if (total() === 0) {
+  <div class="empty">
+    @if (onlyMine()) {
+      <p>No favorite or circled games this week.</p>
+      <p class="hint">Tap "My games" to see the full schedule.</p>
+    } @else {
+      <p>No games this week.</p>
+      <p class="hint">Try another week, or import a schedule.</p>
+    }
+  </div>
+} @else {
+  <section class="congestion-wrap">
+    <h2>Games per day</h2>
+    <app-congestion [bars]="congestion()" />
+  </section>
+
+  @for (day of days(); track day.key) {
+    <section class="day-group">
+      <div class="day-head">
+        <h2>{{ day.date | date: 'EEEE, MMM d' }}</h2>
+        <span class="cnt">{{ day.count }} game{{ day.count === 1 ? '' : 's' }}</span>
+      </div>
+
+      @for (slot of day.slots; track slot.key) {
+        <div class="slot">
+          <h3 class="slot-time">
+            {{ slotLabel(slot.kickoff) }}
+            <span class="cnt">{{ slot.count }} game{{ slot.count === 1 ? '' : 's' }}</span>
+          </h3>
+          <div class="rows">
+            @for (game of slot.games; track game.id) {
+              <app-game-row [game]="game" (changed)="refresh()" />
+            }
+          </div>
+        </div>
+      }
+    </section>
+  }
+}

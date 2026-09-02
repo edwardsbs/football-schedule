@@ -1,0 +1,22 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Angular / Node (kickoff-client has its own .gitignore too, this covers root-level tooling)
+node_modules/
+dist/
+.angular/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local secrets / env overrides — connection strings belong in dotnet user-secrets, never here
+appsettings.*.local.json
+*.env
+.env.local

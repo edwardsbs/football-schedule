@@ -1,0 +1,276 @@
+/*
+ * The conference table treatment lives globally to keep the route component inside
+ * Angular's per-component style budget. The element selector confines these
+ * rules to the conference-alignment screen.
+ */
+app-conference-alignment {
+  .palette-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-top: 0.85rem;
+    padding: 0.22rem;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 8px;
+    background: var(--surface, #161a22);
+
+    .palette-label {
+      padding-inline: 0.55rem 0.4rem;
+      color: var(--muted, #8b93a1);
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    button {
+      min-height: 34px;
+      padding: 0.35rem 0.75rem;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted-strong, #aab2c0);
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+
+      &:hover {
+        color: var(--text, #e7ebf2);
+      }
+
+      &.active {
+        border-color: color-mix(in srgb, var(--accent-gold, #c9a227) 45%, var(--border, #262c38));
+        background: color-mix(in srgb, var(--accent-gold, #c9a227) 14%, var(--surface-2, #1c212b));
+        color: var(--text, #e7ebf2);
+      }
+    }
+  }
+
+  .conference-page[data-palette='muted'] {
+    --accent-gold: #8f8877;
+
+    .conference {
+      --accent: color-mix(in srgb, var(--conference-color, #777) 50%, #757c84);
+    }
+  }
+
+  .conference-page[data-palette='mono'] {
+    --accent-gold: #c8cbd0;
+
+    .conference {
+      --accent: #9298a0;
+    }
+
+    .conference-head {
+      background: rgb(255 255 255 / 4%);
+    }
+
+    .nfl-conference {
+      background: linear-gradient(145deg, rgb(255 255 255 / 3%), transparent 35%), var(--surface, #161a22);
+    }
+  }
+
+  .conference-kicker {
+    display: block;
+    margin-bottom: 0.15rem;
+    color: color-mix(in srgb, var(--accent) 65%, #fff);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .conference-count {
+    flex: none;
+    color: var(--muted-strong, #aab2c0);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .division-ledgers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .division-ledger {
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--border, #262c38) 88%, #fff);
+    border-radius: 8px;
+    border-spacing: 0;
+    table-layout: fixed;
+    background: color-mix(in srgb, var(--surface-2, #1c212b) 70%, transparent);
+
+    .club-column {
+      width: auto;
+    }
+
+    .record-column {
+      width: 2rem;
+    }
+
+    th,
+    td {
+      height: 42px;
+      padding: 0.35rem 0.4rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--border, #262c38) 75%, transparent);
+      font-size: 0.76rem;
+    }
+
+    thead th {
+      height: 36px;
+      background: color-mix(in srgb, var(--accent) 16%, var(--surface-2, #1c212b));
+      color: var(--muted-strong, #aab2c0);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+
+      abbr {
+        text-decoration: none;
+      }
+    }
+
+    .division-label {
+      padding-left: 0.65rem;
+      border-left: 3px solid var(--accent);
+      color: var(--text, #e7ebf2);
+      text-align: left;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgb(255 255 255 / 2.5%);
+    }
+
+    tbody tr:last-child th,
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tbody td {
+      color: var(--muted, #8b93a1);
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .club {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      min-width: 0;
+      padding-left: 0.6rem;
+      color: var(--text, #e7ebf2);
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .team-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .ncaa-division-ledger {
+    th:not(:first-child),
+    td:not(:first-child) {
+      border-left: 1px solid color-mix(in srgb, var(--border, #262c38) 82%, #fff);
+    }
+
+    .team-name {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      line-height: 1.25;
+    }
+  }
+
+  .independent-ledger-wrap {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
+  }
+
+  .standings-note {
+    margin: 0.75rem 0 0;
+    color: var(--muted, #8b93a1);
+    font-size: 0.72rem;
+    font-style: italic;
+    text-align: right;
+  }
+}
+
+@media (max-width: 1180px) {
+  app-conference-alignment {
+    .conference-count {
+      display: none;
+    }
+
+    .division-ledgers {
+      gap: 0.75rem;
+      padding: 0.75rem;
+    }
+
+    .division-ledger {
+      .record-column {
+        width: 1.7rem;
+      }
+
+      th,
+      td {
+        padding-inline: 0.25rem;
+        font-size: 0.7rem;
+      }
+
+      .club {
+        gap: 0.4rem;
+        padding-left: 0.4rem;
+      }
+    }
+  }
+}
+
+@media (min-width: 561px) and (max-width: 820px) {
+  app-conference-alignment .conference-count {
+    display: block;
+  }
+}
+
+@media (max-width: 560px) {
+  app-conference-alignment {
+    .palette-picker {
+      width: 100%;
+
+      .palette-label {
+        display: none;
+      }
+
+      button {
+        flex: 1;
+      }
+    }
+
+    .division-ledgers {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+    }
+
+    .division-ledger {
+      .record-column {
+        width: 2.25rem;
+      }
+
+      th,
+      td {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}

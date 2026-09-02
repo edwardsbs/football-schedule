@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+@media (max-width: 600px) {
+  :host {
+    padding-inline: 0.75rem;
+  }
+}

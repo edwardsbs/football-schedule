@@ -1,0 +1,89 @@
+<header class="formation-page-head">
+  <div class="side-toggle">
+    <a routerLink="/formations/offense" [class.active]="!isDefense()">OFFENSE</a>
+    <a routerLink="/formations/defense" [class.active]="isDefense()">DEFENSE</a>
+  </div>
+  <h1>{{ isDefense() ? 'Defensive Fronts & Shells' : 'Offensive Formations' }}</h1>
+  <p>{{ isDefense() ? 'See the front, secondary structure, and one common coverage shell' : 'See the alignment and the personnel grouping behind the call' }}</p>
+  @if (isDefense()) {
+    <p class="context-note">A front and a coverage shell are separate calls. Each diagram pairs the front with one common example.</p>
+  } @else {
+    <p class="context-note"><strong>Personnel code:</strong> first digit = running backs · second digit = tight ends</p>
+  }
+</header>
+
+<div class="formation-legend" aria-label="Position legend">
+  @if (isDefense()) {
+    <span><i class="shape square"></i> Defensive line</span>
+    <span><i class="shape circle"></i> Linebacker</span>
+    <span><i class="shape ring"></i> Defensive back</span>
+    <span><i class="shape zone"></i> Deep shell</span>
+  } @else {
+    <span><i class="shape square"></i> Offensive line</span>
+    <span><i class="shape circle"></i> Backfield</span>
+    <span><i class="shape ring"></i> Receiver / tight end</span>
+  }
+  <span class="formation-count">{{ formations().length }} formations</span>
+</div>
+
+<div class="formation-grid">
+  @for (f of formations(); track f.name) {
+    <article class="formation-card">
+      <header class="formation-card-head">
+        <div>
+          <span class="card-kicker">{{ isDefense() ? 'Front' : 'Formation' }}</span>
+          <h2>{{ f.name }}</h2>
+        </div>
+
+        @if (!isDefense() && f.personnelCode) {
+          <div class="personnel-callout" [attr.aria-label]="f.personnelCode + ' personnel: ' + f.personnel">
+            <strong>{{ f.personnelCode }}</strong>
+            <span>{{ f.personnel }}</span>
+          </div>
+        } @else if (f.shell; as shell) {
+          <div class="shell-callout">
+            <span>{{ shell.family }}</span>
+            <strong>{{ shell.name }}</strong>
+          </div>
+        }
+      </header>
+
+      <div class="formation-field" [class.defense-field]="isDefense()">
+        <span class="field-direction">{{ isDefense() ? 'DEEP' : 'BACKFIELD' }}</span>
+        <div class="line-of-scrimmage"><span>LOS</span></div>
+
+        @if (isDefense() && f.shell; as shell) {
+          <div class="shell-zones" aria-hidden="true">
+            @for (zone of shell.zones; track zone.label + zone.x) {
+              <span
+                class="shell-zone"
+                [style.left.%]="zone.x"
+                [style.top.%]="zone.y"
+                [style.width.%]="zone.width"
+                [style.height.%]="zone.height"
+              >{{ zone.label }}</span>
+            }
+          </div>
+        }
+
+        @for (spot of f.spots; track spot.label + spot.x + spot.y) {
+          <span
+            class="formation-spot"
+            [class]="spot.group"
+            [style.left.%]="spot.x"
+            [style.top.%]="spot.y"
+          >{{ spot.label }}</span>
+        }
+      </div>
+
+      <div class="formation-copy">
+        <p>{{ f.blurb }}</p>
+        @if (isDefense() && f.shell; as shell) {
+          <small><strong>{{ shell.name }}:</strong> {{ shell.detail }}</small>
+        } @else {
+          <small>{{ f.personnel }}</small>
+        }
+      </div>
+    </article>
+  }
+</div>

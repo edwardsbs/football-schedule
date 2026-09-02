@@ -1,0 +1,38 @@
+/* Kickoff global theme — dark, sports-scoreboard feel. */
+@use './app/routes/conference-alignment/conference-ledger';
+@use './app/routes/route-map/receiver-route-tree';
+@use './app/routes/playoff-bracket/playoff-bracket';
+@use './app/routes/formations/formation-board';
+@use './app/shared/game-row/game-row-compact';
+
+:root {
+  --bg: #0f1218;
+  --surface: #161a22;
+  --surface-2: #1c212b;
+  --border: #262c38;
+  --text: #e7ebf2;
+  --muted: #8b93a1;
+  --muted-strong: #aab2c0;
+  --accent-gold: #c9a227;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent-gold);
+}

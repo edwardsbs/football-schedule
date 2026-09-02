@@ -1,0 +1,36 @@
+@if (open()) {
+  <div class="backdrop" (click)="close()">
+    <div class="panel" (click)="$event.stopPropagation()">
+      <header class="panel-head">
+        <h2><span class="ico">★◉</span> My Games</h2>
+        <span class="count">{{ followed().length }}</span>
+        <button type="button" class="icon-btn" title="Refresh" (click)="refresh()">↻</button>
+        <button type="button" class="icon-btn close" title="Close" (click)="close()">✕</button>
+      </header>
+
+      <div class="panel-body">
+        @if (loading()) {
+          <p class="note">Loading…</p>
+        } @else if (followed().length === 0) {
+          <div class="empty">
+            <p>No favorite or circled games in the next few weeks.</p>
+            <p class="hint">Star a team or circle a game to see it here.</p>
+          </div>
+        } @else {
+          @for (day of groups(); track day.key) {
+            <section class="day-group">
+              <h3 class="day-head">{{ day.date | date: 'EEEE, MMM d' }}</h3>
+              <div class="rows">
+                @for (slot of day.slots; track slot.key) {
+                  @for (game of slot.games; track game.id) {
+                    <app-game-row [game]="game" (changed)="refresh()" />
+                  }
+                }
+              </div>
+            </section>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

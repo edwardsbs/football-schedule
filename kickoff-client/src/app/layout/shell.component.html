@@ -1,0 +1,48 @@
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" routerLink="/live">
+      <span class="mark">🏈</span> Kickoff
+    </a>
+    <nav class="nav">
+      @for (link of links; track link.path) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: !!link.exact }"
+        >{{ link.label }}</a>
+      }
+    </nav>
+    <button type="button" class="my-games-btn" (click)="myGamesOpen.set(true)">
+      <span class="ico">★◉</span> My Games
+    </button>
+  </header>
+
+  <div class="content-wrap">
+    <div class="content" #contentEl (scroll)="onScroll()">
+      <router-outlet />
+    </div>
+
+    <div class="kiosk-scrollbar" [class.hidden]="!scrollable()">
+      <button type="button" class="cap up" aria-label="Scroll up" (click)="nudge(-1)">
+        <span class="tri up-ico"></span>
+      </button>
+      <div class="track" #trackEl (pointerdown)="onTrackPointerDown($event)">
+        <div
+          class="thumb"
+          [style.height.px]="thumbHeightPx()"
+          [style.transform]="'translateY(' + thumbTopPx() + 'px)'"
+          (pointerdown)="onThumbPointerDown($event)"
+          (pointermove)="onThumbPointerMove($event)"
+          (pointerup)="onThumbPointerUp($event)"
+          (pointercancel)="onThumbPointerUp($event)"
+        ></div>
+      </div>
+      <button type="button" class="cap down" aria-label="Scroll down" (click)="nudge(1)">
+        <span class="tri down-ico"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-my-games-modal [open]="myGamesOpen()" (closed)="myGamesOpen.set(false)" />
+<app-game-detail-modal />

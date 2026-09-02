@@ -1,0 +1,253 @@
+:host {
+  display: block;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.page-head {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    margin: 0.25rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  .subtitle {
+    margin: 0.15rem 0 0;
+    font-weight: 700;
+    color: var(--accent-gold, #c9a227);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.95rem;
+  }
+
+  .meta {
+    margin: 0.5rem 0 0;
+    color: var(--muted, #8b93a1);
+    font-size: 0.85rem;
+  }
+}
+
+.league-toggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--surface-2, #1c212b);
+  border-radius: 999px;
+
+  a {
+    padding: 0.35rem 1.1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--muted, #8b93a1);
+
+    &.active {
+      background: var(--accent-gold, #c9a227);
+      color: #12151b;
+    }
+  }
+}
+
+.tier {
+  margin-bottom: 2.25rem;
+}
+
+.tier-title {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted, #8b93a1);
+  margin: 0 0 1rem;
+
+  &::before,
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 2.5rem;
+    height: 1px;
+    vertical-align: middle;
+    margin: 0 0.6rem;
+    background: currentColor;
+    opacity: 0.4;
+  }
+}
+
+.conference-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+  gap: 1.25rem;
+}
+
+.conference {
+  --accent: var(--conference-color, #555);
+  background: var(--surface, #161a22);
+  border: 1px solid var(--border, #262c38);
+  border-top: 4px solid var(--accent);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.conference-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.85rem;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+
+  .badge {
+    flex: none;
+    min-width: 2.4rem;
+    text-align: center;
+    padding: 0.2rem 0.4rem;
+    border-radius: 5px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.78rem;
+  }
+
+  .conference-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+}
+
+.nfl-ledger {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 2.2vw, 2rem);
+  align-items: start;
+}
+
+.nfl-conference {
+  position: relative;
+  border-top-width: 5px;
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 35%),
+    var(--surface, #161a22);
+  box-shadow: 0 18px 42px rgb(0 0 0 / 22%);
+}
+
+.nfl-conference-head {
+  justify-content: space-between;
+  min-height: 78px;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border, #262c38));
+}
+
+.conference-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+
+  .badge {
+    min-width: 3rem;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.82rem;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 38%, transparent);
+  }
+}
+
+.nfl-conference-head .conference-name {
+  display: block;
+  font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  line-height: 1.2;
+}
+
+.division-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.25rem 0.5rem;
+  padding: 0.5rem 0.85rem 0.85rem;
+}
+
+.division-name {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted, #8b93a1);
+}
+
+.team-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.2rem 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border, #262c38) 60%, transparent);
+  }
+
+  .team-name {
+    min-width: 0;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  li:last-child {
+    border-bottom: none;
+  }
+}
+
+.independents {
+  border-top-color: var(--accent);
+  padding: 0.85rem;
+  text-align: center;
+
+  .team-list li {
+    font-weight: 700;
+    border-bottom: none;
+    justify-content: center;
+  }
+
+  .note {
+    margin: 0.35rem 0 0;
+    font-size: 0.75rem;
+    color: var(--muted, #8b93a1);
+  }
+}
+
+.source-note {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted, #8b93a1);
+  font-style: italic;
+}
+
+.not-found {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  .league-toggle {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 820px) {
+  :host {
+    padding-inline: 0.75rem;
+  }
+
+  .nfl-ledger {
+    grid-template-columns: 1fr;
+  }
+}

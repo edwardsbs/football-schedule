@@ -1,0 +1,27 @@
+/* Field-diagram paint rules live globally to stay outside Angular's component-style budget. */
+app-route-map {
+  .diagram {
+    margin: 0;
+    padding: 1rem;
+    background: #0b0e13;
+
+    svg {
+      display: block;
+      width: 100%;
+      max-height: 56vh;
+    }
+  }
+
+  .grass-a { fill: #173b2a; }
+  .grass-b { fill: #1a422e; }
+  .yard-line { stroke: rgb(255 255 255 / 24%); stroke-width: 2; }
+  .hash { stroke: rgb(255 255 255 / 34%); stroke-width: 3; }
+  .line-of-scrimmage { stroke: #72a7d8; stroke-width: 3; stroke-dasharray: 10 6; }
+  .yard-label,
+  .los-label { fill: rgb(255 255 255 / 55%); font: 700 11px 'Segoe UI', sans-serif; letter-spacing: 0.08em; }
+  .receiver { fill: #e7ebf2; stroke: #11151c; stroke-width: 3; }
+  .receiver-label { fill: #11151c; font: 900 8px 'Segoe UI', sans-serif; }
+  .route-path { fill: none; stroke: var(--accent-gold, #c9a227); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+  .route-path.shadow { stroke: rgb(0 0 0 / 35%); stroke-width: 13; }
+  .arrow-head { fill: var(--accent-gold, #c9a227); }
+}

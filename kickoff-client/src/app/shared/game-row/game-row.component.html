@@ -1,0 +1,109 @@
+<div
+  class="row"
+  role="button"
+  tabindex="0"
+  [attr.aria-label]="'Open ' + game().away.displayName + ' at ' + game().home.displayName + ' details'"
+  [class.muted]="game().isMuted"
+  [class.peeking]="peeking"
+  [class.fav]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
+  [class.circled]="fan.isCircled(game().id)"
+  (click)="open()"
+  (keydown.enter)="open()"
+  (keydown.space)="$event.preventDefault(); open()"
+>
+  <span
+    class="league"
+    [class.nfl]="game().league === 'Nfl'"
+    [class.ncaa]="game().league === 'Ncaa'"
+    >{{ game().league === 'Nfl' ? 'NFL' : 'NCAA' }}</span>
+
+  <div class="side away">
+    <button
+      type="button"
+      class="star"
+      [class.on]="fan.isFavorite(game().away.id)"
+      [attr.aria-label]="(fan.isFavorite(game().away.id) ? 'Unfollow ' : 'Follow ') + game().away.displayName"
+      (click)="$event.stopPropagation(); fan.toggleFavorite(game().away.id)"
+    >{{ fan.isFavorite(game().away.id) ? '★' : '☆' }}</button>
+    <app-team-badge
+      [name]="game().away.displayName"
+      [logoUrl]="game().away.logoUrl"
+      [abbreviation]="game().away.abbreviation"
+      [size]="28"
+    />
+    <span class="abbr">{{ game().away.abbreviation }}</span>
+  </div>
+
+  <div class="scores">
+    @if (shownScore(); as sc) {
+      <span class="s">{{ sc.awayScore }}</span>
+      <span class="sep">–</span>
+      <span class="s">{{ sc.homeScore }}</span>
+    } @else if (game().isMuted) {
+      <span class="lock" title="Muted">🔒</span>
+    } @else {
+      <span class="s dim">–</span><span class="sep">–</span><span class="s dim">–</span>
+    }
+  </div>
+
+  <div class="side home">
+    <button
+      type="button"
+      class="star"
+      [class.on]="fan.isFavorite(game().home.id)"
+      [attr.aria-label]="(fan.isFavorite(game().home.id) ? 'Unfollow ' : 'Follow ') + game().home.displayName"
+      (click)="$event.stopPropagation(); fan.toggleFavorite(game().home.id)"
+    >{{ fan.isFavorite(game().home.id) ? '★' : '☆' }}</button>
+    <app-team-badge
+      [name]="game().home.displayName"
+      [logoUrl]="game().home.logoUrl"
+      [abbreviation]="game().home.abbreviation"
+      [size]="28"
+    />
+    <span class="abbr">{{ game().home.abbreviation }}</span>
+  </div>
+
+  <div class="meta">
+    <span class="status" [class.live]="game().status === 'Live'">
+      @if (game().status === 'Upcoming') {
+        {{ game().kickoffUtc | date: 'h:mm a' }}
+      } @else {
+        {{ statusLine() }}
+      }
+    </span>
+    @if (game().broadcasts.length) {
+      <span class="net">📺 {{ game().broadcasts[0].network }}</span>
+    }
+  </div>
+
+  <div class="actions">
+    <button
+      type="button"
+      class="icon-btn circle-btn"
+      [class.on]="fan.isCircled(game().id)"
+      [attr.aria-label]="fan.isCircled(game().id) ? 'Remove from Upcoming' : 'Circle this game'"
+      (click)="$event.stopPropagation(); fan.toggleCircle(game().id)"
+    >{{ fan.isCircled(game().id) ? '◉' : '○' }}</button>
+
+    <button
+      type="button"
+      class="icon-btn mute-btn"
+      [attr.aria-label]="game().isMuted ? 'Unmute' : 'Mute (hide score)'"
+      (click)="$event.stopPropagation(); game().isMuted ? unmute() : mute()"
+    >{{ game().isMuted ? '🔈' : '🔇' }}</button>
+
+    @if (game().isMuted) {
+      <button
+        type="button"
+        class="peek-btn"
+        aria-label="Hold to peek at the score"
+        (click)="$event.stopPropagation()"
+        (pointerdown)="$event.stopPropagation(); peekStart()"
+        (pointerup)="peekEnd()"
+        (pointerleave)="peekEnd()"
+        (pointercancel)="peekEnd()"
+        (contextmenu)="$event.preventDefault()"
+      >{{ peeking ? '👁' : 'peek' }}</button>
+    }
+  </div>
+</div>

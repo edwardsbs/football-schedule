@@ -1,0 +1,179 @@
+:host {
+  display: block;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  min-height: 56px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s, filter 0.2s, background 0.15s;
+
+  /* Touch/kiosk: no hover, so tapping the row (not a control) opens detail
+     and gives an immediate pressed state instead of a hover cue. */
+  &:hover { background: var(--surface-2, #1c212b); }
+  &:active { background: var(--surface-2, #1c212b); }
+  &:focus-visible {
+    outline: 2px solid var(--accent-gold, #c9a227);
+    outline-offset: -2px;
+  }
+
+  &.muted {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+  }
+  &.peeking {
+    opacity: 1;
+    filter: none;
+  }
+
+  /* favorite / circled highlight */
+  border-left: 3px solid transparent;
+  &.fav {
+    border-left-color: var(--accent-gold, #c9a227);
+    background: color-mix(in srgb, var(--accent-gold, #c9a227) 8%, transparent);
+  }
+  &.circled {
+    border-left-color: #4c8dff;
+  }
+  &.fav.circled {
+    border-left-color: var(--accent-gold, #c9a227);
+    box-shadow: inset 2px 0 0 #4c8dff;
+  }
+}
+
+/* Shared touch target: ≥44px hit area, centered glyph, pressed feedback. */
+.star,
+.icon-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  border-radius: 8px;
+  color: var(--muted, #8b93a1);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.12s, background 0.12s;
+
+  &:active { background: var(--surface-2, #1c212b); }
+}
+
+.star.on {
+  color: var(--accent-gold, #c9a227);
+}
+.circle-btn.on {
+  color: #4c8dff;
+}
+
+.league {
+  flex: none;
+  width: 2.8rem;
+  text-align: center;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 0.14rem 0;
+  border-radius: 4px;
+  color: #fff;
+  &.nfl { background: #013369; }
+  &.ncaa { background: #7a2226; }
+}
+
+.side {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1 1 0;
+  min-width: 0;
+
+  .abbr {
+    font-weight: 700;
+    font-size: 0.98rem;
+  }
+
+  &.home {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+}
+
+.scores {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 3.6rem;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+
+  .s {
+    font-size: 1.15rem;
+    font-weight: 800;
+    &.dim { color: var(--muted, #8b93a1); font-weight: 600; }
+  }
+  .sep { color: var(--muted, #8b93a1); }
+  .lock { font-size: 1rem; }
+}
+
+.meta {
+  flex: none;
+  width: 7.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  font-size: 0.76rem;
+  color: var(--muted, #8b93a1);
+
+  .status {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    &.live { color: #e5484d; }
+  }
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+
+  .peek-btn {
+    min-width: 52px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border, #262c38);
+    background: var(--surface-2, #1c212b);
+    color: var(--text, #e7ebf2);
+    border-radius: 8px;
+    padding: 0 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    user-select: none;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    &:active { background: var(--accent-gold, #c9a227); color: #12151b; }
+  }
+}
+
+@media (max-width: 560px) {
+  .row { gap: 0.4rem; }
+  .meta { width: 4.6rem; }
+  .side .abbr { font-size: 0.9rem; }
+  .league { width: 2.5rem; }
+}

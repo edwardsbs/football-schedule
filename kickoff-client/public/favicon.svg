@@ -1,0 +1,32 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kickoff">
+  <defs>
+    <linearGradient id="ball" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ecca5e"/>
+      <stop offset="1" stop-color="#c9a227"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2230"/>
+      <stop offset="1" stop-color="#0f1218"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bg)" stroke="#2b3242" stroke-width="1.5"/>
+
+  <g transform="rotate(-20 32 32)">
+    <!-- football body -->
+    <path d="M7 32 Q32 8 57 32 Q32 56 7 32 Z" fill="url(#ball)" stroke="#9c7c1a" stroke-width="1.6"/>
+
+    <!-- pointed-end seams -->
+    <path d="M14 27.5 Q17 32 14 36.5" fill="none" stroke="#12151b" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M50 27.5 Q47 32 50 36.5" fill="none" stroke="#12151b" stroke-width="2.4" stroke-linecap="round"/>
+
+    <!-- lace seam + crossbars -->
+    <line x1="24" y1="32" x2="40" y2="32" stroke="#12151b" stroke-width="2" stroke-linecap="round"/>
+    <g stroke="#12151b" stroke-width="2.8" stroke-linecap="round">
+      <line x1="25.5" y1="28.4" x2="25.5" y2="35.6"/>
+      <line x1="30.5" y1="27.8" x2="30.5" y2="36.2"/>
+      <line x1="35.5" y1="27.8" x2="35.5" y2="36.2"/>
+      <line x1="40.5" y1="28.4" x2="40.5" y2="35.6"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,87 @@
+<header class="page-head">
+  <h1>Receiver Route Tree</h1>
+  <p class="subtitle">Select a numbered route to study its break, depth, and finish</p>
+  <p class="note">Classic 1–9 tree plus advanced routes · names and numbering can vary by playbook</p>
+</header>
+
+<div class="route-tree-layout">
+  <section class="tree" aria-label="Receiver routes">
+    <div class="tree-root">
+      <span class="football" aria-hidden="true">🏈</span>
+      <span>Receiver route tree</span>
+    </div>
+
+    @for (route of routes; track route.number) {
+      <div class="branch">
+        <span class="stem" aria-hidden="true"></span>
+        <button
+          type="button"
+          class="route-node"
+          [class.selected]="selectedRoute().number === route.number"
+          [attr.aria-pressed]="selectedRoute().number === route.number"
+          (click)="selectRoute(route)"
+        >
+          <span class="route-number">{{ route.number }}</span>
+          <span class="route-name">
+            <strong>{{ route.name }}</strong>
+            @if (route.aliases) {
+              <small>{{ route.aliases }}</small>
+            }
+          </span>
+          <span class="route-depth">{{ route.depth }}</span>
+        </button>
+      </div>
+    }
+  </section>
+
+  @if (selectedRoute(); as selected) {
+    <aside class="route-preview" aria-live="polite">
+      <header class="preview-head">
+        <span class="preview-number">{{ selected.number }}</span>
+        <div>
+          <span class="eyebrow">Selected route</span>
+          <h2>{{ selected.name }}</h2>
+          @if (selected.aliases) {
+            <p>{{ selected.aliases }}</p>
+          }
+        </div>
+        <span class="depth-chip">{{ selected.depth }}</span>
+      </header>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 440 350" role="img" [attr.aria-labelledby]="'route-title-' + selected.number">
+          <title [id]="'route-title-' + selected.number">{{ selected.name }} receiver route diagram</title>
+          <defs>
+            <marker id="route-arrow" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M0 0 L5 2.5 L0 5 Z" class="arrow-head" />
+            </marker>
+            <pattern id="grass-stripes" width="80" height="80" patternUnits="userSpaceOnUse">
+              <rect width="40" height="80" class="grass-a" />
+              <rect x="40" width="40" height="80" class="grass-b" />
+            </pattern>
+          </defs>
+
+          <rect x="0" y="0" width="440" height="350" rx="12" fill="url(#grass-stripes)" />
+          @for (y of yardLines; track y; let index = $index) {
+            <line x1="0" [attr.y1]="y" x2="440" [attr.y2]="y" class="yard-line" />
+            <text x="16" [attr.y]="y - 6" class="yard-label">{{ (index + 1) * 5 }}</text>
+            <line x1="174" [attr.y1]="y" x2="190" [attr.y2]="y" class="hash" />
+            <line x1="250" [attr.y1]="y" x2="266" [attr.y2]="y" class="hash" />
+          }
+          <line x1="0" y1="316" x2="440" y2="316" class="line-of-scrimmage" />
+          <text x="16" y="338" class="los-label">LINE OF SCRIMMAGE</text>
+
+          <circle cx="220" cy="310" r="11" class="receiver" />
+          <text x="220" y="314" text-anchor="middle" class="receiver-label">WR</text>
+          <path [attr.d]="selected.pathData" class="route-path shadow" />
+          <path [attr.d]="selected.pathData" class="route-path" marker-end="url(#route-arrow)" />
+        </svg>
+      </figure>
+
+      <div class="route-details">
+        <p class="summary">{{ selected.summary }}</p>
+        <p class="coaching"><span>Coaching point</span>{{ selected.coachingPoint }}</p>
+      </div>
+    </aside>
+  }
+</div>

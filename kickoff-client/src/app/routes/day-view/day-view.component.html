@@ -1,0 +1,58 @@
+<header class="page-head">
+  <div class="nav">
+    <button type="button" class="arrow" (click)="prev()" title="Previous day">‹</button>
+    <h1>{{ day() | date: 'EEEE, MMM d' }}</h1>
+    <button type="button" class="arrow" (click)="next()" title="Next day">›</button>
+    <button type="button" class="today" (click)="today()">Today</button>
+  </div>
+  <p class="meta">
+    {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
+    · NCAA + NFL, merged by kickoff
+  </p>
+</header>
+
+<div class="filter-row">
+  <button
+    type="button"
+    class="filter-chip"
+    [class.on]="onlyMine()"
+    [attr.aria-pressed]="onlyMine()"
+    (click)="toggleMine()"
+  >
+    <span class="ico">★◉</span> My games
+    <span class="badge">{{ followedCount() }}</span>
+  </button>
+</div>
+
+<app-my-teams-strip />
+
+@if (total() === 0) {
+  <div class="empty">
+    @if (onlyMine()) {
+      <p>No favorite or circled games on this day.</p>
+      <p class="hint">Tap "My games" to see the full schedule.</p>
+    } @else {
+      <p>No games on this day.</p>
+      <p class="hint">Try another day, or import a schedule.</p>
+    }
+  </div>
+} @else {
+  <section class="congestion-wrap">
+    <h2>Kickoff congestion</h2>
+    <app-congestion [bars]="congestion()" />
+  </section>
+
+  @for (slot of slots(); track slot.key) {
+    <section class="slot">
+      <h3 class="slot-time">
+        {{ slotLabel(slot.kickoff) }}
+        <span class="cnt">{{ slot.count }} game{{ slot.count === 1 ? '' : 's' }}</span>
+      </h3>
+      <div class="rows">
+        @for (game of slot.games; track game.id) {
+          <app-game-row [game]="game" (changed)="refresh()" />
+        }
+      </div>
+    </section>
+  }
+}

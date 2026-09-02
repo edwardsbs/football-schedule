@@ -1,0 +1,198 @@
+:host {
+  display: block;
+  height: 100dvh;
+  overflow: hidden;
+  /* Faint yard lines running down the field, behind the content. */
+  background:
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(255, 255, 255, 0.02) 47px 48px),
+    var(--bg, #0f1218);
+}
+
+/* The actual flex container — :host can't stand in for it, since the
+   template wraps everything one level down in this div. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Fixed Kickoff bar — the content scrolls underneath it. */
+.topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0 1.1rem;
+  height: 60px;
+  background: linear-gradient(180deg, #1a1f29, var(--surface, #161a22));
+  border-bottom: 1px solid var(--border, #262c38);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  color: var(--text, #e7ebf2);
+  white-space: nowrap;
+}
+.brand .mark { font-size: 1.2rem; }
+
+.nav {
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    text-decoration: none;
+    white-space: nowrap;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--muted, #8b93a1);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover { color: var(--text, #e7ebf2); }
+    &.active {
+      color: var(--text, #e7ebf2);
+      background: var(--surface-2, #1c212b);
+      box-shadow: inset 0 -2px 0 var(--accent-gold, #c9a227);
+    }
+  }
+}
+
+.my-games-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 40px;
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--accent-gold, #c9a227);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent-gold, #c9a227);
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  .ico { font-size: 0.8rem; letter-spacing: -0.1em; }
+  &:active { background: color-mix(in srgb, var(--accent-gold, #c9a227) 16%, transparent); }
+}
+
+/* Wraps the scroll container + the custom overlay scrollbar together. */
+.content-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* The real scroll container. Native scrollbar is hidden everywhere — the
+   custom one below is the only one that ever renders, so its width/behavior
+   is identical across Chrome, Edge, Firefox, and regardless of OS scrollbar
+   settings (classic vs. overlay), which the native pseudo-elements were not. */
+.content {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding-right: 84px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; width: 0; height: 0; }
+}
+
+/* Wide, touch-friendly football-sideline scrollbar. */
+.kiosk-scrollbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+  pointer-events: none; /* lets wheel/touch-scroll pass through to .content */
+
+  &.hidden {
+    visibility: hidden;
+    opacity: 0;
+  }
+}
+
+.cap {
+  pointer-events: auto;
+  flex: none;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-left: 1px solid #20252f;
+  background: #0a0d12;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover { background: var(--surface, #161a22); }
+  &:active { background: var(--surface-2, #1c212b); }
+  &.up { border-bottom: 1px solid #20252f; }
+  &.down { border-top: 1px solid #20252f; }
+}
+
+.tri {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+
+  &.up-ico { border-bottom: 12px solid #9aa3b2; }
+  &.down-ico { border-top: 12px solid #9aa3b2; }
+}
+
+.track {
+  pointer-events: auto;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 15px, rgba(255, 255, 255, 0.05) 15px 16px),
+    linear-gradient(to right, #06090d, #11151c);
+  border-left: 1px solid #20252f;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.thumb {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  border-radius: 20px;
+  background: linear-gradient(to bottom, #4a515d, #2b303a);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover { background: linear-gradient(to bottom, #565e6c, #343a45); }
+  &:active { background: linear-gradient(to bottom, #d4ad2c, #a5831c); cursor: grabbing; }
+}
