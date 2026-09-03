@@ -19,4 +19,11 @@ public interface ISportsDataClient
     /// </summary>
     Task<IReadOnlyList<GameScoreUpdate>> GetLiveScoresAsync(
         League league, CancellationToken ct = default);
+
+    /// <summary>
+    /// The full team roster for a league, independent of any schedule/week --
+    /// lets team data (and real ids for favoriting) exist ahead of a team
+    /// actually appearing in an imported game.
+    /// </summary>
+    Task<IReadOnlyList<FeedTeam>> GetAllTeamsAsync(League league, CancellationToken ct = default);
 }

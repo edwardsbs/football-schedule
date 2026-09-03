@@ -32,4 +32,17 @@ public class AdminSyncController(
         var result = await import.ImportAsync(feed, ct);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Pull a league's full team roster, independent of any week's schedule --
+    /// gives every team a real id to favorite even before it appears in a game.
+    /// </summary>
+    [HttpPost("teams")]
+    public async Task<ActionResult<TeamImportResult>> ImportTeams(
+        [FromQuery] League league, CancellationToken ct)
+    {
+        var teams = await client.GetAllTeamsAsync(league, ct);
+        var result = await import.ImportTeamsAsync(league, teams, ct);
+        return Ok(result);
+    }
 }

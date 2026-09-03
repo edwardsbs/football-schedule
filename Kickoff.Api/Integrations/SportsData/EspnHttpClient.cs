@@ -68,6 +68,47 @@ public class EspnHttpClient(
         return updates;
     }
 
+    public async Task<IReadOnlyList<FeedTeam>> GetAllTeamsAsync(League league, CancellationToken ct = default)
+    {
+        var url = $"{BaseUrl}/{Sport(league)}/teams?limit=500";
+        using var doc = await GetJsonAsync(url, ct);
+
+        var teams = new List<FeedTeam>();
+        if (doc is null) return teams;
+
+        if (!doc.RootElement.TryGetProperty("sports", out var sports) || sports.GetArrayLength() == 0) return teams;
+        if (!sports[0].TryGetProperty("leagues", out var leagues) || leagues.GetArrayLength() == 0) return teams;
+        if (!leagues[0].TryGetProperty("teams", out var entries)) return teams;
+
+        foreach (var entry in entries.EnumerateArray())
+        {
+            if (!entry.TryGetProperty("team", out var t) || !t.TryGetProperty("id", out var idEl)) continue;
+            var id = idEl.GetString();
+            if (string.IsNullOrEmpty(id)) continue;
+
+            var location = t.TryGetProperty("location", out var loc) ? loc.GetString() ?? "" : "";
+            var name = t.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+            var displayName = t.TryGetProperty("displayName", out var dn) ? dn.GetString() ?? $"{location} {name}".Trim() : $"{location} {name}".Trim();
+            var abbr = t.TryGetProperty("abbreviation", out var ab) ? ab.GetString() ?? "" : "";
+
+            string? logo = null;
+            if (t.TryGetProperty("logos", out var logos))
+            {
+                foreach (var l in logos.EnumerateArray())
+                {
+                    if (!l.TryGetProperty("rel", out var rel)) continue;
+                    if (!rel.EnumerateArray().Any(r => r.GetString() == "default")) continue;
+                    logo = l.TryGetProperty("href", out var href) ? href.GetString() : null;
+                    break;
+                }
+            }
+
+            teams.Add(new FeedTeam(id, location, name, displayName, abbr, LogoUrl: logo));
+        }
+
+        return teams;
+    }
+
     private static string Sport(League league) => league == League.Nfl ? "nfl" : "college-football";
 
     private static int MapSeasonType(string seasonType) => seasonType.ToUpperInvariant() switch

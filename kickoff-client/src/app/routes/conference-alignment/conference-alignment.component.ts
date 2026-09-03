@@ -1,7 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { of, switchMap } from 'rxjs';
 import { getAlignment } from '../../core/data/alignment-lookup';
-import { AlignmentConference } from '../../core/models/alignment.model';
+import { AlignmentConference, AlignmentTeam } from '../../core/models/alignment.model';
+import { TeamSummary } from '../../core/models/game.model';
+import { FanStore } from '../../core/services/fan-store';
+import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 
 /**
@@ -16,10 +21,58 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConferenceAlignmentComponent {
+  private readonly api = inject(KickoffApi);
+  readonly fan = inject(FanStore);
+
   readonly league = input.required<string>();
   readonly palette = signal<'original' | 'muted' | 'mono'>('mono');
 
   readonly alignment = computed(() => getAlignment(this.league()));
+
+  /**
+   * Real backend teams for the current league, so alignment-page entries (still
+   * placeholder data) can resolve a favorite-able id. NCAA teams are matched by
+   * the numeric ESPN id embedded in the logo URL; NFL teams by abbreviation --
+   * both are already how the static alignment data builds its own logo URLs, so
+   * no separate name-matching table is needed.
+   */
+  private readonly backendTeams = toSignal(
+    toObservable(this.league).pipe(
+      switchMap((l) =>
+        l === 'ncaa' ? this.api.getTeams('Ncaa') : l === 'nfl' ? this.api.getTeams('Nfl') : of([]),
+      ),
+    ),
+    { initialValue: [] as TeamSummary[] },
+  );
+
+  private readonly teamIdByKey = computed(() => {
+    const isNcaa = this.league() === 'ncaa';
+    const map = new Map<string, number>();
+    for (const t of this.backendTeams()) {
+      const key = isNcaa ? ncaaEspnId(t.logoUrl) : t.abbreviation.toLowerCase();
+      if (key) map.set(key, t.id);
+    }
+    return map;
+  });
+
+  /** The real backend team id for an alignment entry, or null if that team
+   * hasn't been imported yet (not yet favorite-able). */
+  teamId(team: AlignmentTeam): number | null {
+    const isNcaa = this.league() === 'ncaa';
+    const key = isNcaa ? ncaaEspnId(team.logoUrl ?? null) : (team.abbreviation?.toLowerCase() ?? null);
+    return key ? (this.teamIdByKey().get(key) ?? null) : null;
+  }
+
+  isFavorite(team: AlignmentTeam): boolean {
+    const id = this.teamId(team);
+    return id !== null && this.fan.isFavorite(id);
+  }
+
+  toggleFavorite(team: AlignmentTeam, event: Event): void {
+    event.stopPropagation();
+    const id = this.teamId(team);
+    if (id !== null) this.fan.toggleFavorite(id);
+  }
 
   /** The NFL presentation is intentionally NFC-first to match the familiar two-conference layout. */
   readonly nflConferences = computed<AlignmentConference[]>(() => {
@@ -45,4 +98,9 @@ export class ConferenceAlignmentComponent {
   setPalette(palette: 'original' | 'muted' | 'mono'): void {
     this.palette.set(palette);
   }
+}
+
+/** Extracts the numeric ESPN team id from an `.../ncaa/500/{id}.png` logo URL. */
+function ncaaEspnId(logoUrl: string | null | undefined): string | null {
+  return logoUrl?.match(/\/ncaa\/500\/(\d+)\.png/)?.[1] ?? null;
 }

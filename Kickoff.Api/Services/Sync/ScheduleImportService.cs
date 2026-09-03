@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Kickoff.Api.Services.Sync;
 
 public record ScheduleImportResult(int TeamsAdded, int GamesAdded, int GamesUpdated);
+public record TeamImportResult(int TeamsAdded, int TeamsUpdated);
 
 /// <summary>
 /// Upserts a <see cref="ScheduleFeed"/> into the domain, keyed by external id so
@@ -19,7 +20,12 @@ public class ScheduleImportService(IKickoffContext db)
         var season = await GetOrCreateSeasonAsync(feed.League, feed.SeasonYear, ct);
         var week = await GetOrCreateWeekAsync(season, feed, ct);
 
-        var teamsAdded = await UpsertTeamsAsync(feed, ct);
+        var feedTeams = feed.Games
+            .SelectMany(g => new[] { g.Home, g.Away })
+            .GroupBy(t => t.ExternalId)
+            .Select(grp => grp.First())
+            .ToList();
+        var (teamsAdded, _) = await UpsertTeamsAsync(feed.League, feedTeams, ct);
 
         // Existing games for this feed, by external id -- scoped to this feed's
         // league, since a provider's external ids aren't necessarily unique
@@ -69,20 +75,25 @@ public class ScheduleImportService(IKickoffContext db)
         return new ScheduleImportResult(teamsAdded, added, updated);
     }
 
-    private async Task<int> UpsertTeamsAsync(ScheduleFeed feed, CancellationToken ct)
-    {
-        var feedTeams = feed.Games
-            .SelectMany(g => new[] { g.Home, g.Away })
-            .GroupBy(t => t.ExternalId)
-            .Select(grp => grp.First())
-            .ToList();
+    /// <summary>
+    /// Upserts a full team roster, independent of any schedule feed -- used both
+    /// by a schedule import (teams referenced by that week's games) and by
+    /// <see cref="ImportTeamsAsync"/> (a league's entire roster, so every team
+    /// has a real id to favorite even before it appears in an imported game).
+    /// </summary>
+    public Task<TeamImportResult> ImportTeamsAsync(
+        League league, IReadOnlyList<FeedTeam> feedTeams, CancellationToken ct = default) =>
+        UpsertTeamsAsync(league, feedTeams, ct);
 
+    private async Task<TeamImportResult> UpsertTeamsAsync(
+        League league, IReadOnlyList<FeedTeam> feedTeams, CancellationToken ct)
+    {
         var ids = feedTeams.Select(t => t.ExternalId).ToList();
         var existing = await db.Teams
-            .Where(t => t.League == feed.League && t.ExternalId != null && ids.Contains(t.ExternalId))
+            .Where(t => t.League == league && t.ExternalId != null && ids.Contains(t.ExternalId))
             .ToDictionaryAsync(t => t.ExternalId!, ct);
 
-        var added = 0;
+        int added = 0, updated = 0;
         foreach (var ft in feedTeams)
         {
             if (existing.TryGetValue(ft.ExternalId, out var team))
@@ -90,12 +101,13 @@ public class ScheduleImportService(IKickoffContext db)
                 team.DisplayName = ft.DisplayName;
                 team.Abbreviation = ft.Abbreviation;
                 if (ft.LogoUrl is not null) team.LogoUrl = ft.LogoUrl;
+                updated++;
                 continue;
             }
 
             db.Teams.Add(new Team
             {
-                League = feed.League,
+                League = league,
                 ExternalId = ft.ExternalId,
                 Location = ft.Location,
                 Name = ft.Name,
@@ -107,7 +119,7 @@ public class ScheduleImportService(IKickoffContext db)
         }
 
         await db.SaveChangesAsync(ct); // assign team ids before wiring games
-        return added;
+        return new TeamImportResult(added, updated);
     }
 
     private static void ApplyScore(Game game, ScoreSnapshot? score)

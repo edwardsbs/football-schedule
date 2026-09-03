@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { FavoriteTeam, Game, MuteType } from '../models/game.model';
+import { FavoriteTeam, Game, MuteType, TeamSummary } from '../models/game.model';
 
 /**
  * All Kickoff API calls. Uses relative `/api/...` URLs — proxied to the API in
@@ -67,5 +67,13 @@ export class KickoffApi {
 
   uncircle(id: number): Observable<void> {
     return this.http.delete<void>(`/api/games/${id}/circle`);
+  }
+
+  // --- teams ---
+
+  /** Every known team for a league, with real ids -- for resolving a favorite-able
+   * id against a team the client already knows about (e.g. conference pages). */
+  getTeams(league: 'Nfl' | 'Ncaa'): Observable<TeamSummary[]> {
+    return this.http.get<TeamSummary[]>('/api/teams', { params: { league } });
   }
 }
