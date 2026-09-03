@@ -12,6 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { FanStore } from '../core/services/fan-store';
+import { LiveGameStore } from '../core/services/live-game-store';
 import { MyGamesModalComponent } from '../shared/my-games-modal/my-games-modal.component';
 import { GameDetailModalComponent } from '../shared/game-detail-modal/game-detail-modal.component';
 
@@ -68,6 +69,8 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
 
   constructor() {
     inject(FanStore).load();
+    // Start the one shared live-score poll for every routed screen.
+    inject(LiveGameStore);
 
     /** Tapping into a game (e.g. from the My Games modal) should close it, not leave it stranded on top. */
     inject(Router)

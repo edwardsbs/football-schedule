@@ -4,6 +4,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { Game } from '../../core/models/game.model';
 import { KickoffApi } from '../../core/services/kickoff-api';
+import { LiveGameStore } from '../../core/services/live-game-store';
 import { filterFollowed, groupByWeek, startOfLocalDay, WeekGroup } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
@@ -40,6 +41,7 @@ function rangeLabel(first: Date, last: Date): string {
 })
 export class SeasonScheduleComponent {
   private readonly api = inject(KickoffApi);
+  private readonly live = inject(LiveGameStore);
   private readonly reload = signal(0);
 
   readonly league = input.required<string>();
@@ -49,7 +51,7 @@ export class SeasonScheduleComponent {
     return this.league() === 'nfl' ? 'Nfl' : this.league() === 'ncaa' ? 'Ncaa' : null;
   });
 
-  readonly games = toSignal(
+  private readonly loadedGames = toSignal(
     toObservable(this.backendLeague).pipe(
       switchMap((league) => {
         if (!league) return of<Game[]>([]);
@@ -59,6 +61,8 @@ export class SeasonScheduleComponent {
     ),
     { initialValue: [] as Game[] },
   );
+
+  readonly games = computed(() => this.live.overlayAll(this.loadedGames()));
 
   /** "My games" filter: only favorite-team or circled games. */
   readonly onlyMine = signal(false);

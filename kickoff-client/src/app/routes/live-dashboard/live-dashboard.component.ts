@@ -1,15 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { Subject, catchError, merge, of, switchMap, timer } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
+import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game, Score } from '../../core/models/game.model';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
-
-const POLL_MS = 10_000;
 
 @Component({
   selector: 'app-live-dashboard',
@@ -21,8 +18,8 @@ const POLL_MS = 10_000;
 export class LiveDashboardComponent {
   private readonly api = inject(KickoffApi);
   private readonly overlay = inject(GameDetailOverlay);
+  private readonly live = inject(LiveGameStore);
   protected readonly fan = inject(FanStore);
-  private readonly refresh$ = new Subject<void>();
 
   /** Tap a tile (not its controls) to open the game detail modal in place. */
   open(g: Game): void {
@@ -32,13 +29,8 @@ export class LiveDashboardComponent {
   /** Temporary reveal ("peek") scores, keyed by game id, held while pressing. */
   private readonly peeked = signal(new Map<number, Score | null>());
 
-  /** Polls the live feed and re-fetches on demand (after a mute toggle). */
-  readonly games = toSignal(
-    merge(timer(0, POLL_MS), this.refresh$).pipe(
-      switchMap(() => this.api.getLive().pipe(catchError(() => of<Game[]>([])))),
-    ),
-    { initialValue: [] as Game[] },
-  );
+  /** The same app-wide feed used to keep every other game view current. */
+  readonly games = this.live.liveGames;
 
   readonly liveCount = computed(() => this.games().filter((g) => g.status === 'Live').length);
 
@@ -86,11 +78,11 @@ export class LiveDashboardComponent {
   // --- actions ---
 
   mute(g: Game): void {
-    this.api.mute(g.id, 'Muted').subscribe(() => this.refresh$.next());
+    this.api.mute(g.id, 'Muted').subscribe(() => this.live.refresh());
   }
 
   unmute(g: Game): void {
-    this.api.unmute(g.id).subscribe(() => this.refresh$.next());
+    this.api.unmute(g.id).subscribe(() => this.live.refresh());
   }
 
   /** Press-and-hold: fetch the true score and show it only while held. */

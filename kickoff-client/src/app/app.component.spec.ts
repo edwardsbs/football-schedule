@@ -20,10 +20,10 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('kickoff-client');
   });
 
-  it('should render title', () => {
+  it('should render the routed application', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, kickoff-client');
+    expect(compiled.querySelector('router-outlet')).not.toBeNull();
   });
 });

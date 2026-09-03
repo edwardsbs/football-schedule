@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
+import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, groupByKickoff, startOfLocalDay } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
@@ -20,6 +21,7 @@ const timeLabel = (iso: string) =>
 })
 export class DayViewComponent {
   private readonly api = inject(KickoffApi);
+  private readonly live = inject(LiveGameStore);
   private readonly reload = signal(0);
 
   readonly day = signal(startOfLocalDay(new Date()));
@@ -30,12 +32,14 @@ export class DayViewComponent {
     return { from: from.toISOString(), to: addDays(from, 1).toISOString() };
   });
 
-  readonly games = toSignal(
+  private readonly loadedGames = toSignal(
     toObservable(this.range).pipe(
       switchMap((r) => this.api.getRange(r.from, r.to).pipe(catchError(() => of<Game[]>([])))),
     ),
     { initialValue: [] as Game[] },
   );
+
+  readonly games = computed(() => this.live.overlayAll(this.loadedGames()));
 
   /** "My games" filter: only favorite-team or circled games (mixes NCAA + NFL). */
   readonly onlyMine = signal(false);

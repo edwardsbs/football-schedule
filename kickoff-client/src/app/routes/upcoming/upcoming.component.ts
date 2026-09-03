@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, timer } from 'rxjs';
 import { FanStore } from '../../core/services/fan-store';
+import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game } from '../../core/models/game.model';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 
@@ -69,12 +70,13 @@ import { GameRowComponent } from '../../shared/game-row/game-row.component';
 })
 export class UpcomingComponent {
   protected readonly fan = inject(FanStore);
+  private readonly live = inject(LiveGameStore);
 
   private readonly now = toSignal(timer(0, 1000).pipe(map(() => Date.now())), {
     initialValue: Date.now(),
   });
 
-  readonly games = computed(() => this.fan.circled());
+  readonly games = computed(() => this.live.overlayAll(this.fan.circled()));
 
   constructor() {
     this.fan.reloadCircled();

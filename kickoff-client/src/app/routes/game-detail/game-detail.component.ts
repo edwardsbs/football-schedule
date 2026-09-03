@@ -4,6 +4,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, of, startWith, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { FanStore } from '../../core/services/fan-store';
+import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game, Score, TeamSummary } from '../../core/models/game.model';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 
@@ -29,6 +30,7 @@ type ViewModel =
 export class GameDetailComponent {
   private readonly api = inject(KickoffApi);
   private readonly location = inject(Location);
+  private readonly live = inject(LiveGameStore);
   protected readonly fan = inject(FanStore);
 
   readonly id = input.required<string>();
@@ -56,7 +58,10 @@ export class GameDetailComponent {
     { initialValue: { status: 'loading', game: null } as ViewModel },
   );
 
-  protected readonly game = computed(() => this.vm().game);
+  protected readonly game = computed(() => {
+    const game = this.vm().game;
+    return game ? this.live.overlay(game) : null;
+  });
 
   /** Live-peek score, held only while the peek button is pressed. */
   protected readonly peek = signal<Score | null | undefined>(undefined);

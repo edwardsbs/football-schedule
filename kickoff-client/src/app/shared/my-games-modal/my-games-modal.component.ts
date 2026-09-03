@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { KickoffApi } from '../../core/services/kickoff-api';
+import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, groupByDay, startOfLocalDay } from '../../core/timeline';
 import { GameRowComponent } from '../game-row/game-row.component';
@@ -19,6 +20,7 @@ import { GameRowComponent } from '../game-row/game-row.component';
 })
 export class MyGamesModalComponent {
   private readonly api = inject(KickoffApi);
+  private readonly live = inject(LiveGameStore);
 
   readonly open = input.required<boolean>();
   readonly closed = output<void>();
@@ -26,8 +28,8 @@ export class MyGamesModalComponent {
   private readonly games = signal<Game[]>([]);
   readonly loading = signal(false);
 
-  readonly followed = signal<Game[]>([]);
-  readonly groups = signal<ReturnType<typeof groupByDay>>([]);
+  readonly followed = computed(() => filterFollowed(this.live.overlayAll(this.games())));
+  readonly groups = computed(() => groupByDay(this.followed()));
 
   constructor() {
     effect(() => {
@@ -42,9 +44,6 @@ export class MyGamesModalComponent {
     this.api.getRange(from.toISOString(), to.toISOString()).subscribe({
       next: (games) => {
         this.games.set(games);
-        const mine = filterFollowed(games);
-        this.followed.set(mine);
-        this.groups.set(groupByDay(mine));
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
