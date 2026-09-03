@@ -107,23 +107,6 @@
   .hint { font-size: 0.85rem; }
 }
 
-.congestion-wrap {
-  background: var(--surface, #161a22);
-  border: 1px solid var(--border, #262c38);
-  border-radius: 12px;
-  padding: 0.75rem 0.9rem 0.9rem;
-  margin-bottom: 1.5rem;
-
-  h2 {
-    margin: 0;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted, #8b93a1);
-  }
-}
-
 .day-group {
   margin-bottom: 1.75rem;
 }

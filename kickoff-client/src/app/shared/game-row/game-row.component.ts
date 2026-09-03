@@ -24,6 +24,8 @@ export class GameRowComponent {
   protected readonly fan = inject(FanStore);
 
   readonly game = input.required<Game>();
+  /** Alternating-row shading, set by the hosting list from its index. */
+  readonly alt = input<boolean>(false);
   readonly changed = output<void>();
 
   /** Tap the row (not its controls) to open the game detail modal in place. */

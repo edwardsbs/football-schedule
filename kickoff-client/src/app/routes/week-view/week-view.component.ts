@@ -5,18 +5,15 @@ import { catchError, of, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, groupByDay, startOfWeek } from '../../core/timeline';
-import { CongestionBar, CongestionComponent } from '../../shared/congestion/congestion.component';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
 
 const timeLabel = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-const weekdayLabel = (iso: string) =>
-  new Date(iso).toLocaleDateString([], { weekday: 'short' });
 
 @Component({
   selector: 'app-week-view',
-  imports: [DatePipe, GameRowComponent, CongestionComponent, MyTeamsStripComponent],
+  imports: [DatePipe, GameRowComponent, MyTeamsStripComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './week-view.component.html',
   styleUrls: ['../shared/timeline.scss'],
@@ -48,13 +45,6 @@ export class WeekViewComponent {
 
   readonly days = computed(() => groupByDay(this.visible()));
   readonly total = computed(() => this.visible().length);
-
-  /** Congestion across the week, one bar per day that has games. */
-  readonly congestion = computed<CongestionBar[]>(() => {
-    const days = this.days();
-    const peak = Math.max(0, ...days.map((d) => d.count));
-    return days.map((d) => ({ label: weekdayLabel(d.date), count: d.count, highlight: d.count === peak && peak > 0 }));
-  });
 
   slotLabel(iso: string): string {
     return timeLabel(iso);

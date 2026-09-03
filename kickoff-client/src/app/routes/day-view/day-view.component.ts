@@ -5,7 +5,6 @@ import { catchError, of, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, groupByKickoff, startOfLocalDay } from '../../core/timeline';
-import { CongestionBar, CongestionComponent } from '../../shared/congestion/congestion.component';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
 
@@ -14,7 +13,7 @@ const timeLabel = (iso: string) =>
 
 @Component({
   selector: 'app-day-view',
-  imports: [DatePipe, GameRowComponent, CongestionComponent, MyTeamsStripComponent],
+  imports: [DatePipe, GameRowComponent, MyTeamsStripComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './day-view.component.html',
   styleUrls: ['../shared/timeline.scss'],
@@ -45,12 +44,6 @@ export class DayViewComponent {
 
   readonly slots = computed(() => groupByKickoff(this.visible()));
   readonly total = computed(() => this.visible().length);
-
-  readonly congestion = computed<CongestionBar[]>(() => {
-    const slots = this.slots();
-    const peak = Math.max(0, ...slots.map((s) => s.count));
-    return slots.map((s) => ({ label: timeLabel(s.kickoff), count: s.count, highlight: s.count === peak && peak > 0 }));
-  });
 
   slotLabel(iso: string): string {
     return timeLabel(iso);

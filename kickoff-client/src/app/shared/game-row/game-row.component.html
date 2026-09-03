@@ -5,6 +5,7 @@
   [attr.aria-label]="'Open ' + game().away.displayName + ' at ' + game().home.displayName + ' details'"
   [class.muted]="game().isMuted"
   [class.peeking]="peeking"
+  [class.alt]="alt()"
   [class.fav]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
   [class.circled]="fan.isCircled(game().id)"
   (click)="open()"

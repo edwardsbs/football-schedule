@@ -15,6 +15,8 @@
   -webkit-tap-highlight-color: transparent;
   transition: opacity 0.2s, filter 0.2s, background 0.15s;
 
+  &.alt { background: rgb(255 255 255 / 4%); }
+
   /* Touch/kiosk: no hover, so tapping the row (not a control) opens detail
      and gives an immediate pressed state instead of a hover cue. */
   &:hover { background: var(--surface-2, #1c212b); }

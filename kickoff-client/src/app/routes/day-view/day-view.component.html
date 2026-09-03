@@ -37,11 +37,6 @@
     }
   </div>
 } @else {
-  <section class="congestion-wrap">
-    <h2>Kickoff congestion</h2>
-    <app-congestion [bars]="congestion()" />
-  </section>
-
   @for (slot of slots(); track slot.key) {
     <section class="slot">
       <h3 class="slot-time">
@@ -49,8 +44,8 @@
         <span class="cnt">{{ slot.count }} game{{ slot.count === 1 ? '' : 's' }}</span>
       </h3>
       <div class="rows">
-        @for (game of slot.games; track game.id) {
-          <app-game-row [game]="game" (changed)="refresh()" />
+        @for (game of slot.games; track game.id; let i = $index) {
+          <app-game-row [game]="game" [alt]="i % 2 === 1" (changed)="refresh()" />
         }
       </div>
     </section>

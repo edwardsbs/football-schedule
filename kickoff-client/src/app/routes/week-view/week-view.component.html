@@ -37,11 +37,6 @@
     }
   </div>
 } @else {
-  <section class="congestion-wrap">
-    <h2>Games per day</h2>
-    <app-congestion [bars]="congestion()" />
-  </section>
-
   @for (day of days(); track day.key) {
     <section class="day-group">
       <div class="day-head">
@@ -56,8 +51,8 @@
             <span class="cnt">{{ slot.count }} game{{ slot.count === 1 ? '' : 's' }}</span>
           </h3>
           <div class="rows">
-            @for (game of slot.games; track game.id) {
-              <app-game-row [game]="game" (changed)="refresh()" />
+            @for (game of slot.games; track game.id; let i = $index) {
+              <app-game-row [game]="game" [alt]="i % 2 === 1" (changed)="refresh()" />
             }
           </div>
         </div>
