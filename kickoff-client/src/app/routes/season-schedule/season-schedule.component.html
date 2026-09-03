@@ -1,11 +1,11 @@
 <header class="page-head">
   <div class="nav">
     <h1>{{ leagueLabel() }} Full Season</h1>
+    <span class="meta-inline">
+      {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
+      · {{ weeks().length }} week{{ weeks().length === 1 ? '' : 's' }}
+    </span>
   </div>
-  <p class="meta">
-    {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
-    · {{ weeks().length }} week{{ weeks().length === 1 ? '' : 's' }}
-  </p>
 </header>
 
 <div class="filter-row">
@@ -28,9 +28,9 @@
     <span class="ico">★◉</span> My games
     <span class="badge">{{ followedCount() }}</span>
   </button>
-</div>
 
-<app-my-teams-strip />
+  <app-my-teams-strip [inline]="true" />
+</div>
 
 @if (total() === 0) {
   <div class="empty">

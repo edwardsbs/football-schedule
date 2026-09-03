@@ -1,3 +1,16 @@
+// Overrides the shared timeline.scss .page-head layout so the game/week
+// counts sit inline next to the title instead of on their own line below.
+.page-head .nav {
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.meta-inline {
+  color: var(--muted, #8b93a1);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
 .view-toggle {
   display: inline-flex;
   gap: 0.25rem;

@@ -29,7 +29,13 @@
   scroll-behavior: smooth;
   padding: 0.3rem 0.1rem;
   scrollbar-width: none;
+  cursor: grab;
+  // Horizontal panning is handled by our own pointer-drag logic, not the
+  // browser's native touch scroll -- letting both drive scrollLeft at once
+  // is janky. pan-y keeps vertical page scroll passing through untouched.
+  touch-action: pan-y;
   &::-webkit-scrollbar { display: none; }
+  &:active { cursor: grabbing; }
 }
 
 .week-chip {
