@@ -28,4 +28,14 @@ public class SportsDataOptions
 
     /// <summary>Leagues to poll for live scores.</summary>
     public string[] LiveLeagues { get; set; } = ["Nfl", "Ncaa"];
+
+    /// <summary>
+    /// Whether the background schedule-refresh sync runs. Catches flex
+    /// scheduling -- kickoff time and broadcast changes ESPN publishes
+    /// mid-season -- that the live-score poller doesn't touch.
+    /// </summary>
+    public bool ScheduleSyncEnabled { get; set; } = true;
+
+    /// <summary>Hours between full schedule-refresh passes.</summary>
+    public double ScheduleSyncHours { get; set; } = 24;
 }

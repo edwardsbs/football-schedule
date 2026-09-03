@@ -25,7 +25,7 @@ public class LiveScoreSyncWorker(
             return;
         }
 
-        var leagues = ParseLeagues(_opt.LiveLeagues);
+        var leagues = LeagueListParser.Parse(_opt.LiveLeagues);
         logger.LogInformation(
             "Live score sync started ({Provider}, every {Seconds}s, leagues: {Leagues}).",
             _opt.Provider, _opt.LivePollSeconds, string.Join(", ", leagues));
@@ -64,16 +64,5 @@ public class LiveScoreSyncWorker(
             var applied = await scores.ApplyAsync(league, updates, ct);
             logger.LogDebug("{League}: applied {Count} live update(s).", league, applied);
         }
-    }
-
-    private static List<League> ParseLeagues(IEnumerable<string> names)
-    {
-        var leagues = new List<League>();
-        foreach (var n in names)
-        {
-            if (Enum.TryParse<League>(n, ignoreCase: true, out var league) && !leagues.Contains(league))
-                leagues.Add(league);
-        }
-        return leagues.Count > 0 ? leagues : [League.Nfl, League.Ncaa];
     }
 }

@@ -173,17 +173,27 @@ public class ScheduleImportService(IKickoffContext db)
 
     private async Task<Week> GetOrCreateWeekAsync(Season season, ScheduleFeed feed, CancellationToken ct)
     {
-        var week = await db.Weeks.FirstOrDefaultAsync(w => w.SeasonId == season.Id && w.Number == feed.Week, ct);
-        if (week is not null) return week;
-
         var kickoffs = feed.Games.Select(g => g.KickoffUtc).DefaultIfEmpty().ToList();
+        var startDate = DateOnly.FromDateTime(kickoffs.Min().UtcDateTime);
+        var endDate = DateOnly.FromDateTime(kickoffs.Max().UtcDateTime);
+
+        var week = await db.Weeks.FirstOrDefaultAsync(w => w.SeasonId == season.Id && w.Number == feed.Week, ct);
+        if (week is not null)
+        {
+            // Re-imports refresh the displayed date range too -- flex scheduling
+            // can shift a week's actual kickoff spread after it was first created.
+            week.StartDate = startDate;
+            week.EndDate = endDate;
+            return week;
+        }
+
         week = new Week
         {
             SeasonId = season.Id,
             Number = feed.Week,
             Label = $"Week {feed.Week}",
-            StartDate = DateOnly.FromDateTime(kickoffs.Min().UtcDateTime),
-            EndDate = DateOnly.FromDateTime(kickoffs.Max().UtcDateTime),
+            StartDate = startDate,
+            EndDate = endDate,
         };
         db.Weeks.Add(week);
         await db.SaveChangesAsync(ct);

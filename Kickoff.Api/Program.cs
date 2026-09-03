@@ -50,6 +50,7 @@ else
 }
 
 builder.Services.AddHostedService<LiveScoreSyncWorker>();
+builder.Services.AddHostedService<ScheduleSyncWorker>();
 
 builder.Services
     .AddControllers()
