@@ -12,15 +12,18 @@ namespace Kickoff.Api.Services.Sync;
 public class ScoreSyncService(IKickoffContext db)
 {
     public async Task<int> ApplyAsync(
-        IReadOnlyList<GameScoreUpdate> updates, CancellationToken ct = default)
+        League league, IReadOnlyList<GameScoreUpdate> updates, CancellationToken ct = default)
     {
         if (updates.Count == 0) return 0;
 
         var byExt = updates.ToDictionary(u => u.GameExternalId);
         var ids = byExt.Keys.ToList();
 
+        // Scoped by league -- external ids are only unique within a league (see
+        // Team/Game's composite index), so an unscoped lookup could otherwise
+        // match a same-numbered game in the wrong league.
         var games = await db.Games
-            .Where(g => g.ExternalId != null && ids.Contains(g.ExternalId))
+            .Where(g => g.League == league && g.ExternalId != null && ids.Contains(g.ExternalId))
             .ToListAsync(ct);
 
         var now = DateTimeOffset.UtcNow;

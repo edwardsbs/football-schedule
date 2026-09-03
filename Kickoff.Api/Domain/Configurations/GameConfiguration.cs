@@ -10,8 +10,11 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
         builder.Property(g => g.Clock).HasMaxLength(10);
         builder.Property(g => g.ExternalId).HasMaxLength(64);
 
-        // Upsert key for the sports-data provider's score sync.
-        builder.HasIndex(g => g.ExternalId)
+        // Upsert key for the sports-data provider's score sync. Scoped by League
+        // for the same reason as Team's index -- don't assume the provider's
+        // external ids are unique across leagues even if collisions are less
+        // likely here (ESPN's event ids are large sequential numbers).
+        builder.HasIndex(g => new { g.League, g.ExternalId })
             .IsUnique()
             .HasFilter("[ExternalId] IS NOT NULL");
 

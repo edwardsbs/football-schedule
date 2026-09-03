@@ -61,7 +61,7 @@ public class LiveScoreSyncWorker(
             var updates = await client.GetLiveScoresAsync(league, ct);
             if (updates.Count == 0) continue;
 
-            var applied = await scores.ApplyAsync(updates, ct);
+            var applied = await scores.ApplyAsync(league, updates, ct);
             logger.LogDebug("{League}: applied {Count} live update(s).", league, applied);
         }
     }

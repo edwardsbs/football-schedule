@@ -14,8 +14,12 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
         builder.Property(t => t.PrimaryColor).HasMaxLength(9);   // "#RRGGBBAA"
         builder.Property(t => t.ExternalId).HasMaxLength(64);
 
-        // Upsert key for the sports-data provider sync; filtered so many nulls stay allowed.
-        builder.HasIndex(t => t.ExternalId)
+        // Upsert key for the sports-data provider sync; filtered so many nulls stay
+        // allowed. Scoped by League, not ExternalId alone -- ESPN's NFL and NCAA
+        // team ids are not in a shared namespace and can collide (verified: an
+        // NFL team's id overwrote an NCAA team's display fields via the naive
+        // global-uniqueness assumption this used to have).
+        builder.HasIndex(t => new { t.League, t.ExternalId })
             .IsUnique()
             .HasFilter("[ExternalId] IS NOT NULL");
 

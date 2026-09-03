@@ -60,7 +60,7 @@ public class SyncPipelineTests
         // Jump well past the end of every game, then poll+apply.
         clock.Advance(TimeSpan.FromMinutes(200));
         var updates = await client.GetLiveScoresAsync(League.Nfl);
-        var applied = await scores.ApplyAsync(updates);
+        var applied = await scores.ApplyAsync(League.Nfl, updates);
 
         Assert.True(applied > 0);
         var games = await ctx.Games.ToListAsync();

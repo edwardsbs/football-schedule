@@ -21,16 +21,18 @@ public class ScheduleImportService(IKickoffContext db)
 
         var teamsAdded = await UpsertTeamsAsync(feed, ct);
 
-        // Existing games for this feed, by external id.
+        // Existing games for this feed, by external id -- scoped to this feed's
+        // league, since a provider's external ids aren't necessarily unique
+        // across leagues (verified: ESPN's aren't, for teams at least).
         var externalIds = feed.Games.Select(g => g.ExternalId).ToList();
         var existingGames = await db.Games
             .Include(g => g.Broadcasts)
-            .Where(g => g.ExternalId != null && externalIds.Contains(g.ExternalId))
+            .Where(g => g.League == feed.League && g.ExternalId != null && externalIds.Contains(g.ExternalId))
             .ToListAsync(ct);
         var gamesByExt = existingGames.ToDictionary(g => g.ExternalId!);
 
         var teamsByExt = await db.Teams
-            .Where(t => t.ExternalId != null)
+            .Where(t => t.League == feed.League && t.ExternalId != null)
             .ToDictionaryAsync(t => t.ExternalId!, ct);
 
         int added = 0, updated = 0;
@@ -77,7 +79,7 @@ public class ScheduleImportService(IKickoffContext db)
 
         var ids = feedTeams.Select(t => t.ExternalId).ToList();
         var existing = await db.Teams
-            .Where(t => t.ExternalId != null && ids.Contains(t.ExternalId))
+            .Where(t => t.League == feed.League && t.ExternalId != null && ids.Contains(t.ExternalId))
             .ToDictionaryAsync(t => t.ExternalId!, ct);
 
         var added = 0;
