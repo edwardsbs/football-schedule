@@ -1,0 +1,47 @@
+.view-toggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--surface-2, #1c212b);
+  border-radius: 999px;
+
+  button {
+    min-height: 44px;
+    padding: 0.4rem 0.9rem;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--muted, #8b93a1);
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    touch-action: manipulation;
+
+    &.active {
+      background: var(--accent-gold, #c9a227);
+      color: #12151b;
+    }
+  }
+}
+
+.week-group {
+  margin-bottom: 2.5rem;
+}
+
+.week-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--accent-gold, #c9a227);
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .cnt { color: var(--muted, #8b93a1); font-size: 0.85rem; }
+}

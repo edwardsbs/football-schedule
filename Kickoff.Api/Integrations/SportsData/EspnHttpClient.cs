@@ -12,9 +12,22 @@ namespace Kickoff.Api.Integrations.SportsData;
 /// keep parsing defensive and never let a shape change take down the poller.
 ///
 /// URL shape: https://site.api.espn.com/apis/site/v2/sports/football/{sport}/scoreboard
-/// where sport is "nfl" or "college-football". Schedule pulls add
-/// ?seasontype=&week=&dates={year}; the live poll omits all three, which makes
-/// ESPN default to "today" — no season/week config to keep in sync.
+/// where sport is "nfl" or "college-football". The live poll omits all query
+/// params, which makes ESPN default to "today" — no season/week config to keep
+/// in sync.
+///
+/// Schedule pulls differ by league: NFL's `week=` parameter reliably returns
+/// the whole week (verified: identical to the equivalent date-range query).
+/// NCAA's does not -- verified directly two ways: `week=1` returned 25 of a
+/// real 99 games for that week (silently dropping the rest, no error), and
+/// separately, ESPN's own calendar entry for that same week spans Aug 22 -
+/// Sep 7 as ONE block -- which is actually two real-world weeks (fans' "Week
+/// 0" and "Week 1"), confirmed by the fact that trusting it as one window
+/// made several teams appear to play twice in what was supposedly a single
+/// week. So NCAA schedule pulls query by date range using boundaries this
+/// client computes itself (real Tuesday-Monday weeks, same convention as the
+/// merged week view), anchored to the season's actual start date from ESPN's
+/// calendar -- not ESPN's own (evidently unreliable) per-week calendar entries.
 /// </summary>
 public class EspnHttpClient(
     HttpClient http,
@@ -27,8 +40,25 @@ public class EspnHttpClient(
     public async Task<ScheduleFeed> GetWeekScheduleAsync(
         League league, int seasonYear, int week, CancellationToken ct = default)
     {
-        var seasonType = MapSeasonType(_opt.SeasonType);
-        var url = $"{BaseUrl}/{Sport(league)}/scoreboard?seasontype={seasonType}&week={week}&dates={seasonYear}";
+        string url;
+        if (league == League.Ncaa)
+        {
+            var week0Start = await GetNcaaWeek0StartAsync(league, ct);
+            if (week0Start is null)
+            {
+                logger.LogWarning("Could not resolve the NCAA season start date from ESPN's calendar.");
+                return new ScheduleFeed(league, seasonYear, week, []);
+            }
+            var start = week0Start.Value.AddDays(7 * week);
+            var end = start.AddDays(6);
+            url = $"{BaseUrl}/{Sport(league)}/scoreboard?dates={start:yyyyMMdd}-{end:yyyyMMdd}";
+        }
+        else
+        {
+            var seasonType = MapSeasonType(_opt.SeasonType);
+            url = $"{BaseUrl}/{Sport(league)}/scoreboard?seasontype={seasonType}&week={week}&dates={seasonYear}";
+        }
+
         using var doc = await GetJsonAsync(url, ct);
 
         var games = new List<FeedGame>();
@@ -41,6 +71,39 @@ public class EspnHttpClient(
         }
 
         return new ScheduleFeed(league, seasonYear, week, games);
+    }
+
+    /// <summary>
+    /// "Week 0"'s start date: the Tuesday on/after the regular season's own
+    /// start date (ESPN's first "Regular Season" calendar entry) -- verified
+    /// directly: season start is a Saturday (Aug 22), the real Week 0 slate
+    /// (Aug 29-30) falls in the Tue-Mon window starting the following Tuesday
+    /// (Aug 25), and that split leaves no team appearing twice within a week.
+    /// </summary>
+    private async Task<DateOnly?> GetNcaaWeek0StartAsync(League league, CancellationToken ct)
+    {
+        var url = $"{BaseUrl}/{Sport(league)}/scoreboard";
+        using var doc = await GetJsonAsync(url, ct);
+        if (doc is null) return null;
+
+        if (!doc.RootElement.TryGetProperty("leagues", out var leagues) || leagues.GetArrayLength() == 0)
+            return null;
+        if (!leagues[0].TryGetProperty("calendar", out var calendar)) return null;
+
+        foreach (var section in calendar.EnumerateArray())
+        {
+            if (!section.TryGetProperty("label", out var label) || label.GetString() != "Regular Season") continue;
+            if (!section.TryGetProperty("entries", out var entries) || entries.GetArrayLength() == 0) continue;
+
+            var first = entries[0];
+            if (!first.TryGetProperty("startDate", out var s) || !s.TryGetDateTimeOffset(out var sd)) continue;
+
+            var seasonStart = DateOnly.FromDateTime(sd.UtcDateTime);
+            var daysUntilTuesday = ((int)DayOfWeek.Tuesday - (int)seasonStart.DayOfWeek + 7) % 7;
+            return seasonStart.AddDays(daysUntilTuesday);
+        }
+
+        return null;
     }
 
     public async Task<IReadOnlyList<GameScoreUpdate>> GetLiveScoresAsync(

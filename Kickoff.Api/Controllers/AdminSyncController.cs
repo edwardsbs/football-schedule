@@ -26,7 +26,9 @@ public class AdminSyncController(
         [FromQuery] int week,
         CancellationToken ct)
     {
-        if (year < 2000 || week is < 1 or > 25) return BadRequest("Invalid year or week.");
+        // NCAA week numbering starts at 0 ("Week 0"); NFL at 1.
+        var minWeek = league == League.Ncaa ? 0 : 1;
+        if (year < 2000 || week < minWeek || week > 25) return BadRequest("Invalid year or week.");
 
         var feed = await client.GetWeekScheduleAsync(league, year, week, ct);
         var result = await import.ImportAsync(feed, ct);

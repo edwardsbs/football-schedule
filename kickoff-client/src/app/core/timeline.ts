@@ -37,10 +37,13 @@ export function addDays(d: Date, n: number): Date {
   return x;
 }
 
-/** Sunday-start week containing d. */
+/** Tuesday-start week containing d, running Tue -> Mon -- keeps Thursday/Sunday/
+ * Monday-night NFL games (and their NCAA equivalents) in the same week instead
+ * of splitting Monday night into the following calendar week. */
 export function startOfWeek(d: Date): Date {
   const x = startOfLocalDay(d);
-  return addDays(x, -x.getDay());
+  const offset = (x.getDay() - 2 + 7) % 7;
+  return addDays(x, -offset);
 }
 
 /** True for a game tied to one of the user's favorite teams, or one they've circled. */

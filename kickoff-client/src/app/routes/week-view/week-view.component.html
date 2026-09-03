@@ -1,9 +1,6 @@
 <header class="page-head">
   <div class="nav">
-    <button type="button" class="arrow" (click)="prev()" title="Previous week">‹</button>
     <h1>{{ weekStart() | date: 'MMM d' }} – {{ weekEnd() | date: 'MMM d' }}</h1>
-    <button type="button" class="arrow" (click)="next()" title="Next week">›</button>
-    <button type="button" class="today" (click)="thisWeek()">This week</button>
   </div>
   <p class="meta">
     {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
@@ -25,6 +22,9 @@
 </div>
 
 <app-my-teams-strip />
+
+<app-week-strip [items]="weekStripItems()" (pick)="pickWeek($event)" (prev)="prev()" (next)="next()" />
+<button type="button" class="current-week-link" (click)="thisWeek()">Jump to this week</button>
 
 @if (total() === 0) {
   <div class="empty">

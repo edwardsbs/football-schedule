@@ -9,6 +9,15 @@
 </header>
 
 <div class="filter-row">
+  <div class="view-toggle" role="group" aria-label="Schedule view">
+    <button type="button" [class.active]="viewMode() === 'byWeek'" (click)="setViewMode('byWeek')">
+      Week by Week
+    </button>
+    <button type="button" [class.active]="viewMode() === 'full'" (click)="setViewMode('full')">
+      Full Season
+    </button>
+  </div>
+
   <button
     type="button"
     class="filter-chip"
@@ -33,6 +42,41 @@
       <p class="hint">Import a season, or check back later.</p>
     }
   </div>
+} @else if (viewMode() === 'byWeek') {
+  <app-week-strip
+    [items]="weekStripItems()"
+    [canPrev]="canPrevWeek()"
+    [canNext]="canNextWeek()"
+    (pick)="selectWeek($event)"
+    (prev)="prevWeek()"
+    (next)="nextWeek()"
+  />
+  <button type="button" class="current-week-link" (click)="jumpToCurrentWeek()">Jump to current week</button>
+
+  @if (activeWeek(); as week) {
+    @for (day of week.days; track day.key) {
+      <section class="day-group">
+        <div class="day-head">
+          <h2>{{ day.date | date: 'EEEE, MMM d' }}</h2>
+          <span class="cnt">{{ day.count }} game{{ day.count === 1 ? '' : 's' }}</span>
+        </div>
+
+        @for (slot of day.slots; track slot.key) {
+          <div class="slot">
+            <h3 class="slot-time">
+              {{ slotLabel(slot.kickoff) }}
+              <span class="cnt">{{ slot.count }} game{{ slot.count === 1 ? '' : 's' }}</span>
+            </h3>
+            <div class="rows">
+              @for (game of slot.games; track game.id; let i = $index) {
+                <app-game-row [game]="game" [alt]="i % 2 === 1" (changed)="refresh()" />
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+  }
 } @else {
   @for (week of weeks(); track week.key) {
     <section class="week-group">

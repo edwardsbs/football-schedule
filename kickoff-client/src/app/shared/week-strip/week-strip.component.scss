@@ -1,0 +1,69 @@
+:host { display: block; }
+
+.arrow {
+  flex: none;
+  align-self: stretch;
+  width: 2rem;
+  border-radius: 6px;
+  border: 1px solid var(--border, #262c38);
+  background: var(--surface, #161a22);
+  color: var(--text, #e7ebf2);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover { background: var(--surface-2, #1c212b); }
+  &:disabled { opacity: 0.4; cursor: default; &:hover { background: var(--surface, #161a22); } }
+}
+
+.week-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.week-chips {
+  display: flex;
+  gap: 0.15rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 0.3rem 0.1rem;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.week-chip {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 92px;
+  min-height: 44px;
+  padding: 0.35rem 0.5rem 0.45rem;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  .wk-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--muted-strong, #aab2c0);
+    text-transform: uppercase;
+  }
+  .wk-range {
+    font-size: 0.64rem;
+    color: var(--muted, #8b93a1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.active {
+    border-bottom-color: var(--accent-gold, #c9a227);
+
+    .wk-label { color: var(--text, #e7ebf2); font-weight: 800; }
+    .wk-range { color: var(--accent-gold, #c9a227); }
+  }
+}

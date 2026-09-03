@@ -5,6 +5,38 @@
   padding: 1.5rem 1.25rem 3rem;
 }
 
+/* Shared prev/next + jump-to-current button styles -- used by the page-head's
+   day/week nav and the season page's week spinner alike. */
+.arrow {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  border: 1px solid var(--border, #262c38);
+  background: var(--surface, #161a22);
+  color: var(--text, #e7ebf2);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover { background: var(--surface-2, #1c212b); }
+  &:disabled { opacity: 0.4; cursor: default; &:hover { background: var(--surface, #161a22); } }
+}
+
+.today {
+  margin-left: auto;
+  border: 1px solid var(--border, #262c38);
+  background: var(--surface, #161a22);
+  color: var(--text, #e7ebf2);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: var(--surface-2, #1c212b); }
+}
+
 .page-head {
   margin-bottom: 1.25rem;
 
@@ -21,35 +53,6 @@
     }
   }
 
-  .arrow {
-    flex: none;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 6px;
-    border: 1px solid var(--border, #262c38);
-    background: var(--surface, #161a22);
-    color: var(--text, #e7ebf2);
-    font-size: 1.1rem;
-    line-height: 1;
-    cursor: pointer;
-
-    &:hover { background: var(--surface-2, #1c212b); }
-  }
-
-  .today {
-    margin-left: auto;
-    border: 1px solid var(--border, #262c38);
-    background: var(--surface, #161a22);
-    color: var(--text, #e7ebf2);
-    border-radius: 6px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-
-    &:hover { background: var(--surface-2, #1c212b); }
-  }
-
   .meta {
     margin: 0.4rem 0 0;
     color: var(--muted, #8b93a1);
@@ -58,6 +61,10 @@
 }
 
 .filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
   margin-bottom: 1rem;
 }
 
@@ -99,34 +106,24 @@
   }
 }
 
+.current-week-link {
+  display: block;
+  margin: 0.4rem 0 1.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted, #8b93a1);
+  font-size: 0.75rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .empty {
   text-align: center;
   padding: 3rem 1rem;
   color: var(--muted, #8b93a1);
 
   .hint { font-size: 0.85rem; }
-}
-
-.week-group {
-  margin-bottom: 2.5rem;
-}
-
-.week-head {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  margin-bottom: 0.85rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 2px solid var(--accent-gold, #c9a227);
-
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-  .cnt { color: var(--muted, #8b93a1); font-size: 0.85rem; }
 }
 
 .day-group {

@@ -7,13 +7,40 @@ import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, groupByDay, startOfWeek } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
+import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
 
 const timeLabel = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
+/** "SEP 16 - 22" (same month) or "AUG 27 - SEP 2" (spanning months), ESPN-style. */
+function rangeLabel(start: Date, end: Date): string {
+  const sameMonth = start.getMonth() === end.getMonth();
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  const from = start.toLocaleDateString([], opts);
+  const to = sameMonth ? end.toLocaleDateString([], { day: 'numeric' }) : end.toLocaleDateString([], opts);
+  return `${from} - ${to}`.toUpperCase();
+}
+
+/** Every Tuesday-start calendar week from Aug 1 of the season's start year
+ * through Feb 15 of the following year -- this page merges both leagues, so
+ * there's no single real "week number" to key off; these are just labeled
+ * positionally (Week 1, 2, 3...) the way the strip visually implies. */
+function seasonWeekStarts(): Date[] {
+  const now = new Date();
+  const startYear = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+  let cursor = startOfWeek(new Date(startYear, 7, 1));
+  const end = new Date(startYear + 1, 1, 15);
+  const starts: Date[] = [];
+  while (cursor < end) {
+    starts.push(cursor);
+    cursor = addDays(cursor, 7);
+  }
+  return starts;
+}
+
 @Component({
   selector: 'app-week-view',
-  imports: [DatePipe, GameRowComponent, MyTeamsStripComponent],
+  imports: [DatePipe, GameRowComponent, MyTeamsStripComponent, WeekStripComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './week-view.component.html',
   styleUrls: ['../shared/timeline.scss'],
@@ -46,8 +73,28 @@ export class WeekViewComponent {
   readonly days = computed(() => groupByDay(this.visible()));
   readonly total = computed(() => this.visible().length);
 
+  private readonly weekStarts = seasonWeekStarts();
+
+  readonly weekStripItems = computed<WeekStripItem[]>(() => {
+    const activeKey = this.weekStart().toISOString();
+    return this.weekStarts.map((start, i) => ({
+      key: start.toISOString(),
+      label: `Week ${i + 1}`,
+      range: rangeLabel(start, addDays(start, 6)),
+      active: start.toISOString() === activeKey,
+    }));
+  });
+
+  // Unlike season-schedule (clamped to real imported weeks), prev/next here
+  // are intentionally unbounded -- the strip covers the season at a glance,
+  // but you can still step arbitrarily far into the off-season if you want.
+
   slotLabel(iso: string): string {
     return timeLabel(iso);
+  }
+
+  pickWeek(key: string | number): void {
+    this.weekStart.set(new Date(key));
   }
 
   prev(): void {

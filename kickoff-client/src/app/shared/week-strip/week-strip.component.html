@@ -1,0 +1,12 @@
+<div class="week-strip">
+  <button type="button" class="arrow" [disabled]="!canPrev()" (click)="prev.emit()" title="Previous week">‹</button>
+  <div class="week-chips" #chipsEl>
+    @for (item of items(); track item.key) {
+      <button type="button" class="week-chip" [class.active]="item.active" (click)="pick.emit(item.key)">
+        <span class="wk-label">{{ item.label }}</span>
+        <span class="wk-range">{{ item.range }}</span>
+      </button>
+    }
+  </div>
+  <button type="button" class="arrow" [disabled]="!canNext()" (click)="next.emit()" title="Next week">›</button>
+</div>
