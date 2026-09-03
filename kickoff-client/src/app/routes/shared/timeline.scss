@@ -107,6 +107,28 @@
   .hint { font-size: 0.85rem; }
 }
 
+.week-group {
+  margin-bottom: 2.5rem;
+}
+
+.week-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--accent-gold, #c9a227);
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .cnt { color: var(--muted, #8b93a1); font-size: 0.85rem; }
+}
+
 .day-group {
   margin-bottom: 1.75rem;
 }

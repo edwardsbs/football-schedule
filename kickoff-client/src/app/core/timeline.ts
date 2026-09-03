@@ -16,6 +16,15 @@ export interface DayGroup {
   slots: KickoffSlot[];
 }
 
+/** One schedule week (the provider's own week, not a calendar week), split into days. */
+export interface WeekGroup {
+  key: number;
+  number: number;
+  label: string;
+  count: number;
+  days: DayGroup[];
+}
+
 export function startOfLocalDay(d: Date): Date {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
@@ -85,4 +94,25 @@ export function groupByDay(games: Game[]): DayGroup[] {
       };
     })
     .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Group a full season's games by the provider's own week number, each week
+ * further split into days (and each day into kickoff slots). */
+export function groupByWeek(games: Game[]): WeekGroup[] {
+  const byWeek = new Map<number, Game[]>();
+  for (const g of games) {
+    const bucket = byWeek.get(g.weekNumber) ?? [];
+    bucket.push(g);
+    byWeek.set(g.weekNumber, bucket);
+  }
+
+  return [...byWeek.entries()]
+    .map(([number, gs]) => ({
+      key: number,
+      number,
+      label: gs[0].weekLabel,
+      count: gs.length,
+      days: groupByDay(gs),
+    }))
+    .sort((a, b) => a.number - b.number);
 }

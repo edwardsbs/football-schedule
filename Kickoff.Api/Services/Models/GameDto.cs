@@ -51,4 +51,6 @@ public record GameDto(
     MuteType? MuteType,
     ScoreDto? Score,
     bool HasFavorite,
-    bool IsCircled);
+    bool IsCircled,
+    int WeekNumber,
+    string WeekLabel);

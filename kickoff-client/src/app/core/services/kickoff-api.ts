@@ -15,9 +15,12 @@ export class KickoffApi {
     return this.http.get<Game[]>('/api/games/live');
   }
 
-  /** Merged timeline: all games kicking off in [fromUtc, toUtc). ISO strings. */
-  getRange(fromUtc: string, toUtc: string): Observable<Game[]> {
-    return this.http.get<Game[]>('/api/games', { params: { from: fromUtc, to: toUtc } });
+  /** Merged timeline: all games kicking off in [fromUtc, toUtc). ISO strings.
+   * Pass `league` to restrict to one league's slice (the season-by-week view). */
+  getRange(fromUtc: string, toUtc: string, league?: 'Nfl' | 'Ncaa'): Observable<Game[]> {
+    const params: Record<string, string> = { from: fromUtc, to: toUtc };
+    if (league) params['league'] = league;
+    return this.http.get<Game[]>('/api/games', { params });
   }
 
   getGame(id: number): Observable<Game> {

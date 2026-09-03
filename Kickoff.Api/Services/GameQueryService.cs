@@ -20,11 +20,16 @@ public class GameQueryService(IKickoffContext db)
             .ToGameDtos(db, userId)
             .ToListAsync(ct);
 
-    /// <summary>Merged timeline for a kickoff window (day or week view).</summary>
+    /// <summary>
+    /// Merged timeline for a kickoff window (day/week view), or one league's
+    /// slice of it when <paramref name="league"/> is given (season-by-week view).
+    /// </summary>
     public Task<List<GameDto>> GetByKickoffRangeAsync(
-        int userId, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default) =>
+        int userId, DateTimeOffset fromUtc, DateTimeOffset toUtc, League? league = null,
+        CancellationToken ct = default) =>
         db.Games
             .Where(g => g.KickoffUtc >= fromUtc && g.KickoffUtc < toUtc)
+            .Where(g => league == null || g.League == league)
             .OrderBy(g => g.KickoffUtc)
             .ToGameDtos(db, userId)
             .ToListAsync(ct);

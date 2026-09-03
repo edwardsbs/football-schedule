@@ -21,11 +21,13 @@ public class GamesController(
     public Task<List<GameDto>> Live(CancellationToken ct) =>
         queries.GetLiveAsync(user.Id, ct);
 
-    /// <summary>Merged timeline between two instants (day/week views).</summary>
+    /// <summary>Merged timeline between two instants (day/week views), optionally
+    /// filtered to one league (season-by-week view).</summary>
     [HttpGet]
     public Task<List<GameDto>> Range(
-        [FromQuery] DateTimeOffset from, [FromQuery] DateTimeOffset to, CancellationToken ct) =>
-        queries.GetByKickoffRangeAsync(user.Id, from, to, ct);
+        [FromQuery] DateTimeOffset from, [FromQuery] DateTimeOffset to,
+        [FromQuery] League? league, CancellationToken ct) =>
+        queries.GetByKickoffRangeAsync(user.Id, from, to, league, ct);
 
     /// <summary>Circled games ("Upcoming"), soonest first.</summary>
     [HttpGet("circled")]

@@ -39,6 +39,8 @@ export interface Game {
   score: Score | null;
   hasFavorite: boolean;
   isCircled: boolean;
+  weekNumber: number;
+  weekLabel: string;
 }
 
 export interface FavoriteTeam {
