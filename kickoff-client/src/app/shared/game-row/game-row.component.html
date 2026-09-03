@@ -12,11 +12,13 @@
   (keydown.enter)="open()"
   (keydown.space)="$event.preventDefault(); open()"
 >
-  <span
-    class="league"
-    [class.nfl]="game().league === 'Nfl'"
-    [class.ncaa]="game().league === 'Ncaa'"
-    >{{ game().league === 'Nfl' ? 'NFL' : 'NCAA' }}</span>
+  <span class="league" [class.nfl]="game().league === 'Nfl'" [class.ncaa]="game().league === 'Ncaa'">
+    @if (game().league === 'Nfl') {
+      <img class="league-logo nfl-logo" src="/nfl-logo.png" alt="NFL" />
+    } @else {
+      <img class="league-logo ncaa-logo" src="/ncaa-wordmark.png" alt="NCAA" />
+    }
+  </span>
 
   <div class="side away">
     <button

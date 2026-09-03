@@ -82,17 +82,21 @@
 
 .league {
   flex: none;
-  width: 2.8rem;
-  text-align: center;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  padding: 0.14rem 0;
-  border-radius: 4px;
-  color: #fff;
-  &.nfl { background: #013369; }
-  &.ncaa { background: #7a2226; }
+  min-width: 2.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
 }
+
+.league-logo {
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.nfl-logo { height: 27px; }
+.ncaa-logo { height: 18px; }
 
 .side {
   display: flex;
