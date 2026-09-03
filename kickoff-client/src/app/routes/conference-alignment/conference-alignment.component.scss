@@ -200,7 +200,11 @@
   font-size: 1.05rem;
   color: var(--muted, #8b93a1);
 
-  &.on { color: var(--accent-gold, #c9a227); }
+  // Hardcoded, not var(--accent-gold): that variable is remapped to grey/tan
+  // under the muted/B&W palettes, but the star is a functional favorite
+  // indicator, not a decorative theme element -- it should stay recognizably
+  // gold no matter what color treatment the conference badges are using.
+  &.on { color: #c9a227; }
   &:disabled { visibility: hidden; }
 }
 

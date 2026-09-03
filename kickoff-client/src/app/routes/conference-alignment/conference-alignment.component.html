@@ -116,6 +116,14 @@
                       @for (team of div.teams; track team.name) {
                         <tr>
                           <th scope="row" class="club">
+                            <button
+                              type="button"
+                              class="star"
+                              [class.on]="isFavorite(team)"
+                              [disabled]="teamId(team) === null"
+                              [attr.aria-label]="(isFavorite(team) ? 'Unfollow ' : 'Follow ') + team.name"
+                              (click)="toggleFavorite(team, $event)"
+                            >{{ isFavorite(team) ? '★' : '☆' }}</button>
                             <app-team-badge
                               [name]="team.name"
                               [logoUrl]="team.logoUrl"
@@ -167,6 +175,14 @@
                 @for (team of a.independents; track team.name) {
                   <tr>
                     <th scope="row" class="club">
+                      <button
+                        type="button"
+                        class="star"
+                        [class.on]="isFavorite(team)"
+                        [disabled]="teamId(team) === null"
+                        [attr.aria-label]="(isFavorite(team) ? 'Unfollow ' : 'Follow ') + team.name"
+                        (click)="toggleFavorite(team, $event)"
+                      >{{ isFavorite(team) ? '★' : '☆' }}</button>
                       <app-team-badge
                         [name]="team.name"
                         [logoUrl]="team.logoUrl"
