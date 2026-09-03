@@ -1,12 +1,12 @@
 using Kickoff.Api.Domain;
 
-namespace Kickoff.Api.Integrations.SportsRadar.Contracts;
+namespace Kickoff.Api.Integrations.SportsData.Contracts;
 
 /// <summary>
-/// League-agnostic, normalized shapes that every <see cref="ISportsRadarClient"/>
+/// League-agnostic, normalized shapes that every <see cref="ISportsDataClient"/>
 /// returns. Raw provider JSON (which differs between the NFL and NCAAFB feeds
-/// and between tiers) is translated into these before it reaches the domain, so
-/// the sync services never depend on the provider's wire format.
+/// and between providers) is translated into these before it reaches the domain,
+/// so the sync services never depend on the provider's wire format.
 /// </summary>
 public record FeedTeam(
     string ExternalId,

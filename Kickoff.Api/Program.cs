@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 using Kickoff.Api.Domain;
-using Kickoff.Api.Integrations.SportsRadar;
+using Kickoff.Api.Integrations.SportsData;
 using Kickoff.Api.Services;
 using Kickoff.Api.Services.Sync;
 using Microsoft.EntityFrameworkCore;
@@ -25,27 +25,28 @@ builder.Services.AddScoped<MuteService>();
 builder.Services.AddScoped<FavoritesService>();
 builder.Services.AddScoped<CircledService>();
 
-// --- SportsRadar sync ---
+// --- sports data sync ---
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.Configure<SportsRadarOptions>(
-    builder.Configuration.GetSection(SportsRadarOptions.SectionName));
+builder.Services.Configure<SportsDataOptions>(
+    builder.Configuration.GetSection(SportsDataOptions.SectionName));
 builder.Services.AddScoped<ScheduleImportService>();
 builder.Services.AddScoped<ScoreSyncService>();
 
-var srOptions = builder.Configuration
-    .GetSection(SportsRadarOptions.SectionName).Get<SportsRadarOptions>() ?? new SportsRadarOptions();
+var sportsDataOptions = builder.Configuration
+    .GetSection(SportsDataOptions.SectionName).Get<SportsDataOptions>() ?? new SportsDataOptions();
 
-// Fall back to the simulator whenever the real provider isn't fully configured,
-// so the app always has live data to show.
-var useReal = srOptions.Provider == SportsRadarProvider.SportsRadar
-              && !string.IsNullOrWhiteSpace(srOptions.ApiKey);
-if (useReal)
+if (sportsDataOptions.Provider == SportsDataProvider.Espn)
 {
-    builder.Services.AddHttpClient<ISportsRadarClient, SportsRadarHttpClient>();
+    // ESPN's edge blocks requests with no User-Agent header at all (verified: a
+    // bare HttpClient request 403s, curl's default UA passes) — HttpClient sends
+    // none by default, so one must be set explicitly. Any non-empty value works;
+    // this one just self-identifies honestly rather than spoofing a browser.
+    builder.Services.AddHttpClient<ISportsDataClient, EspnHttpClient>(c =>
+        c.DefaultRequestHeaders.UserAgent.ParseAdd("Kickoff/1.0 (+https://github.com/edwardsbs/football-schedule)"));
 }
 else
 {
-    builder.Services.AddSingleton<ISportsRadarClient, SimulatedSportsRadarClient>();
+    builder.Services.AddSingleton<ISportsDataClient, SimulatedSportsDataClient>();
 }
 
 builder.Services.AddHostedService<LiveScoreSyncWorker>();

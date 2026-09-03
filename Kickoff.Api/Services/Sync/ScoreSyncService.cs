@@ -1,5 +1,5 @@
 using Kickoff.Api.Domain;
-using Kickoff.Api.Integrations.SportsRadar.Contracts;
+using Kickoff.Api.Integrations.SportsData.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoff.Api.Services.Sync;

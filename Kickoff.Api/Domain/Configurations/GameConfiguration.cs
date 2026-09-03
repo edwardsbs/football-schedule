@@ -10,7 +10,7 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
         builder.Property(g => g.Clock).HasMaxLength(10);
         builder.Property(g => g.ExternalId).HasMaxLength(64);
 
-        // Upsert key for SportsRadar score sync.
+        // Upsert key for the sports-data provider's score sync.
         builder.HasIndex(g => g.ExternalId)
             .IsUnique()
             .HasFilter("[ExternalId] IS NOT NULL");

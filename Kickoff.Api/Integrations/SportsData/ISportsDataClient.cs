@@ -1,13 +1,13 @@
 using Kickoff.Api.Domain;
-using Kickoff.Api.Integrations.SportsRadar.Contracts;
+using Kickoff.Api.Integrations.SportsData.Contracts;
 
-namespace Kickoff.Api.Integrations.SportsRadar;
+namespace Kickoff.Api.Integrations.SportsData;
 
 /// <summary>
-/// Provider seam for football data. Implemented by the real SportsRadar HTTP
-/// client and by a simulator; the sync services depend only on this interface.
+/// Provider seam for football data. Implemented by the real ESPN HTTP client and
+/// by a simulator; the sync services depend only on this interface.
 /// </summary>
-public interface ISportsRadarClient
+public interface ISportsDataClient
 {
     /// <summary>Full schedule for one league / season / week.</summary>
     Task<ScheduleFeed> GetWeekScheduleAsync(

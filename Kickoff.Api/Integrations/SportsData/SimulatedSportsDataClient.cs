@@ -1,22 +1,22 @@
 using System.Collections.Concurrent;
 using Kickoff.Api.Domain;
-using Kickoff.Api.Integrations.SportsRadar.Contracts;
+using Kickoff.Api.Integrations.SportsData.Contracts;
 
-namespace Kickoff.Api.Integrations.SportsRadar;
+namespace Kickoff.Api.Integrations.SportsData;
 
 /// <summary>
 /// Deterministic-ish football simulator. Generates a week's schedule from a
 /// small built-in roster and advances in-progress games on every live poll —
 /// scores tick up, the clock winds down, quarters roll over, games go final.
 /// Registered as a singleton so state survives across requests and the poller.
-/// Lets the whole stack show live data with no SportsRadar account.
+/// Lets the whole stack show live data with no network access at all.
 /// </summary>
-public class SimulatedSportsRadarClient : ISportsRadarClient
+public class SimulatedSportsDataClient : ISportsDataClient
 {
     private readonly ConcurrentDictionary<string, SimGame> _games = new();
     private readonly TimeProvider _time;
 
-    public SimulatedSportsRadarClient(TimeProvider? time = null) => _time = time ?? TimeProvider.System;
+    public SimulatedSportsDataClient(TimeProvider? time = null) => _time = time ?? TimeProvider.System;
 
     public Task<ScheduleFeed> GetWeekScheduleAsync(
         League league, int seasonYear, int week, CancellationToken ct = default)
@@ -174,7 +174,7 @@ public class SimulatedSportsRadarClient : ISportsRadarClient
     private static string Nfl(string abbr) => $"https://a.espncdn.com/i/teamlogos/nfl/500/{abbr}.png";
     private static string Ncaa(int espnId) => $"https://a.espncdn.com/i/teamlogos/ncaa/500/{espnId}.png";
 
-    // Small built-in rosters (external ids are stable sim keys, not real SR ids).
+    // Small built-in rosters (external ids are stable sim keys, not real ids).
     // LogoUrl points at ESPN's public CDN.
     private static readonly FeedTeam[] NflTeams =
     [

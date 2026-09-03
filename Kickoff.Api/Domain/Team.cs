@@ -18,6 +18,6 @@ public class Team
     public string? PrimaryColor { get; set; }
     public string? LogoUrl { get; set; }
 
-    /// <summary>SportsRadar identifier; upsert key when syncing.</summary>
+    /// <summary>Sports-data provider identifier; upsert key when syncing.</summary>
     public string? ExternalId { get; set; }
 }

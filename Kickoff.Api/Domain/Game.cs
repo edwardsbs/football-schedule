@@ -38,7 +38,7 @@ public class Game
     public int? PossessionTeamId { get; set; }
     public double? HomeWinProbability { get; set; }
 
-    /// <summary>SportsRadar identifier; upsert key when syncing scores.</summary>
+    /// <summary>Sports-data provider identifier; upsert key when syncing scores.</summary>
     public string? ExternalId { get; set; }
     public DateTimeOffset? LastUpdatedUtc { get; set; }
 

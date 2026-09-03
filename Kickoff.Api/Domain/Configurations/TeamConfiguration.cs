@@ -14,7 +14,7 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
         builder.Property(t => t.PrimaryColor).HasMaxLength(9);   // "#RRGGBBAA"
         builder.Property(t => t.ExternalId).HasMaxLength(64);
 
-        // Upsert key for SportsRadar sync; filtered so many nulls stay allowed.
+        // Upsert key for the sports-data provider sync; filtered so many nulls stay allowed.
         builder.HasIndex(t => t.ExternalId)
             .IsUnique()
             .HasFilter("[ExternalId] IS NOT NULL");

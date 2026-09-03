@@ -1,5 +1,5 @@
 using Kickoff.Api.Domain;
-using Kickoff.Api.Integrations.SportsRadar;
+using Kickoff.Api.Integrations.SportsData;
 using Kickoff.Api.Services;
 using Kickoff.Api.Services.Sync;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +15,7 @@ namespace Kickoff.Api.Controllers;
 [Route("api/admin/sync")]
 [TypeFilter(typeof(AdminApiKeyFilter))]
 public class AdminSyncController(
-    ISportsRadarClient client,
+    ISportsDataClient client,
     ScheduleImportService import) : ControllerBase
 {
     /// <summary>Pull one league/week schedule from the provider and upsert it.</summary>

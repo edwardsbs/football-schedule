@@ -1,5 +1,5 @@
 using Kickoff.Api.Domain;
-using Kickoff.Api.Integrations.SportsRadar;
+using Kickoff.Api.Integrations.SportsData;
 using Kickoff.Api.Services.Sync;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +18,7 @@ public class SyncPipelineTests
     {
         using var ctx = TestDb.NewContext();
         var clock = new FakeTimeProvider(T0);
-        var client = new SimulatedSportsRadarClient(clock);
+        var client = new SimulatedSportsDataClient(clock);
         var import = new ScheduleImportService(ctx);
 
         var feed = await client.GetWeekScheduleAsync(League.Nfl, 2026, 1);
@@ -35,7 +35,7 @@ public class SyncPipelineTests
     public async Task Reimport_is_idempotent()
     {
         using var ctx = TestDb.NewContext();
-        var client = new SimulatedSportsRadarClient(new FakeTimeProvider(T0));
+        var client = new SimulatedSportsDataClient(new FakeTimeProvider(T0));
         var import = new ScheduleImportService(ctx);
 
         await import.ImportAsync(await client.GetWeekScheduleAsync(League.Nfl, 2026, 1));
@@ -51,7 +51,7 @@ public class SyncPipelineTests
     {
         using var ctx = TestDb.NewContext();
         var clock = new FakeTimeProvider(T0);
-        var client = new SimulatedSportsRadarClient(clock);
+        var client = new SimulatedSportsDataClient(clock);
         var import = new ScheduleImportService(ctx);
         var scores = new ScoreSyncService(ctx);
 

@@ -1,21 +1,21 @@
 using Kickoff.Api.Domain;
-using Kickoff.Api.Integrations.SportsRadar;
+using Kickoff.Api.Integrations.SportsData;
 using Microsoft.Extensions.Options;
 
 namespace Kickoff.Api.Services.Sync;
 
 /// <summary>
-/// Background poller: every <see cref="SportsRadarOptions.LivePollSeconds"/> it
+/// Background poller: every <see cref="SportsDataOptions.LivePollSeconds"/> it
 /// asks the provider for live lines in each configured league and applies them
 /// via <see cref="ScoreSyncService"/>. A singleton, so it opens a DI scope per
 /// tick to use the scoped context.
 /// </summary>
 public class LiveScoreSyncWorker(
     IServiceScopeFactory scopeFactory,
-    IOptions<SportsRadarOptions> options,
+    IOptions<SportsDataOptions> options,
     ILogger<LiveScoreSyncWorker> logger) : BackgroundService
 {
-    private readonly SportsRadarOptions _opt = options.Value;
+    private readonly SportsDataOptions _opt = options.Value;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -53,7 +53,7 @@ public class LiveScoreSyncWorker(
         // One scope per tick: the simulator resolves to its shared singleton,
         // while a real typed-HttpClient client gets a fresh, factory-managed instance.
         using var scope = scopeFactory.CreateScope();
-        var client = scope.ServiceProvider.GetRequiredService<ISportsRadarClient>();
+        var client = scope.ServiceProvider.GetRequiredService<ISportsDataClient>();
         var scores = scope.ServiceProvider.GetRequiredService<ScoreSyncService>();
 
         foreach (var league in leagues)
