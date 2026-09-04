@@ -303,9 +303,11 @@ public class EspnHttpClient(
             possessionTeamExternalId = situation.TryGetProperty("possession", out var possession)
                 ? possession.GetString()
                 : null;
-            downDistance = situation.TryGetProperty("shortDownDistanceText", out var down)
-                ? down.GetString()
-                : null;
+            downDistance = situation.TryGetProperty("downDistanceText", out var fullDown)
+                ? fullDown.GetString()
+                : situation.TryGetProperty("shortDownDistanceText", out var shortDown)
+                    ? shortDown.GetString()
+                    : null;
         }
 
         // ESPN's scoreboard doesn't expose a win-probability field; leave null

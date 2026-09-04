@@ -36,7 +36,7 @@ public class Game
     public int? Period { get; set; }            // quarter
     public string? Clock { get; set; }          // "12:04"
     public int? PossessionTeamId { get; set; }
-    public string? DownDistance { get; set; }   // "1st & 10"
+    public string? DownDistance { get; set; }   // "1st & 10 at MASS 45"
     public double? HomeWinProbability { get; set; }
 
     /// <summary>Sports-data provider identifier; upsert key when syncing scores.</summary>

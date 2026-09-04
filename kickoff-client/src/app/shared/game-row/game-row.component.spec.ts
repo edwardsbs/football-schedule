@@ -6,7 +6,7 @@ import { KickoffApi } from '../../core/services/kickoff-api';
 import { GameRowComponent } from './game-row.component';
 
 describe('GameRowComponent', () => {
-  it('shows Halftime and hides stale situation data at the end of the second quarter', async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [GameRowComponent],
       providers: [
@@ -23,6 +23,9 @@ describe('GameRowComponent', () => {
         },
       ],
     }).compileComponents();
+  });
+
+  it('shows Halftime and hides stale situation data at the end of the second quarter', () => {
     const fixture = TestBed.createComponent(GameRowComponent);
     fixture.componentRef.setInput('game', halftimeGame());
 
@@ -33,6 +36,27 @@ describe('GameRowComponent', () => {
     expect(text).not.toContain('Q2');
     expect(text).not.toContain('2nd & 10');
     expect(fixture.nativeElement.querySelector('.possession-ball')).toBeNull();
+  });
+
+  it('shows the field spot and offensive direction for a live situation', () => {
+    const fixture = TestBed.createComponent(GameRowComponent);
+    const game = halftimeGame();
+    game.score = {
+      ...game.score!,
+      period: 3,
+      clock: '8:42',
+      possessionTeamId: game.home.id,
+      downDistance: '3rd & 7 at HOM 41',
+    };
+    fixture.componentRef.setInput('game', game);
+
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    const direction = fixture.nativeElement.querySelector('.field-direction') as HTMLElement;
+    expect(text).toContain('3rd & 7 at HOM 41');
+    expect(direction.textContent?.trim()).toBe('→');
+    expect(direction.getAttribute('aria-label')).toBe('Driving right');
   });
 });
 

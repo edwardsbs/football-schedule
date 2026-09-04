@@ -41,6 +41,7 @@ public class EspnHttpClientTests
                   },
                   "situation": {
                     "possession": "59",
+                    "downDistanceText": "3rd & 7 at GT 42",
                     "shortDownDistanceText": "3rd & 7"
                   },
                   "competitors": [
@@ -68,7 +69,7 @@ public class EspnHttpClientTests
         var update = Assert.Single(await sut.GetLiveScoresAsync(League.Ncaa));
 
         Assert.Equal("59", update.Score.PossessionTeamExternalId);
-        Assert.Equal("3rd & 7", update.Score.DownDistance);
+        Assert.Equal("3rd & 7 at GT 42", update.Score.DownDistance);
     }
 
     private sealed class RecordingHandler(string json = "{\"events\":[]}") : HttpMessageHandler

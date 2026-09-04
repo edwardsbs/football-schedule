@@ -81,7 +81,15 @@
       }
     </span>
     @if (game().status === 'Live' && !isHalftime() && shownScore()?.downDistance; as downDistance) {
-      <span class="down-distance">{{ downDistance }}</span>
+      <span class="down-distance">
+        @if (possessionDirection() === 'left') {
+          <span class="field-direction" aria-label="Driving left" title="Driving left">←</span>
+        }
+        {{ downDistance }}
+        @if (possessionDirection() === 'right') {
+          <span class="field-direction" aria-label="Driving right" title="Driving right">→</span>
+        }
+      </span>
     }
     @if (game().broadcasts.length) {
       <span class="net">📺 {{ game().broadcasts[0].network }}</span>

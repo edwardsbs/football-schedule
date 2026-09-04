@@ -71,6 +71,15 @@ export class GameRowComponent {
       && /^0{1,2}:00$/.test(s.clock?.trim() ?? '');
   }
 
+  /** ESPN's field coordinate is fixed: home advances toward 100 (right in our
+   * row), while away advances toward 0 (left). */
+  protected possessionDirection(): 'left' | 'right' | null {
+    const possessionTeamId = this.shownScore()?.possessionTeamId;
+    if (possessionTeamId === this.game().home.id) return 'right';
+    if (possessionTeamId === this.game().away.id) return 'left';
+    return null;
+  }
+
   mute(): void {
     this.api.mute(this.game().id, 'Muted').subscribe(() => this.changed.emit());
   }

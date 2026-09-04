@@ -173,9 +173,18 @@
   }
 
   .down-distance {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     color: var(--text, #e7ebf2);
     font-weight: 700;
     white-space: nowrap;
+  }
+
+  .field-direction {
+    color: var(--accent-gold, #c9a227);
+    font-size: 0.95rem;
+    line-height: 1;
   }
 }
 
