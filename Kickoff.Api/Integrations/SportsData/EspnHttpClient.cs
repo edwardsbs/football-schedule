@@ -12,9 +12,10 @@ namespace Kickoff.Api.Integrations.SportsData;
 /// keep parsing defensive and never let a shape change take down the poller.
 ///
 /// URL shape: https://site.api.espn.com/apis/site/v2/sports/football/{sport}/scoreboard
-/// where sport is "nfl" or "college-football". The live poll omits all query
-/// params, which makes ESPN default to "today" — no season/week config to keep
-/// in sync.
+/// where sport is "nfl" or "college-football". NCAA's unfiltered scoreboard
+/// silently returns only 25 featured events, so its live poll requests ESPN's
+/// full FBS group instead; otherwise live games outside that first page stop
+/// receiving score updates.
 ///
 /// Schedule pulls differ by league: NFL's `week=` parameter reliably returns
 /// the whole week (verified: identical to the equivalent date-range query).
@@ -109,9 +110,11 @@ public class EspnHttpClient(
     public async Task<IReadOnlyList<GameScoreUpdate>> GetLiveScoresAsync(
         League league, CancellationToken ct = default)
     {
-        // No date/week/seasontype params: ESPN defaults to "today", which tracks
-        // whatever's actually being played without any season/week config.
-        var url = $"{BaseUrl}/{Sport(league)}/scoreboard";
+        // ESPN's bare NCAA scoreboard is capped at 25 featured events. groups=80
+        // returns the complete FBS slate (99 events in the live regression that
+        // exposed this), after which we retain only live/final score updates.
+        var group = league == League.Ncaa ? "?groups=80" : "";
+        var url = $"{BaseUrl}/{Sport(league)}/scoreboard{group}";
         using var doc = await GetJsonAsync(url, ct);
 
         var updates = new List<GameScoreUpdate>();
