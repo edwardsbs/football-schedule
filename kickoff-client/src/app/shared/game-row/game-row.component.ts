@@ -51,6 +51,7 @@ export class GameRowComponent {
     const s = this.shownScore();
     switch (g.status) {
       case 'Live':
+        if (this.isHalftime()) return 'Halftime';
         return s?.clock ? `Q${s.period} · ${s.clock}` : 'LIVE';
       case 'Final':
         return 'FINAL';
@@ -61,6 +62,13 @@ export class GameRowComponent {
       default:
         return '';
     }
+  }
+
+  protected isHalftime(): boolean {
+    const s = this.shownScore();
+    return this.game().status === 'Live'
+      && s?.period === 2
+      && /^0{1,2}:00$/.test(s.clock?.trim() ?? '');
   }
 
   mute(): void {

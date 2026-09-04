@@ -35,7 +35,7 @@
       [size]="28"
     />
     <span class="abbr">{{ game().away.abbreviation }}</span>
-    @if (shownScore()?.possessionTeamId === game().away.id) {
+    @if (!isHalftime() && shownScore()?.possessionTeamId === game().away.id) {
       <span class="possession-ball" role="img" aria-label="Possession" title="Possession"></span>
     }
   </div>
@@ -67,7 +67,7 @@
       [size]="28"
     />
     <span class="abbr">{{ game().home.abbreviation }}</span>
-    @if (shownScore()?.possessionTeamId === game().home.id) {
+    @if (!isHalftime() && shownScore()?.possessionTeamId === game().home.id) {
       <span class="possession-ball" role="img" aria-label="Possession" title="Possession"></span>
     }
   </div>
@@ -80,7 +80,7 @@
         {{ statusLine() }}
       }
     </span>
-    @if (game().status === 'Live' && shownScore()?.downDistance; as downDistance) {
+    @if (game().status === 'Live' && !isHalftime() && shownScore()?.downDistance; as downDistance) {
       <span class="down-distance">{{ downDistance }}</span>
     }
     @if (game().broadcasts.length) {
