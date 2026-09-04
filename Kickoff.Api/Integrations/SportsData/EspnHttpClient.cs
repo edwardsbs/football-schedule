@@ -296,9 +296,28 @@ public class EspnHttpClient(
         var clock = status2.ValueKind != JsonValueKind.Undefined && status2.TryGetProperty("displayClock", out var c2)
             ? c2.GetString() : null;
 
+        string? possessionTeamExternalId = null;
+        string? downDistance = null;
+        if (comp.TryGetProperty("situation", out var situation))
+        {
+            possessionTeamExternalId = situation.TryGetProperty("possession", out var possession)
+                ? possession.GetString()
+                : null;
+            downDistance = situation.TryGetProperty("shortDownDistanceText", out var down)
+                ? down.GetString()
+                : null;
+        }
+
         // ESPN's scoreboard doesn't expose a win-probability field; leave null
         // (a future enhancement could pull it from the separate probabilities feed).
-        return new ScoreSnapshot(home.Value, away.Value, period, clock, HomeWinProbability: null);
+        return new ScoreSnapshot(
+            home.Value,
+            away.Value,
+            period,
+            clock,
+            possessionTeamExternalId,
+            downDistance,
+            HomeWinProbability: null);
     }
 
     private static GameStatus ParseStatus(JsonElement comp)

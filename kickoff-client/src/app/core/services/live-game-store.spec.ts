@@ -26,7 +26,7 @@ describe('LiveGameStore', () => {
     const original = game({ status: 'Upcoming', score: null });
     const live = game({
       status: 'Live',
-      score: { homeScore: 24, awayScore: 7, period: 3, clock: '9:42', possessionTeamId: null, homeWinProbability: null },
+      score: { homeScore: 24, awayScore: 7, period: 3, clock: '9:42', possessionTeamId: null, downDistance: null, homeWinProbability: null },
     });
 
     tick(0);
@@ -39,7 +39,7 @@ describe('LiveGameStore', () => {
 
     const final = game({
       status: 'Final',
-      score: { homeScore: 31, awayScore: 14, period: 4, clock: '0:00', possessionTeamId: null, homeWinProbability: null },
+      score: { homeScore: 31, awayScore: 14, period: 4, clock: '0:00', possessionTeamId: null, downDistance: null, homeWinProbability: null },
     });
     http.expectOne('/api/games/1').flush(final);
 
@@ -53,7 +53,7 @@ describe('LiveGameStore', () => {
     const muted = game({ isMuted: true, muteType: 'Muted', score: null });
     const live = game({
       status: 'Live',
-      score: { homeScore: 24, awayScore: 7, period: 3, clock: '9:42', possessionTeamId: null, homeWinProbability: null },
+      score: { homeScore: 24, awayScore: 7, period: 3, clock: '9:42', possessionTeamId: null, downDistance: null, homeWinProbability: null },
     });
 
     tick(0);

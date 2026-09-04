@@ -23,6 +23,8 @@ public record ScoreSnapshot(
     int AwayScore,
     int? Period,
     string? Clock,
+    string? PossessionTeamExternalId,
+    string? DownDistance,
     double? HomeWinProbability);
 
 public record FeedGame(

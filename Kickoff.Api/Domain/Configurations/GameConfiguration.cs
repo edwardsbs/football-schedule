@@ -8,6 +8,7 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
     public void Configure(EntityTypeBuilder<Game> builder)
     {
         builder.Property(g => g.Clock).HasMaxLength(10);
+        builder.Property(g => g.DownDistance).HasMaxLength(32);
         builder.Property(g => g.ExternalId).HasMaxLength(64);
 
         // Upsert key for the sports-data provider's score sync. Scoped by League

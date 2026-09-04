@@ -67,6 +67,7 @@ public static class GameProjections
                            g.Period,
                            g.Clock,
                            g.PossessionTeamId,
+                           g.DownDistance,
                            g.HomeWinProbability)
                        : null,
                    // Highlighting flags — a favorited team on either side, or a circled game.

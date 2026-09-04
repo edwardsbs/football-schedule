@@ -35,6 +35,9 @@
       [size]="28"
     />
     <span class="abbr">{{ game().away.abbreviation }}</span>
+    @if (shownScore()?.possessionTeamId === game().away.id) {
+      <span class="possession-ball" role="img" aria-label="Possession" title="Possession"></span>
+    }
   </div>
 
   <div class="scores">
@@ -64,6 +67,9 @@
       [size]="28"
     />
     <span class="abbr">{{ game().home.abbreviation }}</span>
+    @if (shownScore()?.possessionTeamId === game().home.id) {
+      <span class="possession-ball" role="img" aria-label="Possession" title="Possession"></span>
+    }
   </div>
 
   <div class="meta">
@@ -74,6 +80,9 @@
         {{ statusLine() }}
       }
     </span>
+    @if (game().status === 'Live' && shownScore()?.downDistance; as downDistance) {
+      <span class="down-distance">{{ downDistance }}</span>
+    }
     @if (game().broadcasts.length) {
       <span class="net">📺 {{ game().broadcasts[0].network }}</span>
     }

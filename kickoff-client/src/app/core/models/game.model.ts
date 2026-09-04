@@ -21,6 +21,7 @@ export interface Score {
   period: number | null;
   clock: string | null;
   possessionTeamId: number | null;
+  downDistance: string | null;
   homeWinProbability: number | null;
 }
 

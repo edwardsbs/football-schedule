@@ -25,7 +25,53 @@ public class EspnHttpClientTests
             handler.RequestUri?.AbsoluteUri);
     }
 
-    private sealed class RecordingHandler : HttpMessageHandler
+    [Fact]
+    public async Task Live_poll_maps_down_distance_and_possession()
+    {
+        const string json = """
+            {
+              "events": [{
+                "id": "401856776",
+                "date": "2026-09-04T00:00:00Z",
+                "competitions": [{
+                  "status": {
+                    "period": 1,
+                    "displayClock": "11:29",
+                    "type": { "name": "STATUS_IN_PROGRESS", "state": "in", "completed": false }
+                  },
+                  "situation": {
+                    "possession": "59",
+                    "shortDownDistanceText": "3rd & 7"
+                  },
+                  "competitors": [
+                    {
+                      "homeAway": "home",
+                      "score": "7",
+                      "team": { "id": "59", "displayName": "Georgia Tech", "abbreviation": "GT" }
+                    },
+                    {
+                      "homeAway": "away",
+                      "score": "0",
+                      "team": { "id": "38", "displayName": "Colorado", "abbreviation": "COLO" }
+                    }
+                  ]
+                }]
+              }]
+            }
+            """;
+        var handler = new RecordingHandler(json);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var update = Assert.Single(await sut.GetLiveScoresAsync(League.Ncaa));
+
+        Assert.Equal("59", update.Score.PossessionTeamExternalId);
+        Assert.Equal("3rd & 7", update.Score.DownDistance);
+    }
+
+    private sealed class RecordingHandler(string json = "{\"events\":[]}") : HttpMessageHandler
     {
         public Uri? RequestUri { get; private set; }
 
@@ -36,7 +82,7 @@ public class EspnHttpClientTests
             RequestUri = request.RequestUri;
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("{\"events\":[]}", Encoding.UTF8, "application/json"),
+                Content = new StringContent(json, Encoding.UTF8, "application/json"),
             });
         }
     }

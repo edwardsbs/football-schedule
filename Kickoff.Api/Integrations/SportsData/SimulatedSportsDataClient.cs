@@ -152,7 +152,9 @@ public class SimulatedSportsDataClient : ISportsDataClient
             AwayScore,
             Period,
             Status == GameStatus.Final ? null : $"{SecondsLeftInPeriod / 60:00}:{SecondsLeftInPeriod % 60:00}",
-            EstimateHomeWinProbability());
+            PossessionTeamExternalId: Status == GameStatus.Final ? null : Home.ExternalId,
+            DownDistance: Status == GameStatus.Final ? null : "1st & 10",
+            HomeWinProbability: EstimateHomeWinProbability());
 
         public FeedGame ToFeedGame() => new(
             ExternalId,

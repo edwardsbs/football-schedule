@@ -44,11 +44,16 @@ export class WeekStripComponent {
   private dragStartX = 0;
   private dragStartScrollLeft = 0;
   private dragMoved = false;
+  private lastCenteredKey: string | number | undefined;
 
   constructor() {
     effect(() => {
       const activeKey = this.items().find((i) => i.active)?.key;
-      if (activeKey === undefined) return;
+      // Live-score overlays replace the input array on every poll. Centering the
+      // same active chip again makes scrollIntoView move the outer schedule back
+      // toward the top while somebody is reading games farther down the page.
+      if (activeKey === undefined || activeKey === this.lastCenteredKey) return;
+      this.lastCenteredKey = activeKey;
       queueMicrotask(() => {
         const container = this.chipsEl()?.nativeElement;
         const active = container?.querySelector('.week-chip.active');

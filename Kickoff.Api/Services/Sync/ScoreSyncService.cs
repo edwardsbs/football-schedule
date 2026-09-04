@@ -18,6 +18,11 @@ public class ScoreSyncService(IKickoffContext db)
 
         var byExt = updates.ToDictionary(u => u.GameExternalId);
         var ids = byExt.Keys.ToList();
+        var possessionExternalIds = updates
+            .Select(u => u.Score.PossessionTeamExternalId)
+            .OfType<string>()
+            .Distinct()
+            .ToList();
 
         // Scoped by league -- external ids are only unique within a league (see
         // Team/Game's composite index), so an unscoped lookup could otherwise
@@ -25,6 +30,12 @@ public class ScoreSyncService(IKickoffContext db)
         var games = await db.Games
             .Where(g => g.League == league && g.ExternalId != null && ids.Contains(g.ExternalId))
             .ToListAsync(ct);
+
+        var possessionTeamIds = await db.Teams
+            .Where(t => t.League == league
+                && t.ExternalId != null
+                && possessionExternalIds.Contains(t.ExternalId))
+            .ToDictionaryAsync(t => t.ExternalId!, t => t.Id, ct);
 
         var now = DateTimeOffset.UtcNow;
         foreach (var game in games)
@@ -35,6 +46,11 @@ public class ScoreSyncService(IKickoffContext db)
             game.AwayScore = u.Score.AwayScore;
             game.Period = u.Score.Period;
             game.Clock = u.Score.Clock;
+            game.PossessionTeamId = u.Score.PossessionTeamExternalId is { } possessionExternalId
+                && possessionTeamIds.TryGetValue(possessionExternalId, out var possessionTeamId)
+                    ? possessionTeamId
+                    : null;
+            game.DownDistance = u.Score.DownDistance;
             game.HomeWinProbability = u.Score.HomeWinProbability;
             game.LastUpdatedUtc = now;
         }

@@ -32,6 +32,7 @@ public record ScoreDto(
     int? Period,
     string? Clock,
     int? PossessionTeamId,
+    string? DownDistance,
     double? HomeWinProbability);
 
 /// <summary>

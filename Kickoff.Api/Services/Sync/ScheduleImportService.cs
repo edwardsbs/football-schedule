@@ -67,7 +67,7 @@ public class ScheduleImportService(IKickoffContext db)
             game.AwayTeamId = away.Id;
             game.KickoffUtc = fg.KickoffUtc;
             game.Status = fg.Status;
-            ApplyScore(game, fg.Score);
+            ApplyScore(game, fg.Score, teamsByExt);
             SyncBroadcasts(game, fg.Broadcasts);
         }
 
@@ -122,13 +122,18 @@ public class ScheduleImportService(IKickoffContext db)
         return new TeamImportResult(added, updated);
     }
 
-    private static void ApplyScore(Game game, ScoreSnapshot? score)
+    private static void ApplyScore(
+        Game game,
+        ScoreSnapshot? score,
+        IReadOnlyDictionary<string, Team> teamsByExternalId)
     {
         if (score is null)
         {
             game.HomeScore = game.AwayScore = null;
             game.Period = null;
             game.Clock = null;
+            game.PossessionTeamId = null;
+            game.DownDistance = null;
             game.HomeWinProbability = null;
             return;
         }
@@ -137,6 +142,11 @@ public class ScheduleImportService(IKickoffContext db)
         game.AwayScore = score.AwayScore;
         game.Period = score.Period;
         game.Clock = score.Clock;
+        game.PossessionTeamId = score.PossessionTeamExternalId is { } possessionExternalId
+            && teamsByExternalId.TryGetValue(possessionExternalId, out var possessionTeam)
+                ? possessionTeam.Id
+                : null;
+        game.DownDistance = score.DownDistance;
         game.HomeWinProbability = score.HomeWinProbability;
         game.LastUpdatedUtc = DateTimeOffset.UtcNow;
     }

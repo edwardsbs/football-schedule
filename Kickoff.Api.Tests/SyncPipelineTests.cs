@@ -1,5 +1,6 @@
 using Kickoff.Api.Domain;
 using Kickoff.Api.Integrations.SportsData;
+using Kickoff.Api.Integrations.SportsData.Contracts;
 using Kickoff.Api.Services.Sync;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,5 +67,28 @@ public class SyncPipelineTests
         var games = await ctx.Games.ToListAsync();
         Assert.All(games, g => Assert.Equal(GameStatus.Final, g.Status));
         Assert.All(games, g => Assert.NotNull(g.LastUpdatedUtc));
+    }
+
+    [Fact]
+    public async Task Live_score_sync_maps_provider_possession_to_the_local_team()
+    {
+        using var ctx = TestDb.NewContext();
+        var client = new SimulatedSportsDataClient(new FakeTimeProvider(T0));
+        var import = new ScheduleImportService(ctx);
+        var scores = new ScoreSyncService(ctx);
+
+        await import.ImportAsync(await client.GetWeekScheduleAsync(League.Nfl, 2026, 1));
+        var game = await ctx.Games
+            .Include(g => g.AwayTeam)
+            .FirstAsync();
+        var update = new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.InProgress,
+            new ScoreSnapshot(7, 3, 2, "8:42", game.AwayTeam.ExternalId, "2nd & 6", null));
+
+        await scores.ApplyAsync(League.Nfl, [update]);
+
+        Assert.Equal(game.AwayTeamId, game.PossessionTeamId);
+        Assert.Equal("2nd & 6", game.DownDistance);
     }
 }
