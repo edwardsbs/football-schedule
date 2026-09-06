@@ -18,18 +18,19 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
         [attr.title]="rank() == null ? null : 'Rank ' + rank()"
       >{{ rank() ?? '' }}</span>
     }
-    @if (logoUrl() && !failed()) {
+    @if (displayLogoUrl() && !failed()) {
       <img
         class="logo"
         [class.needs-contrast]="needsContrast()"
-        [src]="logoUrl()"
+        [class.official-nfl-logo]="isUsingOfficialNflLogo()"
+        [src]="displayLogoUrl()"
         [alt]="name()"
         [style.width.px]="size()"
         [style.height.px]="size()"
         crossorigin="anonymous"
         loading="lazy"
         (load)="inspectLogo($event)"
-        (error)="failed.set(true); needsContrast.set(false)"
+        (error)="handleLogoError()"
       />
     } @else {
       <span
@@ -61,6 +62,9 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
         &.needs-contrast {
           filter: drop-shadow(0 0 0.65px rgb(218 223 232 / 88%));
         }
+        &.official-nfl-logo.needs-contrast {
+          filter: drop-shadow(0 0 0.35px rgb(218 223 232 / 52%));
+        }
       }
       .monogram {
         display: inline-flex;
@@ -84,8 +88,37 @@ export class TeamBadgeComponent {
   readonly rank = input<number | null | undefined>(undefined);
   readonly reserveRankSpace = input<boolean>(false);
 
-  protected readonly failed = signal(false);
+  private readonly rejectedPreferredUrl = signal<string | null>(null);
+  private readonly rejectedFallbackUrl = signal<string | null>(null);
   protected readonly needsContrast = signal(false);
+  protected readonly preferredLogoUrl = computed(() => officialNflLogoUrl(this.logoUrl()) ?? this.logoUrl() ?? null);
+  protected readonly displayLogoUrl = computed(() => {
+    const preferred = this.preferredLogoUrl();
+    const original = this.logoUrl() ?? null;
+    return preferred && this.rejectedPreferredUrl() === preferred ? original : preferred;
+  });
+  protected readonly isUsingOfficialNflLogo = computed(() => {
+    const original = this.logoUrl() ?? null;
+    return this.displayLogoUrl() !== original;
+  });
+  protected readonly failed = computed(() => {
+    const displayed = this.displayLogoUrl();
+    return displayed == null || this.rejectedFallbackUrl() === displayed;
+  });
+
+  /** Retry the original ESPN raster after an official NFL vector fails. */
+  protected handleLogoError(): void {
+    const displayed = this.displayLogoUrl();
+    const original = this.logoUrl() ?? null;
+    this.needsContrast.set(false);
+
+    if (displayed && original && displayed !== original) {
+      this.rejectedPreferredUrl.set(displayed);
+      return;
+    }
+
+    this.rejectedFallbackUrl.set(displayed);
+  }
 
   /** ESPN serves its transparent logos with CORS enabled, so sample only the
    * visible pixels and outline marks that would disappear into the dark UI. */
@@ -125,6 +158,20 @@ export class TeamBadgeComponent {
     const hue = Math.abs(hash) % 360;
     return `hsl(${hue} 52% 40%)`;
   });
+}
+
+const ESPN_TO_NFL_CLUB_CODE: Readonly<Record<string, string>> = {
+  ari: 'ARI', atl: 'ATL', bal: 'BAL', buf: 'BUF', car: 'CAR', chi: 'CHI', cin: 'CIN', cle: 'CLE',
+  dal: 'DAL', den: 'DEN', det: 'DET', gb: 'GB', hou: 'HOU', ind: 'IND', jax: 'JAX', kc: 'KC',
+  lv: 'LV', lac: 'LAC', lar: 'LAR', mia: 'MIA', min: 'MIN', ne: 'NE', no: 'NO', nyg: 'NYG',
+  nyj: 'NYJ', phi: 'PHI', pit: 'PIT', sea: 'SEA', sf: 'SF', tb: 'TB', ten: 'TEN', wsh: 'WAS',
+};
+
+/** Convert an ESPN NFL raster URL to the NFL's resolution-independent club logo. */
+export function officialNflLogoUrl(logoUrl: string | null | undefined): string | null {
+  const espnCode = logoUrl?.match(/\/teamlogos\/nfl\/(?:500\/)?([a-z0-9]+)\.png(?:\?.*)?$/i)?.[1]?.toLowerCase();
+  const nflCode = espnCode ? ESPN_TO_NFL_CLUB_CODE[espnCode] : undefined;
+  return nflCode ? `https://static.www.nfl.com/league/api/clubs/logos/${nflCode}.svg` : null;
 }
 
 export function needsLightLogoOutline(pixels: ArrayLike<number>): boolean {
