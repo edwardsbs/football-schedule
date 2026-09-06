@@ -5,7 +5,11 @@
       <span class="live-dot"></span> {{ liveCount() }} game{{ liveCount() === 1 ? '' : 's' }} in progress
       · NCAA + NFL · auto-refreshing
     } @else {
-      No games in progress right now.
+      @if (showingUpcoming()) {
+        Next scheduled games · NCAA + NFL
+      } @else {
+        No games in progress right now.
+      }
     }
   </p>
 </header>
@@ -14,10 +18,18 @@
 
 @if (games().length === 0) {
   <div class="empty">
-    <p>Nothing live at the moment.</p>
-    <p class="hint">Import a schedule, then games appear here as they kick off.</p>
+    <p>Nothing live or scheduled in the next 30 days.</p>
+    <p class="hint">Games will appear here when a schedule becomes available.</p>
   </div>
 } @else {
+  @if (showingUpcoming()) {
+    <app-live-upcoming-summary
+      [game]="nextUpcoming()!"
+      [today]="showingTodayUpcoming()"
+      [countdown]="kickoffCountdown()"
+    />
+  }
+
   <div class="grid">
     @for (game of games(); track trackById($index, game)) {
       <article
@@ -45,7 +57,7 @@
 
           <span class="status" [class.live]="game.status === 'Live'">
             @if (game.status === 'Upcoming') {
-              {{ game.kickoffUtc | date: 'EEE h:mm a' }}
+              {{ game.kickoffUtc | date: 'EEE, MMM d · h:mm a' }}
             } @else {
               {{ statusLine(game) }}
             }
@@ -76,7 +88,7 @@
               [attr.aria-label]="(fan.isFavorite(side.id) ? 'Unfollow ' : 'Follow ') + side.displayName"
               (click)="$event.stopPropagation(); fan.toggleFavorite(side.id)"
             >{{ fan.isFavorite(side.id) ? '★' : '☆' }}</button>
-            <app-team-badge [name]="side.displayName" [logoUrl]="side.logoUrl" [abbreviation]="side.abbreviation" [size]="30" />
+            <app-team-badge [name]="side.displayName" [logoUrl]="side.logoUrl" [abbreviation]="side.abbreviation" [rank]="side.currentRank" [size]="30" />
             <span class="team-name">{{ side.displayName }}</span>
             <span class="score">
               @if (shownScore(game); as sc) {

@@ -17,7 +17,15 @@ public record TeamSummaryDto(
     string DisplayName,
     string Abbreviation,
     string? LogoUrl,
-    string? PrimaryColor);
+    string? PrimaryColor,
+    int? CurrentRank);
+
+/// <summary>A team's overall result record for one league season.</summary>
+public record TeamRecordDto(
+    int TeamId,
+    int Wins,
+    int Losses,
+    int Ties);
 
 public record BroadcastDto(string Network, bool IsStreaming);
 

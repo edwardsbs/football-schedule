@@ -9,6 +9,9 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
   selector: 'app-team-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    @if (rank(); as currentRank) {
+      <span class="rank" [attr.aria-label]="'Rank ' + currentRank" [attr.title]="'Rank ' + currentRank">{{ currentRank }}</span>
+    }
     @if (logoUrl() && !failed()) {
       <img
         class="logo"
@@ -33,7 +36,16 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
   `,
   styles: [
     `
-      :host { display: inline-flex; flex: none; }
+      :host { display: inline-flex; align-items: center; gap: 0.3rem; flex: none; }
+      .rank {
+        min-width: 1.25rem;
+        color: var(--muted-strong, #aab2c0);
+        font-size: 0.72rem;
+        font-weight: 800;
+        line-height: 1;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
       .logo { object-fit: contain; }
       .monogram {
         display: inline-flex;
@@ -54,6 +66,7 @@ export class TeamBadgeComponent {
   readonly logoUrl = input<string | null | undefined>(undefined);
   readonly abbreviation = input<string | null | undefined>(undefined);
   readonly size = input<number>(26);
+  readonly rank = input<number | null | undefined>(undefined);
 
   protected readonly failed = signal(false);
 

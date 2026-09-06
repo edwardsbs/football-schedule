@@ -8,4 +8,5 @@ public record FavoriteTeamDto(
     League League,
     string DisplayName,
     string Abbreviation,
-    string? LogoUrl);
+    string? LogoUrl,
+    int? CurrentRank);

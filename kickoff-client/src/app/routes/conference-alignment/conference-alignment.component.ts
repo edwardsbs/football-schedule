@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { catchError, of, switchMap, timer } from 'rxjs';
 import { getAlignment } from '../../core/data/alignment-lookup';
 import { AlignmentConference, AlignmentTeam } from '../../core/models/alignment.model';
-import { TeamSummary } from '../../core/models/game.model';
+import { TeamRecord, TeamSummary } from '../../core/models/game.model';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
@@ -55,12 +55,58 @@ export class ConferenceAlignmentComponent {
     return map;
   });
 
+  private readonly teamRankByKey = computed(() => {
+    const isNcaa = this.league() === 'ncaa';
+    const map = new Map<string, number>();
+    for (const team of this.backendTeams()) {
+      const key = isNcaa ? ncaaEspnId(team.logoUrl) : team.abbreviation.toLowerCase();
+      if (key && team.currentRank !== null) map.set(key, team.currentRank);
+    }
+    return map;
+  });
+
+  /** Records are inexpensive to calculate and refresh shortly after a game is
+   * marked final, without requiring the user to reload the conference page. */
+  private readonly backendRecords = toSignal(
+    toObservable(this.league).pipe(
+      switchMap((l) =>
+        timer(0, 30_000).pipe(
+          switchMap(() =>
+            l === 'ncaa'
+              ? this.api.getTeamRecords('Ncaa').pipe(catchError(() => of([] as TeamRecord[])))
+              : l === 'nfl'
+                ? this.api.getTeamRecords('Nfl').pipe(catchError(() => of([] as TeamRecord[])))
+                : of([] as TeamRecord[]),
+          ),
+        ),
+      ),
+    ),
+    { initialValue: [] as TeamRecord[] },
+  );
+
+  private readonly recordByTeamId = computed(() =>
+    new Map(this.backendRecords().map((record) => [record.teamId, record])),
+  );
+
   /** The real backend team id for an alignment entry, or null if that team
    * hasn't been imported yet (not yet favorite-able). */
   teamId(team: AlignmentTeam): number | null {
     const isNcaa = this.league() === 'ncaa';
     const key = isNcaa ? ncaaEspnId(team.logoUrl ?? null) : (team.abbreviation?.toLowerCase() ?? null);
     return key ? (this.teamIdByKey().get(key) ?? null) : null;
+  }
+
+  record(team: AlignmentTeam): TeamRecord | null {
+    const id = this.teamId(team);
+    if (id === null) return null;
+    return this.recordByTeamId().get(id) ?? { teamId: id, wins: 0, losses: 0, ties: 0 };
+  }
+
+  teamRank(team: AlignmentTeam): number | null {
+    const key = this.league() === 'ncaa'
+      ? ncaaEspnId(team.logoUrl ?? null)
+      : (team.abbreviation?.toLowerCase() ?? null);
+    return key ? (this.teamRankByKey().get(key) ?? null) : null;
   }
 
   isFavorite(team: AlignmentTeam): boolean {

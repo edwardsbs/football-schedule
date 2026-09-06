@@ -24,6 +24,7 @@ builder.Services.AddScoped<GameQueryService>();
 builder.Services.AddScoped<MuteService>();
 builder.Services.AddScoped<FavoritesService>();
 builder.Services.AddScoped<CircledService>();
+builder.Services.AddScoped<StandingsService>();
 
 // --- sports data sync ---
 builder.Services.AddSingleton(TimeProvider.System);

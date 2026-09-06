@@ -3,12 +3,12 @@
     <button type="button" class="arrow" (click)="prev()" title="Previous day">‹</button>
     <h1>{{ day() | date: 'EEEE, MMM d' }}</h1>
     <button type="button" class="arrow" (click)="next()" title="Next day">›</button>
+    <span class="meta-inline">
+      {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
+      · NCAA + NFL, merged by kickoff
+    </span>
     <button type="button" class="today" (click)="today()">Today</button>
   </div>
-  <p class="meta">
-    {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
-    · NCAA + NFL, merged by kickoff
-  </p>
 </header>
 
 <div class="filter-row">
@@ -22,9 +22,9 @@
     <span class="ico">★◉</span> My games
     <span class="badge">{{ followedCount() }}</span>
   </button>
-</div>
 
-<app-my-teams-strip />
+  <app-my-teams-strip [inline]="true" />
+</div>
 
 @if (total() === 0) {
   <div class="empty">

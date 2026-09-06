@@ -12,7 +12,8 @@ public class FavoritesService(IKickoffContext db)
             .Where(f => f.UserId == userId)
             .OrderBy(f => f.Team.DisplayName)
             .Select(f => new FavoriteTeamDto(
-                f.TeamId, f.Team.League, f.Team.DisplayName, f.Team.Abbreviation, f.Team.LogoUrl))
+                f.TeamId, f.Team.League, f.Team.DisplayName, f.Team.Abbreviation,
+                f.Team.LogoUrl, f.Team.CurrentRank))
             .ToListAsync(ct);
 
     /// <summary>Follow a team. Idempotent; returns false if the team doesn't exist.</summary>

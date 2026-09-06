@@ -8,6 +8,14 @@ export interface TeamSummary {
   abbreviation: string;
   logoUrl: string | null;
   primaryColor: string | null;
+  currentRank: number | null;
+}
+
+export interface TeamRecord {
+  teamId: number;
+  wins: number;
+  losses: number;
+  ties: number;
 }
 
 export interface Broadcast {
@@ -50,4 +58,5 @@ export interface FavoriteTeam {
   displayName: string;
   abbreviation: string;
   logoUrl: string | null;
+  currentRank: number | null;
 }

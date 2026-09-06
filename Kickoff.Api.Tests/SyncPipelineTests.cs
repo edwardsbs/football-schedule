@@ -91,4 +91,37 @@ public class SyncPipelineTests
         Assert.Equal(game.AwayTeamId, game.PossessionTeamId);
         Assert.Equal("2nd & 6", game.DownDistance);
     }
+
+    [Fact]
+    public async Task Schedule_import_updates_rank_while_roster_import_preserves_it()
+    {
+        using var ctx = TestDb.NewContext();
+        var import = new ScheduleImportService(ctx);
+        var ranked = new FeedTeam("ranked", "Ranked", "Team", "Ranked Team", "RNK", CurrentRank: 4);
+        var opponent = new FeedTeam("opponent", "Other", "Team", "Other Team", "OTH");
+        var game = new FeedGame(
+            "rank-game",
+            T0,
+            ranked,
+            opponent,
+            GameStatus.Scheduled,
+            null,
+            [],
+            null);
+
+        await import.ImportAsync(new ScheduleFeed(League.Ncaa, 2026, 1, [game]));
+        Assert.Equal(4, await ctx.Teams.Where(t => t.ExternalId == "ranked").Select(t => t.CurrentRank).SingleAsync());
+
+        await import.ImportTeamsAsync(
+            League.Ncaa,
+            [new FeedTeam("ranked", "Ranked", "Team", "Ranked Team", "RNK")]);
+        Assert.Equal(4, await ctx.Teams.Where(t => t.ExternalId == "ranked").Select(t => t.CurrentRank).SingleAsync());
+
+        await import.ImportAsync(new ScheduleFeed(
+            League.Ncaa,
+            2026,
+            1,
+            [game with { Home = ranked with { CurrentRank = null } }]));
+        Assert.Null(await ctx.Teams.Where(t => t.ExternalId == "ranked").Select(t => t.CurrentRank).SingleAsync());
+    }
 }

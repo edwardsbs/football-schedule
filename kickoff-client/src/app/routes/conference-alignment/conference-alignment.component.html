@@ -64,13 +64,14 @@
                           [name]="team.name"
                           [logoUrl]="team.logoUrl"
                           [abbreviation]="team.abbreviation"
+                          [rank]="teamRank(team)"
                           [size]="26"
                         />
                         <span class="team-name">{{ team.name }}</span>
                       </th>
-                      <td aria-label="Wins unavailable">—</td>
-                      <td aria-label="Losses unavailable">—</td>
-                      <td aria-label="Ties unavailable">—</td>
+                      <td [attr.aria-label]="record(team) ? record(team)!.wins + ' wins' : 'Wins unavailable'">{{ record(team)?.wins ?? '—' }}</td>
+                      <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
+                      <td [attr.aria-label]="record(team) ? record(team)!.ties + ' ties' : 'Ties unavailable'">{{ record(team)?.ties ?? '—' }}</td>
                     </tr>
                   }
                 </tbody>
@@ -81,7 +82,6 @@
       }
     </section>
 
-    <p class="standings-note">W/L/T columns are ready for live standings data.</p>
   } @else {
     @for (tier of a.tiers; track tier.title) {
       <section class="tier">
@@ -128,13 +128,14 @@
                               [name]="team.name"
                               [logoUrl]="team.logoUrl"
                               [abbreviation]="team.abbreviation"
+                              [rank]="teamRank(team)"
                               [size]="26"
                             />
                             <span class="team-name">{{ team.name }}</span>
                           </th>
-                          <td aria-label="Wins unavailable">—</td>
-                          <td aria-label="Losses unavailable">—</td>
-                          <td aria-label="Ties unavailable">—</td>
+                          <td [attr.aria-label]="record(team) ? record(team)!.wins + ' wins' : 'Wins unavailable'">{{ record(team)?.wins ?? '—' }}</td>
+                          <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
+                          <td [attr.aria-label]="record(team) ? record(team)!.ties + ' ties' : 'Ties unavailable'">{{ record(team)?.ties ?? '—' }}</td>
                         </tr>
                       }
                     </tbody>
@@ -147,7 +148,6 @@
       </section>
     }
 
-    <p class="standings-note">W/L/T columns are ready for live standings data.</p>
   }
 
   @if (a.independents.length) {
@@ -187,13 +187,14 @@
                         [name]="team.name"
                         [logoUrl]="team.logoUrl"
                         [abbreviation]="team.abbreviation"
+                        [rank]="teamRank(team)"
                         [size]="26"
                       />
                       <span class="team-name">{{ team.name }}</span>
                     </th>
-                    <td aria-label="Wins unavailable">—</td>
-                    <td aria-label="Losses unavailable">—</td>
-                    <td aria-label="Ties unavailable">—</td>
+                    <td [attr.aria-label]="record(team) ? record(team)!.wins + ' wins' : 'Wins unavailable'">{{ record(team)?.wins ?? '—' }}</td>
+                    <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
+                    <td [attr.aria-label]="record(team) ? record(team)!.ties + ' ties' : 'Ties unavailable'">{{ record(team)?.ties ?? '—' }}</td>
                   </tr>
                 }
               </tbody>
@@ -206,8 +207,8 @@
   }
 
   <p class="source-note">
-    Membership mirrors the reference alignment (as of May 2026). Placeholder data —
-    will be served from the API once conference endpoints exist.
+    Membership mirrors the reference alignment (as of May 2026). Records are calculated
+    from completed games in the current season and refresh every 30 seconds.
   </p>
 } @else {
   <div class="not-found">

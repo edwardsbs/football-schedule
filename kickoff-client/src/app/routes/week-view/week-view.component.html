@@ -1,11 +1,11 @@
 <header class="page-head">
   <div class="nav">
     <h1>{{ weekStart() | date: 'MMM d' }} – {{ weekEnd() | date: 'MMM d' }}</h1>
+    <span class="meta-inline">
+      {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
+      · NCAA + NFL, merged by kickoff
+    </span>
   </div>
-  <p class="meta">
-    {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
-    · NCAA + NFL, merged by kickoff
-  </p>
 </header>
 
 <div class="filter-row">
@@ -19,9 +19,9 @@
     <span class="ico">★◉</span> My games
     <span class="badge">{{ followedCount() }}</span>
   </button>
-</div>
 
-<app-my-teams-strip />
+  <app-my-teams-strip [inline]="true" />
+</div>
 
 <app-week-strip [items]="weekStripItems()" (pick)="pickWeek($event)" (prev)="prev()" (next)="next()" />
 <button type="button" class="current-week-link" (click)="thisWeek()">Jump to this week</button>

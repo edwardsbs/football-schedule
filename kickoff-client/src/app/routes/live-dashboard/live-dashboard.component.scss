@@ -83,11 +83,11 @@
     filter: none;
   }
 
-  &.fav {
-    border-color: var(--accent-gold, #c9a227);
-  }
+  &.fav,
   &.circled {
-    box-shadow: inset 3px 0 0 #4c8dff;
+    border-color: #ffd84d;
+    background: color-mix(in srgb, #ffd84d 13%, var(--surface, #161a22));
+    box-shadow: 0 0 18px #ffd84d38;
   }
 }
 
@@ -100,7 +100,6 @@
 
   .league {
     font-weight: 800;
-    letter-spacing: 0.03em;
     padding: 0.12rem 0.4rem;
     border-radius: 4px;
     color: #fff;
@@ -139,7 +138,7 @@
     -webkit-tap-highlight-color: transparent;
     &:active { background: var(--surface-2, #1c212b); }
   }
-  .circle-btn.on { color: #4c8dff; }
+  .circle-btn.on { color: #ffd84d; }
 }
 
 .team .star {
@@ -158,7 +157,7 @@
   color: var(--muted, #8b93a1);
   touch-action: manipulation;
 
-  &.on { color: var(--accent-gold, #c9a227); }
+  &.on { color: #ffd84d; }
   &:active { background: var(--surface-2, #1c212b); }
 }
 

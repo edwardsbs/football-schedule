@@ -264,11 +264,25 @@ public class EspnHttpClient(
             var displayName = t.TryGetProperty("displayName", out var dn) ? dn.GetString() ?? $"{location} {name}".Trim() : $"{location} {name}".Trim();
             var abbr = t.TryGetProperty("abbreviation", out var ab) ? ab.GetString() ?? "" : "";
             var logo = t.TryGetProperty("logo", out var lg) ? lg.GetString() : null;
+            var currentRank = ParseCurrentRank(c);
 
-            return new FeedTeam(id, location, name, displayName, abbr, LogoUrl: logo);
+            return new FeedTeam(id, location, name, displayName, abbr, LogoUrl: logo, CurrentRank: currentRank);
         }
 
         return null;
+    }
+
+    /// <summary>ESPN uses 99 as its unranked sentinel; only Top 25 values are displayed.</summary>
+    private static int? ParseCurrentRank(JsonElement competitor)
+    {
+        if (!competitor.TryGetProperty("curatedRank", out var curatedRank)
+            || !curatedRank.TryGetProperty("current", out var current)
+            || !current.TryGetInt32(out var rank))
+        {
+            return null;
+        }
+
+        return rank is >= 1 and <= 25 ? rank : null;
     }
 
     private static ScoreSnapshot? ParseScore(JsonElement comp, GameStatus status)

@@ -1,0 +1,18 @@
+<section class="summary">
+  <div>
+    <span class="kicker">Upcoming</span>
+    <h2>{{ today() ? 'Games later today' : 'Next scheduled slate' }}</h2>
+    <p>{{ game().kickoffUtc | date: 'EEEE, MMMM d' }}</p>
+  </div>
+
+  @if (countdown(); as value) {
+    <div class="countdown" aria-label="Time until the next kickoff">
+      <span>Next kickoff in</span>
+      <strong>{{ value }}</strong>
+      <small>
+        {{ game().away.abbreviation }} at {{ game().home.abbreviation }} ·
+        {{ game().kickoffUtc | date: 'h:mm a' }}
+      </small>
+    </div>
+  }
+</section>

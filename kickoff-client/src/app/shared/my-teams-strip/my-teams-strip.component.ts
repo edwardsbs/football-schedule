@@ -21,7 +21,7 @@ import { TeamBadgeComponent } from '../team-badge/team-badge.component';
         <div class="chips">
           @for (team of fan.favorites(); track team.teamId) {
             <span class="chip">
-              <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [size]="16" />
+              <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [rank]="team.currentRank" [size]="16" />
               <span class="abbr">{{ team.abbreviation }}</span>
               <button
                 type="button"
