@@ -66,7 +66,6 @@ export class SeasonScheduleComponent {
 
   /** "My games" filter: only favorite-team or circled games. */
   readonly onlyMine = signal(false);
-  readonly followedCount = computed(() => filterFollowed(this.games()).length);
   readonly visible = computed(() => (this.onlyMine() ? filterFollowed(this.games()) : this.games()));
 
   readonly weeks = computed(() => groupByWeek(this.visible()));
@@ -106,6 +105,15 @@ export class SeasonScheduleComponent {
 
   readonly weekNumber = computed(() => this.selectedWeek() ?? this.currentWeekNumber());
   readonly activeWeek = computed(() => this.weeks().find((w) => w.number === this.weekNumber()) ?? null);
+
+  /** The badge describes only what the current schedule view can reveal: the
+   * selected week in Week by Week mode, or the entire league season in Full Season. */
+  readonly followedCount = computed(() => {
+    const games = this.games();
+    if (this.viewMode() === 'full') return filterFollowed(games).length;
+    const weekNumber = this.weekNumber();
+    return filterFollowed(games.filter((game) => game.weekNumber === weekNumber)).length;
+  });
 
   private readonly weekIndex = computed(() => this.weeks().findIndex((w) => w.number === this.weekNumber()));
 

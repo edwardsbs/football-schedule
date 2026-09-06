@@ -2,7 +2,16 @@
 
 ## Queued
 
-- [ ] Add reusable game-list filters for NFL/NCAA and conference.
+- [ ] Add a reusable **Find Games** filter panel to schedule views. Keep **My Games** as the fastest one-tap filter and support combining:
+  - League and conference/division (NFL, NCAA, SEC, AFC, etc.).
+  - Ranked vs. ranked and any Top 25 team.
+  - Conference/division rival matchups.
+  - Playoff-impact or playoff-contention games.
+  - Kickoff at or after a chosen local time.
+  - Hide completed games, optionally preserving favorite/circled games.
+  - Both teams at or above .750 after Week 8.
+  - Both teams undefeated after Week 6.
+  - Hide NCAA matchups containing an FCS opponent.
 
 ## Later
 
