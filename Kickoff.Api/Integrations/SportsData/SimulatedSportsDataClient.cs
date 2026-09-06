@@ -62,6 +62,10 @@ public class SimulatedSportsDataClient : ISportsDataClient
     public Task<IReadOnlyList<FeedTeam>> GetAllTeamsAsync(League league, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<FeedTeam>>(league == League.Nfl ? NflTeams : NcaaTeams);
 
+    public Task<IReadOnlyList<TeamRanking>> GetCurrentRankingsAsync(
+        League league, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<TeamRanking>>([]);
+
     // --- internal simulation state ---
 
     private sealed class SimGame

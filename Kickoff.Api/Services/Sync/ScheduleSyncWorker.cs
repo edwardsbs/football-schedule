@@ -58,11 +58,26 @@ public class ScheduleSyncWorker(
         var db = scope.ServiceProvider.GetRequiredService<IKickoffContext>();
         var client = scope.ServiceProvider.GetRequiredService<ISportsDataClient>();
         var import = scope.ServiceProvider.GetRequiredService<ScheduleImportService>();
+        var rankingsSync = scope.ServiceProvider.GetRequiredService<RankingsSyncService>();
 
         var today = DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime);
 
         foreach (var league in leagues)
         {
+            if (league == League.Ncaa)
+            {
+                try
+                {
+                    var rankings = await client.GetCurrentRankingsAsync(league, ct);
+                    var applied = await rankingsSync.ApplyAsync(league, rankings, ct);
+                    logger.LogInformation("{League} current rankings sync: {Count} ranked teams.", league, applied);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "{League} current rankings sync failed.", league);
+                }
+            }
+
             // Only weeks that haven't fully concluded -- history doesn't need
             // re-pulling, which keeps the daily call count small.
             var pendingWeeks = await db.Weeks

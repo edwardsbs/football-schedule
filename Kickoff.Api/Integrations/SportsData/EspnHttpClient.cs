@@ -175,6 +175,48 @@ public class EspnHttpClient(
         return teams;
     }
 
+    public async Task<IReadOnlyList<TeamRanking>> GetCurrentRankingsAsync(
+        League league, CancellationToken ct = default)
+    {
+        if (league != League.Ncaa) return [];
+
+        using var doc = await GetJsonAsync($"{BaseUrl}/{Sport(league)}/rankings", ct);
+        if (doc is null || !doc.RootElement.TryGetProperty("rankings", out var polls)) return [];
+
+        // The AP poll is the familiar ranking used by scoreboards. Avoid mixing
+        // it with the Coaches or FCS polls also present in this response.
+        JsonElement? apPoll = null;
+        foreach (var poll in polls.EnumerateArray())
+        {
+            var type = poll.TryGetProperty("type", out var typeEl) ? typeEl.GetString() : null;
+            if (string.Equals(type, "ap", StringComparison.OrdinalIgnoreCase))
+            {
+                apPoll = poll;
+                break;
+            }
+        }
+
+        if (apPoll is null || !apPoll.Value.TryGetProperty("ranks", out var ranks)) return [];
+
+        var result = new List<TeamRanking>();
+        foreach (var entry in ranks.EnumerateArray())
+        {
+            if (!entry.TryGetProperty("current", out var current)
+                || !current.TryGetInt32(out var rank)
+                || rank is < 1 or > 25
+                || !entry.TryGetProperty("team", out var team)
+                || !team.TryGetProperty("id", out var idEl)
+                || idEl.GetString() is not { Length: > 0 } id)
+            {
+                continue;
+            }
+
+            result.Add(new TeamRanking(id, rank));
+        }
+
+        return result;
+    }
+
     private static string Sport(League league) => league == League.Nfl ? "nfl" : "college-football";
 
     private static int MapSeasonType(string seasonType) => seasonType.ToUpperInvariant() switch
@@ -264,25 +306,11 @@ public class EspnHttpClient(
             var displayName = t.TryGetProperty("displayName", out var dn) ? dn.GetString() ?? $"{location} {name}".Trim() : $"{location} {name}".Trim();
             var abbr = t.TryGetProperty("abbreviation", out var ab) ? ab.GetString() ?? "" : "";
             var logo = t.TryGetProperty("logo", out var lg) ? lg.GetString() : null;
-            var currentRank = ParseCurrentRank(c);
 
-            return new FeedTeam(id, location, name, displayName, abbr, LogoUrl: logo, CurrentRank: currentRank);
+            return new FeedTeam(id, location, name, displayName, abbr, LogoUrl: logo);
         }
 
         return null;
-    }
-
-    /// <summary>ESPN uses 99 as its unranked sentinel; only Top 25 values are displayed.</summary>
-    private static int? ParseCurrentRank(JsonElement competitor)
-    {
-        if (!competitor.TryGetProperty("curatedRank", out var curatedRank)
-            || !curatedRank.TryGetProperty("current", out var current)
-            || !current.TryGetInt32(out var rank))
-        {
-            return null;
-        }
-
-        return rank is >= 1 and <= 25 ? rank : null;
     }
 
     private static ScoreSnapshot? ParseScore(JsonElement comp, GameStatus status)

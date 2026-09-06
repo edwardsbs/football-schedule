@@ -93,35 +93,21 @@ public class SyncPipelineTests
     }
 
     [Fact]
-    public async Task Schedule_import_updates_rank_while_roster_import_preserves_it()
+    public async Task Rankings_sync_replaces_the_previous_current_poll()
     {
         using var ctx = TestDb.NewContext();
-        var import = new ScheduleImportService(ctx);
-        var ranked = new FeedTeam("ranked", "Ranked", "Team", "Ranked Team", "RNK", CurrentRank: 4);
-        var opponent = new FeedTeam("opponent", "Other", "Team", "Other Team", "OTH");
-        var game = new FeedGame(
-            "rank-game",
-            T0,
-            ranked,
-            opponent,
-            GameStatus.Scheduled,
-            null,
-            [],
-            null);
+        var first = new Team { League = League.Ncaa, ExternalId = "first", DisplayName = "First" };
+        var second = new Team { League = League.Ncaa, ExternalId = "second", DisplayName = "Second" };
+        ctx.Teams.AddRange(first, second);
+        await ctx.SaveChangesAsync();
 
-        await import.ImportAsync(new ScheduleFeed(League.Ncaa, 2026, 1, [game]));
-        Assert.Equal(4, await ctx.Teams.Where(t => t.ExternalId == "ranked").Select(t => t.CurrentRank).SingleAsync());
+        var sync = new RankingsSyncService(ctx);
+        Assert.Equal(1, await sync.ApplyAsync(League.Ncaa, [new TeamRanking("first", 4)]));
+        Assert.Equal(4, first.CurrentRank);
+        Assert.Null(second.CurrentRank);
 
-        await import.ImportTeamsAsync(
-            League.Ncaa,
-            [new FeedTeam("ranked", "Ranked", "Team", "Ranked Team", "RNK")]);
-        Assert.Equal(4, await ctx.Teams.Where(t => t.ExternalId == "ranked").Select(t => t.CurrentRank).SingleAsync());
-
-        await import.ImportAsync(new ScheduleFeed(
-            League.Ncaa,
-            2026,
-            1,
-            [game with { Home = ranked with { CurrentRank = null } }]));
-        Assert.Null(await ctx.Teams.Where(t => t.ExternalId == "ranked").Select(t => t.CurrentRank).SingleAsync());
+        Assert.Equal(1, await sync.ApplyAsync(League.Ncaa, [new TeamRanking("second", 7)]));
+        Assert.Null(first.CurrentRank);
+        Assert.Equal(7, second.CurrentRank);
     }
 }

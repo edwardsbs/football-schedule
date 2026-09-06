@@ -26,4 +26,8 @@ public interface ISportsDataClient
     /// actually appearing in an imported game.
     /// </summary>
     Task<IReadOnlyList<FeedTeam>> GetAllTeamsAsync(League league, CancellationToken ct = default);
+
+    /// <summary>The current primary Top 25 poll for a league.</summary>
+    Task<IReadOnlyList<TeamRanking>> GetCurrentRankingsAsync(
+        League league, CancellationToken ct = default);
 }

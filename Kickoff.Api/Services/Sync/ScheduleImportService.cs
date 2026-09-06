@@ -25,7 +25,7 @@ public class ScheduleImportService(IKickoffContext db)
             .GroupBy(t => t.ExternalId)
             .Select(grp => grp.First())
             .ToList();
-        var (teamsAdded, _) = await UpsertTeamsAsync(feed.League, feedTeams, updateRanks: true, ct);
+        var (teamsAdded, _) = await UpsertTeamsAsync(feed.League, feedTeams, ct);
 
         // Existing games for this feed, by external id -- scoped to this feed's
         // league, since a provider's external ids aren't necessarily unique
@@ -83,12 +83,11 @@ public class ScheduleImportService(IKickoffContext db)
     /// </summary>
     public Task<TeamImportResult> ImportTeamsAsync(
         League league, IReadOnlyList<FeedTeam> feedTeams, CancellationToken ct = default) =>
-        UpsertTeamsAsync(league, feedTeams, updateRanks: false, ct);
+        UpsertTeamsAsync(league, feedTeams, ct);
 
     private async Task<TeamImportResult> UpsertTeamsAsync(
         League league,
         IReadOnlyList<FeedTeam> feedTeams,
-        bool updateRanks,
         CancellationToken ct)
     {
         var ids = feedTeams.Select(t => t.ExternalId).ToList();
@@ -104,7 +103,6 @@ public class ScheduleImportService(IKickoffContext db)
                 team.DisplayName = ft.DisplayName;
                 team.Abbreviation = ft.Abbreviation;
                 if (ft.LogoUrl is not null) team.LogoUrl = ft.LogoUrl;
-                if (updateRanks) team.CurrentRank = ft.CurrentRank;
                 updated++;
                 continue;
             }
@@ -118,7 +116,6 @@ public class ScheduleImportService(IKickoffContext db)
                 DisplayName = ft.DisplayName,
                 Abbreviation = ft.Abbreviation,
                 LogoUrl = ft.LogoUrl,
-                CurrentRank = ft.CurrentRank,
             });
             added++;
         }

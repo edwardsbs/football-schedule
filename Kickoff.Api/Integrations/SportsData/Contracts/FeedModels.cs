@@ -16,8 +16,10 @@ public record FeedTeam(
     string Abbreviation,
     string? Conference = null,
     string? Division = null,
-    string? LogoUrl = null,
-    int? CurrentRank = null);
+    string? LogoUrl = null);
+
+/// <summary>A team's place in the provider's current primary Top 25 poll.</summary>
+public record TeamRanking(string TeamExternalId, int Rank);
 
 public record ScoreSnapshot(
     int HomeScore,
