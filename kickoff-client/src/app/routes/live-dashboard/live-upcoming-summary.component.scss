@@ -57,6 +57,18 @@
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
   }
+
+  .ranked-glow {
+    color: #77a9ff;
+    font-weight: 750;
+    text-shadow: 0 0 2.5px rgb(76 141 255 / 28%);
+  }
+
+  .favorite-glow {
+    color: var(--text, #e7ebf2);
+    font-weight: 750;
+    text-shadow: 0 0 2.5px rgb(255 255 255 / 30%);
+  }
 }
 
 @media (max-width: 640px) {

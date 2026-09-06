@@ -31,7 +31,7 @@ interface LeagueGroup {
             <ul class="teams">
               @for (team of group.teams; track team.teamId) {
                 <li>
-                  <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [rank]="team.currentRank" [size]="28" />
+                  <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [rank]="team.currentRank" [glow]="true" [size]="28" />
                   <span class="name">{{ team.displayName }}</span>
                   <button type="button" class="remove" title="Unfollow" (click)="fan.toggleFavorite(team.teamId)">Unfollow</button>
                 </li>

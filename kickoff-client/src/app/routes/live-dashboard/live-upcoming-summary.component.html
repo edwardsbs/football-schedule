@@ -10,7 +10,20 @@
       <span>Next kickoff in</span>
       <strong>{{ value }}</strong>
       <small>
-        {{ game().away.abbreviation }} at {{ game().home.abbreviation }} ·
+        <span
+          [class.favorite-glow]="fan.isFavorite(game().away.id)"
+          [class.ranked-glow]="game().away.currentRank !== null"
+        >
+          {{ game().away.abbreviation }}
+        </span>
+        at
+        <span
+          [class.favorite-glow]="fan.isFavorite(game().home.id)"
+          [class.ranked-glow]="game().home.currentRank !== null"
+        >
+          {{ game().home.abbreviation }}
+        </span>
+        ·
         {{ game().kickoffUtc | date: 'h:mm a' }}
       </small>
     </div>

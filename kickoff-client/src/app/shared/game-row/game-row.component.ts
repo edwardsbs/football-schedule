@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, input, output, signal } fro
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score } from '../../core/models/game.model';
 import { TeamBadgeComponent } from '../team-badge/team-badge.component';
 
@@ -22,6 +23,7 @@ export class GameRowComponent {
   private readonly api = inject(KickoffApi);
   private readonly overlay = inject(GameDetailOverlay);
   protected readonly fan = inject(FanStore);
+  protected readonly records = inject(TeamRecordStore);
 
   readonly game = input.required<Game>();
   /** Alternating-row shading, set by the hosting list from its index. */

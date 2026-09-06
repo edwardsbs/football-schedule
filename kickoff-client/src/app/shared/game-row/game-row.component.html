@@ -28,14 +28,22 @@
       [attr.aria-label]="(fan.isFavorite(game().away.id) ? 'Unfollow ' : 'Follow ') + game().away.displayName"
       (click)="$event.stopPropagation(); fan.toggleFavorite(game().away.id)"
     >{{ fan.isFavorite(game().away.id) ? '★' : '☆' }}</button>
-    <app-team-badge
-      [name]="game().away.displayName"
-      [logoUrl]="game().away.logoUrl"
-      [abbreviation]="game().away.abbreviation"
-      [rank]="game().away.currentRank"
-      [size]="28"
-    />
-    <span class="abbr">{{ game().away.abbreviation }}</span>
+    <div class="team-identity">
+      <div class="team-main">
+        <app-team-badge
+          [name]="game().away.displayName"
+          [logoUrl]="game().away.logoUrl"
+          [abbreviation]="game().away.abbreviation"
+          [rank]="game().away.currentRank"
+          [glow]="fan.isFavorite(game().away.id)"
+          [size]="28"
+        />
+        <span class="abbr">{{ game().away.abbreviation }}</span>
+      </div>
+      <span class="team-record" [attr.aria-label]="records.ariaLabel(game().away.id)">
+        {{ records.label(game().away.id) }}
+      </span>
+    </div>
     @if (!isHalftime() && shownScore()?.possessionTeamId === game().away.id) {
       <span class="possession-ball" role="img" aria-label="Possession" title="Possession"></span>
     }
@@ -61,14 +69,22 @@
       [attr.aria-label]="(fan.isFavorite(game().home.id) ? 'Unfollow ' : 'Follow ') + game().home.displayName"
       (click)="$event.stopPropagation(); fan.toggleFavorite(game().home.id)"
     >{{ fan.isFavorite(game().home.id) ? '★' : '☆' }}</button>
-    <app-team-badge
-      [name]="game().home.displayName"
-      [logoUrl]="game().home.logoUrl"
-      [abbreviation]="game().home.abbreviation"
-      [rank]="game().home.currentRank"
-      [size]="28"
-    />
-    <span class="abbr">{{ game().home.abbreviation }}</span>
+    <div class="team-identity home-identity">
+      <div class="team-main">
+        <app-team-badge
+          [name]="game().home.displayName"
+          [logoUrl]="game().home.logoUrl"
+          [abbreviation]="game().home.abbreviation"
+          [rank]="game().home.currentRank"
+          [glow]="fan.isFavorite(game().home.id)"
+          [size]="28"
+        />
+        <span class="abbr">{{ game().home.abbreviation }}</span>
+      </div>
+      <span class="team-record" [attr.aria-label]="records.ariaLabel(game().home.id)">
+        {{ records.label(game().home.id) }}
+      </span>
+    </div>
     @if (!isHalftime() && shownScore()?.possessionTeamId === game().home.id) {
       <span class="possession-ball" role="img" aria-label="Possession" title="Possession"></span>
     }

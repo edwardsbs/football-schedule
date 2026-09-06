@@ -27,14 +27,22 @@
         <!-- Away (visitor) on top, home below — the stacked-schedule row style. -->
         <div class="team-row" [class.lead]="leads('away')">
           <span class="accent" [style.background]="accent(g.away)"></span>
-          <app-team-badge
-            [name]="g.away.displayName"
-            [logoUrl]="g.away.logoUrl"
-            [abbreviation]="g.away.abbreviation"
-            [rank]="g.away.currentRank"
-            [size]="30"
-          />
-          <span class="name">{{ g.away.displayName }}</span>
+          <div class="team-identity">
+            <div class="team-main">
+              <app-team-badge
+                [name]="g.away.displayName"
+                [logoUrl]="g.away.logoUrl"
+                [abbreviation]="g.away.abbreviation"
+                [rank]="g.away.currentRank"
+                [glow]="fan.isFavorite(g.away.id)"
+                [size]="30"
+              />
+              <span class="name">{{ g.away.displayName }}</span>
+            </div>
+            <span class="team-record" [attr.aria-label]="records.ariaLabel(g.away.id)">
+              {{ records.label(g.away.id) }}
+            </span>
+          </div>
           <button
             type="button"
             class="star"
@@ -57,14 +65,22 @@
 
         <div class="team-row" [class.lead]="leads('home')">
           <span class="accent" [style.background]="accent(g.home)"></span>
-          <app-team-badge
-            [name]="g.home.displayName"
-            [logoUrl]="g.home.logoUrl"
-            [abbreviation]="g.home.abbreviation"
-            [rank]="g.home.currentRank"
-            [size]="30"
-          />
-          <span class="name">{{ g.home.displayName }}</span>
+          <div class="team-identity">
+            <div class="team-main">
+              <app-team-badge
+                [name]="g.home.displayName"
+                [logoUrl]="g.home.logoUrl"
+                [abbreviation]="g.home.abbreviation"
+                [rank]="g.home.currentRank"
+                [glow]="fan.isFavorite(g.home.id)"
+                [size]="30"
+              />
+              <span class="name">{{ g.home.displayName }}</span>
+            </div>
+            <span class="team-record" [attr.aria-label]="records.ariaLabel(g.home.id)">
+              {{ records.label(g.home.id) }}
+            </span>
+          </div>
           <button
             type="button"
             class="star"

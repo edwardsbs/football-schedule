@@ -8,6 +8,10 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 @Component({
   selector: 'app-team-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.ranked-glow]': 'rank() != null',
+    '[class.favorite-glow]': 'glow()',
+  },
   template: `
     @if (rank(); as currentRank) {
       <span class="rank" [attr.aria-label]="'Rank ' + currentRank" [attr.title]="'Rank ' + currentRank">{{ currentRank }}</span>
@@ -46,7 +50,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
         text-align: right;
         font-variant-numeric: tabular-nums;
       }
-      .logo { object-fit: contain; }
+      .logo { object-fit: contain; transition: filter 0.18s ease; }
       .monogram {
         display: inline-flex;
         align-items: center;
@@ -57,6 +61,23 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
         line-height: 1;
         letter-spacing: -0.02em;
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        transition: box-shadow 0.18s ease;
+      }
+      :host(.ranked-glow) .logo {
+        filter: drop-shadow(0 0 2px rgb(76 141 255 / 31%));
+      }
+      :host(.ranked-glow) .monogram {
+        box-shadow: 0 0 4px rgb(76 141 255 / 24%);
+      }
+      :host(.ranked-glow) .rank {
+        color: #77a9ff;
+        text-shadow: 0 0 2.5px rgb(76 141 255 / 28%);
+      }
+      :host(.favorite-glow) .logo {
+        filter: drop-shadow(0 0 2px rgb(255 255 255 / 34%));
+      }
+      :host(.favorite-glow) .monogram {
+        box-shadow: 0 0 4px rgb(255 255 255 / 27%);
       }
     `,
   ],
@@ -67,6 +88,7 @@ export class TeamBadgeComponent {
   readonly abbreviation = input<string | null | undefined>(undefined);
   readonly size = input<number>(26);
   readonly rank = input<number | null | undefined>(undefined);
+  readonly glow = input<boolean>(false);
 
   protected readonly failed = signal(false);
 

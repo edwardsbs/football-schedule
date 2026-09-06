@@ -5,6 +5,7 @@ import { catchError, map, of, startWith, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { FanStore } from '../../core/services/fan-store';
 import { LiveGameStore } from '../../core/services/live-game-store';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score, TeamSummary } from '../../core/models/game.model';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 
@@ -32,6 +33,7 @@ export class GameDetailComponent {
   private readonly location = inject(Location);
   private readonly live = inject(LiveGameStore);
   protected readonly fan = inject(FanStore);
+  protected readonly records = inject(TeamRecordStore);
 
   readonly id = input.required<string>();
   /** True when rendered inside the game-detail modal instead of as a routed page. */

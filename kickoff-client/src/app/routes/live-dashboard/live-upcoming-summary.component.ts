@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Game } from '../../core/models/game.model';
+import { FanStore } from '../../core/services/fan-store';
 
 @Component({
   selector: 'app-live-upcoming-summary',
@@ -10,6 +11,7 @@ import { Game } from '../../core/models/game.model';
   styleUrl: './live-upcoming-summary.component.scss',
 })
 export class LiveUpcomingSummaryComponent {
+  protected readonly fan = inject(FanStore);
   readonly game = input.required<Game>();
   readonly today = input(false);
   readonly countdown = input<string | null>(null);

@@ -29,4 +29,17 @@ describe('TeamBadgeComponent', () => {
     expect(fixture.nativeElement.querySelector('.rank')).toBeNull();
     expect(fixture.nativeElement.firstElementChild.tagName).toBe('IMG');
   });
+
+  it('glows for either a favorite or a ranked team', () => {
+    fixture.componentRef.setInput('glow', true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.classList).toContain('favorite-glow');
+    expect(fixture.nativeElement.classList).not.toContain('ranked-glow');
+
+    fixture.componentRef.setInput('glow', false);
+    fixture.componentRef.setInput('rank', 4);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.classList).toContain('ranked-glow');
+    expect(fixture.nativeElement.classList).not.toContain('favorite-glow');
+  });
 });

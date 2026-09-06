@@ -6,6 +6,7 @@ import { KickoffApi } from '../../core/services/kickoff-api';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { LiveGameStore } from '../../core/services/live-game-store';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score } from '../../core/models/game.model';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
@@ -23,6 +24,7 @@ export class LiveDashboardComponent {
   private readonly overlay = inject(GameDetailOverlay);
   private readonly live = inject(LiveGameStore);
   protected readonly fan = inject(FanStore);
+  protected readonly records = inject(TeamRecordStore);
 
   /** Tap a tile (not its controls) to open the game detail modal in place. */
   open(g: Game): void {

@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { catchError, of, switchMap, timer } from 'rxjs';
+import { of, switchMap } from 'rxjs';
 import { getAlignment } from '../../core/data/alignment-lookup';
 import { AlignmentConference, AlignmentTeam } from '../../core/models/alignment.model';
 import { TeamRecord, TeamSummary } from '../../core/models/game.model';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 
 /**
@@ -22,6 +23,7 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
 })
 export class ConferenceAlignmentComponent {
   private readonly api = inject(KickoffApi);
+  private readonly records = inject(TeamRecordStore);
   readonly fan = inject(FanStore);
 
   readonly league = input.required<string>();
@@ -65,29 +67,6 @@ export class ConferenceAlignmentComponent {
     return map;
   });
 
-  /** Records are inexpensive to calculate and refresh shortly after a game is
-   * marked final, without requiring the user to reload the conference page. */
-  private readonly backendRecords = toSignal(
-    toObservable(this.league).pipe(
-      switchMap((l) =>
-        timer(0, 30_000).pipe(
-          switchMap(() =>
-            l === 'ncaa'
-              ? this.api.getTeamRecords('Ncaa').pipe(catchError(() => of([] as TeamRecord[])))
-              : l === 'nfl'
-                ? this.api.getTeamRecords('Nfl').pipe(catchError(() => of([] as TeamRecord[])))
-                : of([] as TeamRecord[]),
-          ),
-        ),
-      ),
-    ),
-    { initialValue: [] as TeamRecord[] },
-  );
-
-  private readonly recordByTeamId = computed(() =>
-    new Map(this.backendRecords().map((record) => [record.teamId, record])),
-  );
-
   /** The real backend team id for an alignment entry, or null if that team
    * hasn't been imported yet (not yet favorite-able). */
   teamId(team: AlignmentTeam): number | null {
@@ -99,7 +78,7 @@ export class ConferenceAlignmentComponent {
   record(team: AlignmentTeam): TeamRecord | null {
     const id = this.teamId(team);
     if (id === null) return null;
-    return this.recordByTeamId().get(id) ?? { teamId: id, wins: 0, losses: 0, ties: 0 };
+    return this.records.record(id) ?? { teamId: id, wins: 0, losses: 0, ties: 0 };
   }
 
   teamRank(team: AlignmentTeam): number | null {

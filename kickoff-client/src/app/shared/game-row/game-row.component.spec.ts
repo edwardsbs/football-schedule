@@ -3,6 +3,7 @@ import { Game } from '../../core/models/game.model';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { KickoffApi } from '../../core/services/kickoff-api';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { GameRowComponent } from './game-row.component';
 
 describe('GameRowComponent', () => {
@@ -12,6 +13,15 @@ describe('GameRowComponent', () => {
       providers: [
         { provide: KickoffApi, useValue: {} },
         { provide: GameDetailOverlay, useValue: { open: () => undefined } },
+        {
+          provide: TeamRecordStore,
+          useValue: {
+            label: (teamId: number) => teamId === 1 ? '1–0–0' : '0–1–0',
+            ariaLabel: (teamId: number) => teamId === 1
+              ? '1 win, 0 losses, 0 ties'
+              : '0 wins, 1 loss, 0 ties',
+          },
+        },
         {
           provide: FanStore,
           useValue: {
@@ -57,6 +67,25 @@ describe('GameRowComponent', () => {
     expect(text).toContain('3rd & 7 at HOM 41');
     expect(direction.textContent?.trim()).toBe('→');
     expect(direction.getAttribute('aria-label')).toBe('Driving right');
+  });
+
+  it('shows both records and places the right-side logo before its team name', () => {
+    const fixture = TestBed.createComponent(GameRowComponent);
+    fixture.componentRef.setInput('game', halftimeGame());
+
+    fixture.detectChanges();
+
+    const recordText = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.team-record'))
+      .map((element) => element.textContent?.trim());
+    const rightTeamChildren = Array.from<HTMLElement>(fixture.nativeElement.querySelector('.home .team-main').children);
+    const rightSideChildren = Array.from<HTMLElement>(fixture.nativeElement.querySelector('.home').children);
+    const rightIdentityChildren = Array.from<HTMLElement>(fixture.nativeElement.querySelector('.home-identity').children);
+
+    expect(recordText).toEqual(['0–1–0', '1–0–0']);
+    expect(rightSideChildren[0].classList).toContain('star');
+    expect(rightTeamChildren[0].tagName).toBe('APP-TEAM-BADGE');
+    expect(rightTeamChildren[1].classList).toContain('abbr');
+    expect(rightIdentityChildren[1].classList).toContain('team-record');
   });
 });
 

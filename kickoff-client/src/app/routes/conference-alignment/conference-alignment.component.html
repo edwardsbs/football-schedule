@@ -65,6 +65,7 @@
                           [logoUrl]="team.logoUrl"
                           [abbreviation]="team.abbreviation"
                           [rank]="teamRank(team)"
+                          [glow]="isFavorite(team)"
                           [size]="26"
                         />
                         <span class="team-name">{{ team.name }}</span>
@@ -129,6 +130,7 @@
                               [logoUrl]="team.logoUrl"
                               [abbreviation]="team.abbreviation"
                               [rank]="teamRank(team)"
+                              [glow]="isFavorite(team)"
                               [size]="26"
                             />
                             <span class="team-name">{{ team.name }}</span>
@@ -188,6 +190,7 @@
                         [logoUrl]="team.logoUrl"
                         [abbreviation]="team.abbreviation"
                         [rank]="teamRank(team)"
+                        [glow]="isFavorite(team)"
                         [size]="26"
                       />
                       <span class="team-name">{{ team.name }}</span>
