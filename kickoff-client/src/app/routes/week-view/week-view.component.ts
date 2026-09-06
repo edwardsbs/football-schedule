@@ -7,7 +7,7 @@ import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, groupByDay, startOfWeek } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
-import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
+import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
 
 const timeLabel = (iso: string) =>
@@ -41,7 +41,7 @@ function seasonWeekStarts(): Date[] {
 
 @Component({
   selector: 'app-week-view',
-  imports: [DatePipe, GameRowComponent, MyTeamsStripComponent, WeekStripComponent],
+  imports: [DatePipe, GameRowComponent, ImportantGamesTickerComponent, WeekStripComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './week-view.component.html',
   styleUrls: ['../shared/timeline.scss'],

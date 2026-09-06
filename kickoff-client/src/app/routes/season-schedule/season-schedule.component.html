@@ -1,35 +1,32 @@
-<header class="page-head">
-  <div class="nav">
-    <h1>{{ leagueLabel() }} Full Season</h1>
-    <span class="meta-inline">
-      {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
-      · {{ weeks().length }} week{{ weeks().length === 1 ? '' : 's' }}
-    </span>
-  </div>
-</header>
+<div class="schedule-header compact">
+  <header class="page-head">
+    <div class="nav">
+      <h1>{{ leagueLabel() }} Full Season</h1>
+      <span class="meta-inline">{{ weeks().length }} weeks</span>
+    </div>
+  </header>
 
-<div class="filter-row">
-  <div class="view-toggle" role="group" aria-label="Schedule view">
-    <button type="button" [class.active]="viewMode() === 'byWeek'" (click)="setViewMode('byWeek')">
-      Week by Week
+  <div class="filter-row">
+    <div class="view-toggle" role="group" aria-label="Schedule view">
+      <button type="button" [class.active]="viewMode() === 'byWeek'" (click)="setViewMode('byWeek')">
+        Week by Week
+      </button>
+      <button type="button" [class.active]="viewMode() === 'full'" (click)="setViewMode('full')">
+        Full Season
+      </button>
+    </div>
+
+    <button
+      type="button"
+      class="filter-chip"
+      [class.on]="onlyMine()"
+      [attr.aria-pressed]="onlyMine()"
+      (click)="toggleMine()"
+    >
+      <span class="ico">★◉</span> My games
+      <span class="badge">{{ followedCount() }}</span>
     </button>
-    <button type="button" [class.active]="viewMode() === 'full'" (click)="setViewMode('full')">
-      Full Season
-    </button>
   </div>
-
-  <button
-    type="button"
-    class="filter-chip"
-    [class.on]="onlyMine()"
-    [attr.aria-pressed]="onlyMine()"
-    (click)="toggleMine()"
-  >
-    <span class="ico">★◉</span> My games
-    <span class="badge">{{ followedCount() }}</span>
-  </button>
-
-  <app-my-teams-strip [inline]="true" />
 </div>
 
 @if (total() === 0) {
@@ -43,15 +40,19 @@
     }
   </div>
 } @else if (viewMode() === 'byWeek') {
-  <app-week-strip
-    [items]="weekStripItems()"
-    [canPrev]="canPrevWeek()"
-    [canNext]="canNextWeek()"
-    (pick)="selectWeek($event)"
-    (prev)="prevWeek()"
-    (next)="nextWeek()"
-  />
-  <button type="button" class="current-week-link" (click)="jumpToCurrentWeek()">Jump to current week</button>
+  <app-important-games-ticker [games]="activeWeekGames()" />
+
+  <div class="week-navigation compact">
+    <app-week-strip
+      [items]="weekStripItems()"
+      [canPrev]="canPrevWeek()"
+      [canNext]="canNextWeek()"
+      (pick)="selectWeek($event)"
+      (prev)="prevWeek()"
+      (next)="nextWeek()"
+    />
+    <button type="button" class="current-week-link" (click)="jumpToCurrentWeek()">Jump to current week</button>
+  </div>
 
   @if (activeWeek(); as week) {
     @for (day of week.days; track day.key) {

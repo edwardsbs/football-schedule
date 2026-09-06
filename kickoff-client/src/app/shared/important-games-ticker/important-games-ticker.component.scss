@@ -1,0 +1,228 @@
+:host {
+  display: contents;
+}
+
+.watch-rail,
+.show-rail {
+  position: fixed;
+  top: 4.75rem;
+  right: 5.5rem;
+  z-index: 4;
+  width: 10.5rem;
+}
+
+.watch-rail {
+  overflow: hidden;
+  max-height: calc(100dvh - 5.75rem);
+  background: color-mix(in srgb, var(--surface, #161a22) 96%, transparent);
+  border: 1px solid var(--border, #262c38);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 34%);
+  backdrop-filter: blur(8px);
+}
+
+.rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.45rem 0.5rem 0.45rem 0.65rem;
+  border-bottom: 1px solid var(--border, #262c38);
+
+  div {
+    display: grid;
+    gap: 0.08rem;
+    min-width: 0;
+  }
+
+  strong {
+    font-size: 0.78rem;
+    line-height: 1;
+  }
+
+  span {
+    color: var(--muted, #8b93a1);
+    font-size: 0.62rem;
+  }
+
+  button {
+    flex: none;
+    min-width: 44px;
+    min-height: 36px;
+    padding: 0.25rem 0.4rem;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted-strong, #aab2c0);
+    font-size: 0.68rem;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:active { background: var(--surface-2, #1c212b); }
+  }
+}
+
+.rail-games {
+  max-height: calc(100dvh - 9rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border, #262c38) transparent;
+}
+
+.completed-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem 0.25rem;
+  color: var(--muted, #8b93a1);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgb(139 147 161 / 16%);
+  }
+}
+
+.rail-game {
+  position: relative;
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  min-height: 76px;
+  padding: 0.55rem 0.65rem 0.55rem 0.8rem;
+  border: 0;
+  border-bottom: 1px solid rgb(139 147 161 / 12%);
+  background: transparent;
+  color: var(--text, #e7ebf2);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0.55rem;
+    bottom: 0.55rem;
+    left: 0;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--muted, #8b93a1);
+    opacity: 0.7;
+  }
+
+  &.ranked::before { background: #4c8dff; }
+  &.circled::before { background: #c7ccd5; }
+  &.favorite::before { background: var(--accent-gold, #c9a227); }
+  &.completed {
+    background: rgb(139 147 161 / 4%);
+
+    app-team-badge { filter: grayscale(1); }
+  }
+
+  &.close-alert::after,
+  &.close-alert-double::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid #f28c28;
+    border-radius: 0.4rem;
+    box-shadow: 0 0 6px rgb(242 140 40 / 20%);
+    pointer-events: none;
+  }
+
+  &.close-alert-double::after {
+    border: 3px double #f28c28;
+    box-shadow: 0 0 8px rgb(242 140 40 / 28%);
+  }
+
+  &:last-child { border-bottom: 0; }
+  &:active { background: var(--surface-2, #1c212b); }
+}
+
+.game-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+  min-width: 0;
+  color: var(--muted, #8b93a1);
+  font-size: 0.56rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .live { color: #ff5e63; }
+}
+
+.team-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+
+  strong { font-weight: 800; }
+
+  .rank {
+    margin-right: 0.15rem;
+    color: #75a6ff;
+    font-size: 0.62rem;
+  }
+}
+
+.team-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+
+  app-team-badge { flex: none; }
+}
+
+.show-rail {
+  width: auto;
+  min-width: 8.5rem;
+  min-height: 44px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--accent-gold, #c9a227);
+  border-radius: 999px;
+  background: var(--surface, #161a22);
+  color: var(--accent-gold, #c9a227);
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 30%);
+}
+
+@media (max-width: 1080px) {
+  .watch-rail,
+  .show-rail {
+    top: auto;
+    right: 5.5rem;
+    bottom: 0.75rem;
+  }
+
+  .watch-rail {
+    width: min(19rem, calc(100vw - 6rem));
+    max-height: min(45dvh, 22rem);
+  }
+
+  .rail-games {
+    max-height: calc(min(45dvh, 22rem) - 44px);
+  }
+}

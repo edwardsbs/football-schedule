@@ -9,12 +9,11 @@ import { LiveGameStore } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score } from '../../core/models/game.model';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
-import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
 import { LiveUpcomingSummaryComponent } from './live-upcoming-summary.component';
 
 @Component({
   selector: 'app-live-dashboard',
-  imports: [DatePipe, TeamBadgeComponent, MyTeamsStripComponent, LiveUpcomingSummaryComponent],
+  imports: [DatePipe, TeamBadgeComponent, LiveUpcomingSummaryComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './live-dashboard.component.html',
   styleUrl: './live-dashboard.component.scss',

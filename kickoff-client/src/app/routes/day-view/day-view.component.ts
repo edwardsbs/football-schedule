@@ -7,14 +7,14 @@ import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, groupByKickoff, startOfLocalDay } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
-import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
+import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 
 const timeLabel = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
 @Component({
   selector: 'app-day-view',
-  imports: [DatePipe, GameRowComponent, MyTeamsStripComponent],
+  imports: [DatePipe, GameRowComponent, ImportantGamesTickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './day-view.component.html',
   styleUrls: ['../shared/timeline.scss'],

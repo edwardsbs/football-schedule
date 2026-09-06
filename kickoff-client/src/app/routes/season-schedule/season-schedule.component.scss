@@ -11,6 +11,60 @@
   white-space: nowrap;
 }
 
+/* Season pages add the view-mode toggle to the shared compact schedule header. */
+.schedule-header.compact {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+
+  .page-head {
+    flex: none;
+    margin: 0;
+
+    .nav {
+      gap: 0.4rem;
+
+      h1 {
+        font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+        white-space: nowrap;
+      }
+    }
+
+    .meta-inline {
+      font-size: 0.72rem;
+    }
+  }
+
+  .filter-row {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .view-toggle,
+  .filter-chip {
+    flex: none;
+  }
+}
+
+.week-navigation.compact {
+  .current-week-link {
+    margin: 0.15rem 0 0.65rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .schedule-header.compact {
+    flex-wrap: wrap;
+
+    .filter-row {
+      flex-basis: 100%;
+    }
+  }
+}
+
 .view-toggle {
   display: inline-flex;
   gap: 0.25rem;

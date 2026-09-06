@@ -7,7 +7,7 @@ import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { filterFollowed, groupByWeek, startOfLocalDay, WeekGroup } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
-import { MyTeamsStripComponent } from '../../shared/my-teams-strip/my-teams-strip.component';
+import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
 
 type ViewMode = 'byWeek' | 'full';
@@ -34,7 +34,7 @@ function rangeLabel(first: Date, last: Date): string {
 
 @Component({
   selector: 'app-season-schedule',
-  imports: [DatePipe, GameRowComponent, MyTeamsStripComponent, WeekStripComponent],
+  imports: [DatePipe, GameRowComponent, ImportantGamesTickerComponent, WeekStripComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './season-schedule.component.html',
   styleUrls: ['../shared/timeline.scss', './season-schedule.component.scss'],
@@ -105,6 +105,10 @@ export class SeasonScheduleComponent {
 
   readonly weekNumber = computed(() => this.selectedWeek() ?? this.currentWeekNumber());
   readonly activeWeek = computed(() => this.weeks().find((w) => w.number === this.weekNumber()) ?? null);
+  readonly activeWeekGames = computed(() => {
+    const weekNumber = this.weekNumber();
+    return this.games().filter((game) => game.weekNumber === weekNumber);
+  });
 
   /** The badge describes only what the current schedule view can reveal: the
    * selected week in Week by Week mode, or the entire league season in Full Season. */

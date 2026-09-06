@@ -1,0 +1,67 @@
+@if (importantGames().length > 0) {
+  @if (visibility.hidden()) {
+    <button
+      type="button"
+      class="show-rail"
+      [attr.aria-label]="'Show watch rail with ' + importantGames().length + ' games'"
+      (click)="visibility.hidden.set(false)"
+    >
+      <span aria-hidden="true">★◉</span>
+      Watch {{ importantGames().length }}
+    </button>
+  } @else {
+    <aside class="watch-rail" aria-label="Favorite, ranked, and circled games">
+      <header class="rail-head">
+        <div>
+          <strong>Watch rail</strong>
+          <span>{{ importantGames().length }} game{{ importantGames().length === 1 ? '' : 's' }}</span>
+        </div>
+        <button type="button" (click)="visibility.hidden.set(true)">Hide</button>
+      </header>
+
+      <div class="rail-games">
+        @for (game of importantGames(); track game.id; let index = $index) {
+          @if (isCompleted(game) && (index === 0 || !isCompleted(importantGames()[index - 1]))) {
+            <div class="completed-divider"><span>Completed</span></div>
+          }
+          <button
+            type="button"
+            class="rail-game"
+            [class.favorite]="game.hasFavorite"
+            [class.ranked]="game.home.currentRank != null || game.away.currentRank != null"
+            [class.circled]="game.isCircled"
+            [class.completed]="isCompleted(game)"
+            [class.close-alert]="alertLevel(game) === 'single'"
+            [class.close-alert-double]="alertLevel(game) === 'double'"
+            (click)="open(game)"
+          >
+            <span class="game-meta">
+              <span [class.live]="game.status === 'Live'">{{ statusLabel(game) }}</span>
+              <span>{{ interestLabel(game) }}</span>
+            </span>
+            <span class="team-line">
+              <span class="team-name">
+                <app-team-badge [name]="game.away.displayName" [logoUrl]="game.away.logoUrl" [abbreviation]="game.away.abbreviation" [size]="15" />
+                <strong>
+                  @if (game.away.currentRank != null) { <span class="rank">{{ game.away.currentRank }}</span> }
+                  {{ game.away.abbreviation }}
+                </strong>
+              </span>
+              <span>{{ score(game, 'away') }}</span>
+            </span>
+            <span class="team-line">
+              <span class="team-name">
+                <app-team-badge [name]="game.home.displayName" [logoUrl]="game.home.logoUrl" [abbreviation]="game.home.abbreviation" [size]="15" />
+                <strong>
+                  @if (game.home.currentRank != null) { <span class="rank">{{ game.home.currentRank }}</span> }
+                  {{ game.home.abbreviation }}
+                </strong>
+              </span>
+              <span>{{ score(game, 'home') }}</span>
+            </span>
+          </button>
+        }
+      </div>
+    </aside>
+  }
+}
