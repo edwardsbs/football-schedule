@@ -52,6 +52,12 @@
   padding: 1rem 1.1rem;
   min-width: 0;
 
+  .team-highlight {
+    flex: 0 1 25rem;
+    width: 25rem;
+    max-width: calc(100% - 5.5rem);
+  }
+
   & + .team-row {
     border-top: 1px solid color-mix(in srgb, var(--border, #262c38) 70%, transparent);
   }

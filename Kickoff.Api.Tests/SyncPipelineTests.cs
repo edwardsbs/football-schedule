@@ -110,4 +110,23 @@ public class SyncPipelineTests
         Assert.Null(first.CurrentRank);
         Assert.Equal(7, second.CurrentRank);
     }
+
+    [Fact]
+    public async Task Schedule_import_persists_an_fcs_team_classification()
+    {
+        using var ctx = TestDb.NewContext();
+        var import = new ScheduleImportService(ctx);
+        var fbs = new FeedTeam("fbs", "State", "Bears", "State Bears", "ST", IsFcs: false);
+        var fcs = new FeedTeam("fcs", "Valley", "Eagles", "Valley Eagles", "VAL", IsFcs: true);
+        var feed = new ScheduleFeed(
+            League.Ncaa,
+            2026,
+            1,
+            [new FeedGame("fcs-game", T0, fbs, fcs, GameStatus.Scheduled, null, [], null)]);
+
+        await import.ImportAsync(feed);
+
+        Assert.True((await ctx.Teams.SingleAsync(team => team.ExternalId == "fcs")).IsFcs);
+        Assert.False((await ctx.Teams.SingleAsync(team => team.ExternalId == "fbs")).IsFcs);
+    }
 }

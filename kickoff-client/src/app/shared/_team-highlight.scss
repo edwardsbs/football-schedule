@@ -5,43 +5,56 @@
   position: relative;
   overflow: visible;
   border-radius: 7px;
-  margin: -0.25rem -0.32rem;
-  padding: 0.25rem 0.32rem;
+  margin: -0.25rem calc(-0.32rem - 30px) -0.25rem -0.32rem;
+  padding: 0.25rem calc(0.32rem + 30px) 0.25rem 0.32rem;
   transition: background 0.18s ease, box-shadow 0.18s ease;
 }
 
 .team-highlight.ranked-team {
-  background: rgb(76 141 255 / 2.5%);
+  background: rgb(76 141 255 / 1.6%);
   box-shadow:
-    0 4px 9px rgb(38 104 194 / 17%),
-    0 1px 1px rgb(115 174 255 / 12%);
+    0 4px 9px rgb(38 104 194 / 11%),
+    0 1px 1px rgb(115 174 255 / 7%);
 }
 
 .team-highlight.favorite-team {
-  background: rgb(255 255 255 / 1.8%);
+  background: rgb(255 255 255 / 1.1%);
   box-shadow:
-    0 4px 9px rgb(0 0 0 / 50%),
-    0 1px 1px rgb(255 255 255 / 11%);
+    0 4px 9px rgb(0 0 0 / 36%),
+    0 1px 1px rgb(255 255 255 / 6%);
 }
 
 .ranked-team app-team-badge .rank {
   color: #77a9ff;
 }
 
+.fcs-tag {
+  flex: none;
+  border: 1px solid rgb(201 162 39 / 30%);
+  border-radius: 3px;
+  padding: 0.08rem 0.2rem;
+  background: rgb(201 162 39 / 6%);
+  color: #cbb667;
+  font-size: 0.52rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
 /* Conference standings already use table cells for W/L/T, so highlight the
    complete row there to keep the team and its record inside the same box. */
 app-conference-alignment tr.ranked-team > * {
-  background: rgb(76 141 255 / 2.5%);
+  background: rgb(76 141 255 / 1.6%);
 }
 
 app-conference-alignment tr.favorite-team > * {
-  background: rgb(255 255 255 / 1.8%);
+  background: rgb(255 255 255 / 1.1%);
 }
 
 app-conference-alignment tr.ranked-team {
-  filter: drop-shadow(0 4px 5px rgb(38 104 194 / 14%));
+  filter: drop-shadow(0 4px 5px rgb(38 104 194 / 9%));
 }
 
 app-conference-alignment tr.favorite-team {
-  filter: drop-shadow(0 4px 5px rgb(0 0 0 / 36%));
+  filter: drop-shadow(0 4px 5px rgb(0 0 0 / 25%));
 }

@@ -36,6 +36,9 @@
           [size]="28"
         />
         <span class="abbr">{{ game().away.abbreviation }}</span>
+        @if (game().away.isFcs) {
+          <span class="fcs-tag" title="Football Championship Subdivision">FCS</span>
+        }
       </div>
       <span class="team-record" [attr.aria-label]="records.ariaLabel(game().away.id)">
         {{ records.label(game().away.id) }}
@@ -82,6 +85,9 @@
           [size]="28"
         />
         <span class="abbr">{{ game().home.abbreviation }}</span>
+        @if (game().home.isFcs) {
+          <span class="fcs-tag" title="Football Championship Subdivision">FCS</span>
+        }
       </div>
       <span class="team-record" [attr.aria-label]="records.ariaLabel(game().home.id)">
         {{ records.label(game().home.id) }}

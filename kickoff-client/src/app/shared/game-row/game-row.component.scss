@@ -9,13 +9,12 @@
   padding: 0.3rem 0.6rem;
   min-height: 46px;
   border-radius: 8px;
+  border-bottom: 1px solid rgb(139 147 161 / 9%);
   cursor: pointer;
   user-select: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: opacity 0.2s, filter 0.2s, background 0.15s;
-
-  &.alt { background: rgb(255 255 255 / 4%); }
 
   /* Touch/kiosk: no hover, so tapping the row (not a control) opens detail
      and gives an immediate pressed state instead of a hover cue. */
@@ -120,7 +119,11 @@
 /* Preserve matching gutters before highlighted identities: league mark to the
    away team, and score to the home team. */
 .side .team-highlight {
+  flex: 0 1 15rem;
+  width: 15rem;
+  max-width: calc(100% - 0.5rem);
   margin-left: 0.5rem;
+  justify-content: flex-start;
 }
 
 .team-main {

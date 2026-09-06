@@ -48,6 +48,14 @@ app-game-row .scores {
       gap: 0.32rem;
       width: 100%;
 
+      .team-highlight {
+        flex: 1 1 auto;
+        width: 100%;
+        max-width: 100%;
+        margin-right: 0;
+        padding-right: 0.32rem;
+      }
+
       &.away {
         grid-area: away;
       }

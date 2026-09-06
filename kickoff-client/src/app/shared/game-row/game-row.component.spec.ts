@@ -104,14 +104,28 @@ describe('GameRowComponent', () => {
     expect(scores[1].classList).toContain('winner');
     expect(scores[1].classList).not.toContain('loser');
   });
+
+  it('labels an FCS opponent without labeling the FBS team', () => {
+    const fixture = TestBed.createComponent(GameRowComponent);
+    const game = halftimeGame();
+    game.away.isFcs = true;
+    fixture.componentRef.setInput('game', game);
+
+    fixture.detectChanges();
+
+    const tags = fixture.nativeElement.querySelectorAll('.fcs-tag') as NodeListOf<HTMLElement>;
+    expect(tags.length).toBe(1);
+    expect(tags[0].textContent?.trim()).toBe('FCS');
+    expect(tags[0].closest('.away')).not.toBeNull();
+  });
 });
 
 function halftimeGame(): Game {
   return {
     id: 1,
     league: 'Ncaa',
-    home: { id: 1, displayName: 'Home', abbreviation: 'HOM', logoUrl: null, primaryColor: null, currentRank: null },
-    away: { id: 2, displayName: 'Away', abbreviation: 'AWY', logoUrl: null, primaryColor: null, currentRank: null },
+    home: { id: 1, displayName: 'Home', abbreviation: 'HOM', logoUrl: null, primaryColor: null, currentRank: null, isFcs: false },
+    away: { id: 2, displayName: 'Away', abbreviation: 'AWY', logoUrl: null, primaryColor: null, currentRank: null, isFcs: false },
     kickoffUtc: '2026-09-04T00:00:00Z',
     venue: null,
     broadcasts: [],

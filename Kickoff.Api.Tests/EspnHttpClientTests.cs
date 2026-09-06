@@ -72,6 +72,71 @@ public class EspnHttpClientTests
         Assert.Equal("3rd & 7 at GT 42", update.Score.DownDistance);
     }
 
+    [Fact]
+    public async Task Ncaa_schedule_maps_fcs_teams_from_the_current_group_tree()
+    {
+        const string calendarJson = """
+            {
+              "leagues": [{
+                "calendar": [{
+                  "label": "Regular Season",
+                  "entries": [{ "startDate": "2026-08-22T00:00:00Z" }]
+                }]
+              }]
+            }
+            """;
+        const string fcsGroupsJson = """
+            {
+              "items": [{
+                "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/2026/types/2/groups/32?lang=en&region=us"
+              }]
+            }
+            """;
+        const string scheduleJson = """
+            {
+              "events": [{
+                "id": "fcs-test",
+                "date": "2026-09-05T17:00:00Z",
+                "competitions": [{
+                  "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
+                  "competitors": [
+                    {
+                      "homeAway": "home",
+                      "team": {
+                        "id": "333", "displayName": "Alabama Crimson Tide",
+                        "abbreviation": "ALA", "conferenceId": "8"
+                      }
+                    },
+                    {
+                      "homeAway": "away",
+                      "team": {
+                        "id": "2771", "displayName": "Merrimack Warriors",
+                        "abbreviation": "MRMK", "conferenceId": "32"
+                      }
+                    }
+                  ]
+                }]
+              }]
+            }
+            """;
+
+        var handler = new RoutingHandler(uri =>
+            uri.AbsoluteUri.Contains("/groups/81/children", StringComparison.Ordinal)
+                ? fcsGroupsJson
+                : uri.Query.Contains("dates=", StringComparison.Ordinal)
+                    ? scheduleJson
+                    : calendarJson);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var game = Assert.Single((await sut.GetWeekScheduleAsync(League.Ncaa, 2026, 1)).Games);
+
+        Assert.True(game.Away.IsFcs);
+        Assert.False(game.Home.IsFcs);
+    }
+
     private sealed class RecordingHandler(string json = "{\"events\":[]}") : HttpMessageHandler
     {
         public Uri? RequestUri { get; private set; }
@@ -86,5 +151,16 @@ public class EspnHttpClientTests
                 Content = new StringContent(json, Encoding.UTF8, "application/json"),
             });
         }
+    }
+
+    private sealed class RoutingHandler(Func<Uri, string> responseFor) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(responseFor(request.RequestUri!), Encoding.UTF8, "application/json"),
+            });
     }
 }

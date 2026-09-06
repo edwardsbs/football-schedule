@@ -83,7 +83,20 @@
     filter: none;
   }
 
-  &.fav,
+  &.has-ranked {
+    background: color-mix(in srgb, #4c8dff 1.6%, var(--surface, #161a22));
+    box-shadow:
+      0 6px 15px rgb(38 104 194 / 8%),
+      0 1px 1px rgb(115 174 255 / 5%);
+  }
+
+  &.has-favorite {
+    background: color-mix(in srgb, #fff 1.1%, var(--surface, #161a22));
+    box-shadow:
+      0 6px 15px rgb(255 255 255 / 4%),
+      0 1px 1px rgb(255 255 255 / 6%);
+  }
+
   &.circled {
     border-color: #ffd84d;
     background: color-mix(in srgb, #ffd84d 13%, var(--surface, #161a22));

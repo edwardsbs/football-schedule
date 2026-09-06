@@ -15,6 +15,18 @@
     linear-gradient(120deg, color-mix(in srgb, var(--accent-gold, #c9a227) 11%, transparent), transparent 58%),
     var(--surface, #161a22);
 
+  &.has-ranked {
+    box-shadow:
+      0 6px 15px rgb(38 104 194 / 8%),
+      0 1px 1px rgb(115 174 255 / 5%);
+  }
+
+  &.has-favorite {
+    box-shadow:
+      0 6px 15px rgb(255 255 255 / 4%),
+      0 1px 1px rgb(255 255 255 / 6%);
+  }
+
   h2 {
     margin: 0.18rem 0 0;
     font-size: clamp(1.25rem, 3vw, 1.75rem);

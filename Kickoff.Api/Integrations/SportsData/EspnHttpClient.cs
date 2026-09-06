@@ -36,7 +36,11 @@ public class EspnHttpClient(
     ILogger<EspnHttpClient> logger) : ISportsDataClient
 {
     private const string BaseUrl = "https://site.api.espn.com/apis/site/v2/sports/football";
+    private const string CoreBaseUrl = "https://sports.core.api.espn.com/v2/sports/football/leagues/college-football";
     private readonly SportsDataOptions _opt = options.Value;
+    private readonly SemaphoreSlim _fcsGroupsGate = new(1, 1);
+    private int? _cachedFcsGroupsSeason;
+    private IReadOnlySet<string>? _cachedFcsConferenceIds;
 
     public async Task<ScheduleFeed> GetWeekScheduleAsync(
         League league, int seasonYear, int week, CancellationToken ct = default)
@@ -60,6 +64,9 @@ public class EspnHttpClient(
             url = $"{BaseUrl}/{Sport(league)}/scoreboard?seasontype={seasonType}&week={week}&dates={seasonYear}";
         }
 
+        var fcsConferenceIds = league == League.Ncaa
+            ? await GetNcaaFcsConferenceIdsAsync(seasonYear, ct)
+            : null;
         using var doc = await GetJsonAsync(url, ct);
 
         var games = new List<FeedGame>();
@@ -67,7 +74,7 @@ public class EspnHttpClient(
         {
             foreach (var e in events.EnumerateArray())
             {
-                if (TryParseGame(e, out var game)) games.Add(game);
+                if (TryParseGame(e, out var game, fcsConferenceIds)) games.Add(game);
             }
         }
 
@@ -226,6 +233,56 @@ public class EspnHttpClient(
         _ => 2, // REG
     };
 
+    /// <summary>
+    /// ESPN's scoreboard team objects expose a conference id but not a direct
+    /// subdivision label. Its current season group tree is authoritative:
+    /// Division I group 90 contains FBS group 80 and FCS group 81, whose child
+    /// references are the current FCS conferences. Resolve that small list once
+    /// per client/season, then classify every schedule opponent locally.
+    /// </summary>
+    private async Task<IReadOnlySet<string>?> GetNcaaFcsConferenceIdsAsync(
+        int seasonYear,
+        CancellationToken ct)
+    {
+        if (_cachedFcsGroupsSeason == seasonYear && _cachedFcsConferenceIds is not null)
+            return _cachedFcsConferenceIds;
+
+        await _fcsGroupsGate.WaitAsync(ct);
+        try
+        {
+            if (_cachedFcsGroupsSeason == seasonYear && _cachedFcsConferenceIds is not null)
+                return _cachedFcsConferenceIds;
+
+            var seasonType = MapSeasonType(_opt.SeasonType);
+            var url = $"{CoreBaseUrl}/seasons/{seasonYear}/types/{seasonType}/groups/81/children?limit=100";
+            using var doc = await GetJsonAsync(url, ct);
+            if (doc is null || !doc.RootElement.TryGetProperty("items", out var items)) return null;
+
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var item in items.EnumerateArray())
+            {
+                if (!item.TryGetProperty("$ref", out var refEl)
+                    || refEl.GetString() is not { Length: > 0 } reference
+                    || !Uri.TryCreate(reference, UriKind.Absolute, out var uri))
+                {
+                    continue;
+                }
+
+                var segments = uri.AbsolutePath.TrimEnd('/').Split('/');
+                if (segments.LastOrDefault() is { Length: > 0 } id) ids.Add(id);
+            }
+
+            if (ids.Count == 0) return null;
+            _cachedFcsGroupsSeason = seasonYear;
+            _cachedFcsConferenceIds = ids;
+            return _cachedFcsConferenceIds;
+        }
+        finally
+        {
+            _fcsGroupsGate.Release();
+        }
+    }
+
     private async Task<JsonDocument?> GetJsonAsync(string url, CancellationToken ct)
     {
         try
@@ -249,7 +306,10 @@ public class EspnHttpClient(
 
     // --- JSON mapping ---
 
-    private static bool TryParseGame(JsonElement e, out FeedGame game)
+    private static bool TryParseGame(
+        JsonElement e,
+        out FeedGame game,
+        IReadOnlySet<string>? fcsConferenceIds = null)
     {
         game = null!;
         if (!e.TryGetProperty("id", out var idEl)) return false;
@@ -263,8 +323,8 @@ public class EspnHttpClient(
         var comp = comps[0];
 
         var status = ParseStatus(comp);
-        var home = ParseTeam(comp, "home");
-        var away = ParseTeam(comp, "away");
+        var home = ParseTeam(comp, "home", fcsConferenceIds);
+        var away = ParseTeam(comp, "away", fcsConferenceIds);
         if (home is null || away is null) return false;
 
         var venue = comp.TryGetProperty("venue", out var v) && v.TryGetProperty("fullName", out var vn)
@@ -289,7 +349,10 @@ public class EspnHttpClient(
         return true;
     }
 
-    private static FeedTeam? ParseTeam(JsonElement comp, string side)
+    private static FeedTeam? ParseTeam(
+        JsonElement comp,
+        string side,
+        IReadOnlySet<string>? fcsConferenceIds)
     {
         if (!comp.TryGetProperty("competitors", out var competitors)) return null;
 
@@ -306,8 +369,16 @@ public class EspnHttpClient(
             var displayName = t.TryGetProperty("displayName", out var dn) ? dn.GetString() ?? $"{location} {name}".Trim() : $"{location} {name}".Trim();
             var abbr = t.TryGetProperty("abbreviation", out var ab) ? ab.GetString() ?? "" : "";
             var logo = t.TryGetProperty("logo", out var lg) ? lg.GetString() : null;
+            var conferenceId = t.TryGetProperty("conferenceId", out var conference)
+                ? conference.ValueKind == JsonValueKind.String
+                    ? conference.GetString()
+                    : conference.GetRawText()
+                : null;
+            bool? isFcs = fcsConferenceIds is null || string.IsNullOrWhiteSpace(conferenceId)
+                ? null
+                : fcsConferenceIds.Contains(conferenceId);
 
-            return new FeedTeam(id, location, name, displayName, abbr, LogoUrl: logo);
+            return new FeedTeam(id, location, name, displayName, abbr, LogoUrl: logo, IsFcs: isFcs);
         }
 
         return null;

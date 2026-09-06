@@ -1,4 +1,8 @@
-<section class="summary">
+<section
+  class="summary"
+  [class.has-ranked]="game().home.currentRank !== null || game().away.currentRank !== null"
+  [class.has-favorite]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
+>
   <div>
     <span class="kicker">Upcoming</span>
     <h2>{{ today() ? 'Games later today' : 'Next scheduled slate' }}</h2>
@@ -10,21 +14,15 @@
       <span>Next kickoff in</span>
       <strong>{{ value }}</strong>
       <small>
-        <span
-          class="team-highlight"
-          [class.favorite-team]="fan.isFavorite(game().away.id)"
-          [class.ranked-team]="game().away.currentRank !== null"
-        >
+        <span>
           {{ game().away.abbreviation }}
         </span>
+        @if (game().away.isFcs) { <span class="fcs-tag" title="Football Championship Subdivision">FCS</span> }
         at
-        <span
-          class="team-highlight"
-          [class.favorite-team]="fan.isFavorite(game().home.id)"
-          [class.ranked-team]="game().home.currentRank !== null"
-        >
+        <span>
           {{ game().home.abbreviation }}
         </span>
+        @if (game().home.isFcs) { <span class="fcs-tag" title="Football Championship Subdivision">FCS</span> }
         ·
         {{ game().kickoffUtc | date: 'h:mm a' }}
       </small>

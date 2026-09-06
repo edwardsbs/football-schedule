@@ -103,6 +103,7 @@ public class ScheduleImportService(IKickoffContext db)
                 team.DisplayName = ft.DisplayName;
                 team.Abbreviation = ft.Abbreviation;
                 if (ft.LogoUrl is not null) team.LogoUrl = ft.LogoUrl;
+                if (ft.IsFcs is not null) team.IsFcs = ft.IsFcs.Value;
                 updated++;
                 continue;
             }
@@ -116,6 +117,7 @@ public class ScheduleImportService(IKickoffContext db)
                 DisplayName = ft.DisplayName,
                 Abbreviation = ft.Abbreviation,
                 LogoUrl = ft.LogoUrl,
+                IsFcs = ft.IsFcs ?? false,
             });
             added++;
         }

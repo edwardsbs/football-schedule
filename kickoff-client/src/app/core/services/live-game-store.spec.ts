@@ -69,8 +69,8 @@ function game(overrides: Partial<Game> = {}): Game {
   return {
     id: 1,
     league: 'Ncaa',
-    home: { id: 1, displayName: 'Home', abbreviation: 'HOM', logoUrl: null, primaryColor: null, currentRank: null },
-    away: { id: 2, displayName: 'Away', abbreviation: 'AWY', logoUrl: null, primaryColor: null, currentRank: null },
+    home: { id: 1, displayName: 'Home', abbreviation: 'HOM', logoUrl: null, primaryColor: null, currentRank: null, isFcs: false },
+    away: { id: 2, displayName: 'Away', abbreviation: 'AWY', logoUrl: null, primaryColor: null, currentRank: null, isFcs: false },
     kickoffUtc: '2026-09-03T22:00:00Z',
     venue: null,
     broadcasts: [],

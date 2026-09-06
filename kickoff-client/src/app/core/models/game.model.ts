@@ -9,6 +9,7 @@ export interface TeamSummary {
   logoUrl: string | null;
   primaryColor: string | null;
   currentRank: number | null;
+  isFcs: boolean;
 }
 
 export interface TeamRecord {

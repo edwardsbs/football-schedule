@@ -18,6 +18,7 @@ public class Team
     public string? PrimaryColor { get; set; }
     public string? LogoUrl { get; set; }
     public int? CurrentRank { get; set; }       // NCAA AP/curated Top 25; null = unranked
+    public bool IsFcs { get; set; }             // NCAA Football Championship Subdivision
 
     /// <summary>Sports-data provider identifier; upsert key when syncing.</summary>
     public string? ExternalId { get; set; }
