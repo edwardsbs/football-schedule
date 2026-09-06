@@ -81,21 +81,18 @@
 
         @for (side of [game.away, game.home]; track side.id; let i = $index) {
           <div class="team">
-            <button
-              type="button"
-              class="star"
-              [class.on]="fan.isFavorite(side.id)"
-              [attr.aria-label]="(fan.isFavorite(side.id) ? 'Unfollow ' : 'Follow ') + side.displayName"
-              (click)="$event.stopPropagation(); fan.toggleFavorite(side.id)"
-            >{{ fan.isFavorite(side.id) ? '★' : '☆' }}</button>
-            <div class="team-identity">
+            <div
+              class="team-identity team-highlight"
+              [class.ranked-team]="side.currentRank !== null"
+              [class.favorite-team]="fan.isFavorite(side.id)"
+            >
               <div class="team-main">
                 <app-team-badge
                   [name]="side.displayName"
                   [logoUrl]="side.logoUrl"
                   [abbreviation]="side.abbreviation"
                   [rank]="side.currentRank"
-                  [glow]="fan.isFavorite(side.id)"
+                  [reserveRankSpace]="true"
                   [size]="30"
                 />
                 <span class="team-name">{{ side.displayName }}</span>

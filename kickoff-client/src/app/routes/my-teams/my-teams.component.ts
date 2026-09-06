@@ -15,13 +15,13 @@ interface LeagueGroup {
   template: `
     <header class="head">
       <h1>My Teams</h1>
-      <p class="meta">Teams you follow across NCAA and NFL. Their games are highlighted everywhere.</p>
+      <p class="meta">Teams you follow across NCAA and NFL. Manage favorites from the Conferences page.</p>
     </header>
 
     @if (fan.favorites().length === 0) {
       <div class="empty">
         <p>You're not following any teams yet.</p>
-        <p class="hint">Tap the ☆ next to a team on the Live, Day, or Week views to follow it.</p>
+        <p class="hint">Use the ☆ next to a team on the Conferences page to follow it.</p>
       </div>
     } @else {
       @for (group of groups(); track group.label) {
@@ -30,10 +30,12 @@ interface LeagueGroup {
             <h2>{{ group.label }}</h2>
             <ul class="teams">
               @for (team of group.teams; track team.teamId) {
-                <li>
-                  <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [rank]="team.currentRank" [glow]="true" [size]="28" />
+                <li
+                  class="team-highlight favorite-team"
+                  [class.ranked-team]="team.currentRank !== null"
+                >
+                  <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [rank]="team.currentRank" [reserveRankSpace]="true" [size]="28" />
                   <span class="name">{{ team.displayName }}</span>
-                  <button type="button" class="remove" title="Unfollow" (click)="fan.toggleFavorite(team.teamId)">Unfollow</button>
                 </li>
               }
             </ul>
@@ -69,17 +71,6 @@ interface LeagueGroup {
         border-radius: 8px;
       }
       .teams .name { font-weight: 600; }
-      .teams .remove {
-        margin-left: auto;
-        border: 1px solid var(--border, #262c38);
-        background: var(--surface-2, #1c212b);
-        color: var(--muted-strong, #aab2c0);
-        border-radius: 6px;
-        padding: 0.25rem 0.6rem;
-        font-size: 0.75rem;
-        cursor: pointer;
-        &:hover { color: #e5484d; border-color: #e5484d; }
-      }
     `,
   ],
 })

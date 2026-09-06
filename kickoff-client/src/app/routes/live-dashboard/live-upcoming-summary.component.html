@@ -11,15 +11,17 @@
       <strong>{{ value }}</strong>
       <small>
         <span
-          [class.favorite-glow]="fan.isFavorite(game().away.id)"
-          [class.ranked-glow]="game().away.currentRank !== null"
+          class="team-highlight"
+          [class.favorite-team]="fan.isFavorite(game().away.id)"
+          [class.ranked-team]="game().away.currentRank !== null"
         >
           {{ game().away.abbreviation }}
         </span>
         at
         <span
-          [class.favorite-glow]="fan.isFavorite(game().home.id)"
-          [class.ranked-glow]="game().home.currentRank !== null"
+          class="team-highlight"
+          [class.favorite-team]="fan.isFavorite(game().home.id)"
+          [class.ranked-team]="game().home.currentRank !== null"
         >
           {{ game().home.abbreviation }}
         </span>

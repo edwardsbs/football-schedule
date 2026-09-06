@@ -50,7 +50,10 @@
                 </thead>
                 <tbody>
                   @for (team of div.teams; track team.name) {
-                    <tr>
+                    <tr
+                      [class.ranked-team]="teamRank(team) !== null"
+                      [class.favorite-team]="isFavorite(team)"
+                    >
                       <th scope="row" class="club">
                         <button
                           type="button"
@@ -65,7 +68,7 @@
                           [logoUrl]="team.logoUrl"
                           [abbreviation]="team.abbreviation"
                           [rank]="teamRank(team)"
-                          [glow]="isFavorite(team)"
+                          [reserveRankSpace]="true"
                           [size]="26"
                         />
                         <span class="team-name">{{ team.name }}</span>
@@ -115,7 +118,10 @@
                     </thead>
                     <tbody>
                       @for (team of div.teams; track team.name) {
-                        <tr>
+                        <tr
+                          [class.ranked-team]="teamRank(team) !== null"
+                          [class.favorite-team]="isFavorite(team)"
+                        >
                           <th scope="row" class="club">
                             <button
                               type="button"
@@ -130,7 +136,7 @@
                               [logoUrl]="team.logoUrl"
                               [abbreviation]="team.abbreviation"
                               [rank]="teamRank(team)"
-                              [glow]="isFavorite(team)"
+                              [reserveRankSpace]="true"
                               [size]="26"
                             />
                             <span class="team-name">{{ team.name }}</span>
@@ -175,7 +181,10 @@
               </thead>
               <tbody>
                 @for (team of a.independents; track team.name) {
-                  <tr>
+                  <tr
+                    [class.ranked-team]="teamRank(team) !== null"
+                    [class.favorite-team]="isFavorite(team)"
+                  >
                     <th scope="row" class="club">
                       <button
                         type="button"
@@ -190,7 +199,7 @@
                         [logoUrl]="team.logoUrl"
                         [abbreviation]="team.abbreviation"
                         [rank]="teamRank(team)"
-                        [glow]="isFavorite(team)"
+                        [reserveRankSpace]="true"
                         [size]="26"
                       />
                       <span class="team-name">{{ team.name }}</span>

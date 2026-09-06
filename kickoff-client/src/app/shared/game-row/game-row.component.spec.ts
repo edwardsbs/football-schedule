@@ -78,14 +78,31 @@ describe('GameRowComponent', () => {
     const recordText = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.team-record'))
       .map((element) => element.textContent?.trim());
     const rightTeamChildren = Array.from<HTMLElement>(fixture.nativeElement.querySelector('.home .team-main').children);
-    const rightSideChildren = Array.from<HTMLElement>(fixture.nativeElement.querySelector('.home').children);
     const rightIdentityChildren = Array.from<HTMLElement>(fixture.nativeElement.querySelector('.home-identity').children);
+    const leftIdentityChildren = Array.from<HTMLElement>(fixture.nativeElement.querySelector('.away .team-identity').children);
 
     expect(recordText).toEqual(['0–1–0', '1–0–0']);
-    expect(rightSideChildren[0].classList).toContain('star');
+    expect(fixture.nativeElement.querySelector('.side > .star')).toBeNull();
     expect(rightTeamChildren[0].tagName).toBe('APP-TEAM-BADGE');
     expect(rightTeamChildren[1].classList).toContain('abbr');
+    expect(leftIdentityChildren[1].classList).toContain('team-record');
     expect(rightIdentityChildren[1].classList).toContain('team-record');
+  });
+
+  it('emphasizes only the winning score after a game is final', () => {
+    const fixture = TestBed.createComponent(GameRowComponent);
+    const game = halftimeGame();
+    game.status = 'Final';
+    game.score = { ...game.score!, awayScore: 17, homeScore: 31 };
+    fixture.componentRef.setInput('game', game);
+
+    fixture.detectChanges();
+
+    const scores = fixture.nativeElement.querySelectorAll('.scores .s') as NodeListOf<HTMLElement>;
+    expect(scores[0].classList).toContain('loser');
+    expect(scores[0].classList).not.toContain('winner');
+    expect(scores[1].classList).toContain('winner');
+    expect(scores[1].classList).not.toContain('loser');
   });
 });
 

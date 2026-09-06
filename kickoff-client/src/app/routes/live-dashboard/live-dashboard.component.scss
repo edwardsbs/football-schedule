@@ -141,26 +141,6 @@
   .circle-btn.on { color: #ffd84d; }
 }
 
-.team .star {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1.1rem;
-  line-height: 1;
-  border-radius: 8px;
-  color: var(--muted, #8b93a1);
-  touch-action: manipulation;
-
-  &.on { color: #ffd84d; }
-  &:active { background: var(--surface-2, #1c212b); }
-}
-
 .team {
   display: flex;
   align-items: center;

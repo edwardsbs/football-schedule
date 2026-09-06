@@ -7,12 +7,23 @@ app-game-row {
   container-type: inline-size;
 }
 
-/* Keep the full touch target, but pin its glyph to the team-facing edge so the
-   favorite stars form a tight, consistent column before the team identity. */
-app-game-row .side > .star {
-  width: 44px;
-  padding: 0;
-  justify-content: flex-end;
+app-game-row .scores {
+  display: flex;
+  justify-content: center;
+
+  .s.s.winner {
+    color: var(--text, #e7ebf2);
+    font-size: 1.28rem;
+    font-weight: 850;
+  }
+
+  .s.s.loser {
+    color: #9ca5b4;
+    font-size: 1.08rem;
+    font-weight: 700;
+  }
+
+  .lock { grid-column: 1 / -1; }
 }
 
 @container (max-width: 600px) {
@@ -55,25 +66,24 @@ app-game-row .side > .star {
       }
     }
 
-    .star {
-      width: 32px;
-      min-width: 32px;
-      min-height: 32px;
-      font-size: 1rem;
-    }
-
     .scores {
       grid-area: scores;
       display: grid;
+      grid-template-columns: 1fr;
       grid-template-rows: repeat(2, 1fr);
+      width: auto;
       min-width: 0;
       height: 100%;
       gap: 0;
+      transform: none;
 
       .s {
         display: grid;
         place-items: center;
         font-size: 1rem;
+
+        &.winner { font-size: 1.08rem; }
+        &.loser { font-size: 0.94rem; }
       }
 
       .sep {

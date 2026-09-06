@@ -51,7 +51,6 @@
 }
 
 /* Shared touch target: ≥44px hit area, centered glyph, pressed feedback. */
-.star,
 .icon-btn {
   flex: none;
   display: inline-flex;
@@ -73,9 +72,6 @@
   &:active { background: var(--surface-2, #1c212b); }
 }
 
-.star.on {
-  color: var(--accent-gold, #c9a227);
-}
 .circle-btn.on {
   color: #4c8dff;
 }
@@ -113,16 +109,18 @@
 
 .team-identity {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   justify-content: center;
+  gap: 0.45rem;
   min-width: 0;
   line-height: 1;
+}
 
-  &.home-identity {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.45rem;
-  }
+/* Preserve matching gutters before highlighted identities: league mark to the
+   away team, and score to the home team. */
+.side .team-highlight {
+  margin-left: 0.5rem;
 }
 
 .team-main {
@@ -141,19 +139,12 @@
 }
 
 .team-record {
-  margin-top: 0.08rem;
-  padding-left: 2.05rem;
   color: var(--muted, #8b93a1);
   font-size: 0.62rem;
   font-weight: 600;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-
-.home-identity .team-record {
-  margin-top: 0;
-  padding-left: 0;
 }
 
 .possession-ball {
@@ -180,20 +171,22 @@
 
 .scores {
   flex: none;
-  display: flex;
   align-items: center;
   gap: 0.3rem;
-  min-width: 3.6rem;
+  width: 4.8rem;
+  min-width: 4.8rem;
+  transform: translateX(-0.3rem);
   justify-content: center;
   font-variant-numeric: tabular-nums;
 
   .s {
     font-size: 1.15rem;
     font-weight: 800;
+    line-height: 1;
     &.dim { color: var(--muted, #8b93a1); font-weight: 600; }
   }
   .sep { color: var(--muted, #8b93a1); }
-  .lock { font-size: 1rem; }
+  .lock { font-size: 1rem; text-align: center; }
 }
 
 .meta {

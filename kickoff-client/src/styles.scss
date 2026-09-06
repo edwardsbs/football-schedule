@@ -5,6 +5,7 @@
 @use './app/routes/formations/formation-board';
 @use './app/shared/game-row/game-row-compact';
 @use './app/shared/team-records';
+@use './app/shared/team-highlight';
 
 :root {
   --bg: #0f1218;

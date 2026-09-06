@@ -21,21 +21,18 @@
   </span>
 
   <div class="side away">
-    <button
-      type="button"
-      class="star"
-      [class.on]="fan.isFavorite(game().away.id)"
-      [attr.aria-label]="(fan.isFavorite(game().away.id) ? 'Unfollow ' : 'Follow ') + game().away.displayName"
-      (click)="$event.stopPropagation(); fan.toggleFavorite(game().away.id)"
-    >{{ fan.isFavorite(game().away.id) ? '★' : '☆' }}</button>
-    <div class="team-identity">
+    <div
+      class="team-identity team-highlight"
+      [class.ranked-team]="game().away.currentRank !== null"
+      [class.favorite-team]="fan.isFavorite(game().away.id)"
+    >
       <div class="team-main">
         <app-team-badge
           [name]="game().away.displayName"
           [logoUrl]="game().away.logoUrl"
           [abbreviation]="game().away.abbreviation"
           [rank]="game().away.currentRank"
-          [glow]="fan.isFavorite(game().away.id)"
+          [reserveRankSpace]="true"
           [size]="28"
         />
         <span class="abbr">{{ game().away.abbreviation }}</span>
@@ -51,9 +48,17 @@
 
   <div class="scores">
     @if (shownScore(); as sc) {
-      <span class="s">{{ sc.awayScore }}</span>
+      <span
+        class="s"
+        [class.winner]="game().status === 'Final' && sc.awayScore > sc.homeScore"
+        [class.loser]="game().status === 'Final' && sc.awayScore < sc.homeScore"
+      >{{ sc.awayScore }}</span>
       <span class="sep">–</span>
-      <span class="s">{{ sc.homeScore }}</span>
+      <span
+        class="s"
+        [class.winner]="game().status === 'Final' && sc.homeScore > sc.awayScore"
+        [class.loser]="game().status === 'Final' && sc.homeScore < sc.awayScore"
+      >{{ sc.homeScore }}</span>
     } @else if (game().isMuted) {
       <span class="lock" title="Muted">🔒</span>
     } @else {
@@ -62,21 +67,18 @@
   </div>
 
   <div class="side home">
-    <button
-      type="button"
-      class="star"
-      [class.on]="fan.isFavorite(game().home.id)"
-      [attr.aria-label]="(fan.isFavorite(game().home.id) ? 'Unfollow ' : 'Follow ') + game().home.displayName"
-      (click)="$event.stopPropagation(); fan.toggleFavorite(game().home.id)"
-    >{{ fan.isFavorite(game().home.id) ? '★' : '☆' }}</button>
-    <div class="team-identity home-identity">
+    <div
+      class="team-identity team-highlight home-identity"
+      [class.ranked-team]="game().home.currentRank !== null"
+      [class.favorite-team]="fan.isFavorite(game().home.id)"
+    >
       <div class="team-main">
         <app-team-badge
           [name]="game().home.displayName"
           [logoUrl]="game().home.logoUrl"
           [abbreviation]="game().home.abbreviation"
           [rank]="game().home.currentRank"
-          [glow]="fan.isFavorite(game().home.id)"
+          [reserveRankSpace]="true"
           [size]="28"
         />
         <span class="abbr">{{ game().home.abbreviation }}</span>

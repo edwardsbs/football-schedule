@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TeamBadgeComponent } from './team-badge.component';
+import { needsLightLogoOutline, TeamBadgeComponent } from './team-badge.component';
 
 describe('TeamBadgeComponent', () => {
   let fixture: ComponentFixture<TeamBadgeComponent>;
@@ -22,7 +22,18 @@ describe('TeamBadgeComponent', () => {
     expect(children[1].tagName).toBe('IMG');
   });
 
-  it('does not reserve rank space for an unranked team', () => {
+  it('reserves a blank rank column for an unranked team so logos align', () => {
+    fixture.componentRef.setInput('rank', null);
+    fixture.componentRef.setInput('reserveRankSpace', true);
+    fixture.detectChanges();
+
+    const rank = fixture.nativeElement.querySelector('.rank') as HTMLElement;
+    expect(rank.classList).toContain('empty');
+    expect(rank.textContent?.trim()).toBe('');
+    expect(fixture.nativeElement.children[1].tagName).toBe('IMG');
+  });
+
+  it('does not reserve blank rank space in compact contexts unless requested', () => {
     fixture.componentRef.setInput('rank', null);
     fixture.detectChanges();
 
@@ -30,16 +41,14 @@ describe('TeamBadgeComponent', () => {
     expect(fixture.nativeElement.firstElementChild.tagName).toBe('IMG');
   });
 
-  it('glows for either a favorite or a ranked team', () => {
-    fixture.componentRef.setInput('glow', true);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.classList).toContain('favorite-glow');
-    expect(fixture.nativeElement.classList).not.toContain('ranked-glow');
-
-    fixture.componentRef.setInput('glow', false);
-    fixture.componentRef.setInput('rank', 4);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.classList).toContain('ranked-glow');
-    expect(fixture.nativeElement.classList).not.toContain('favorite-glow');
+  it('detects dark visible logo pixels without treating transparency as black', () => {
+    expect(needsLightLogoOutline(solidPixels(20))).toBeTrue();
+    expect(needsLightLogoOutline(solidPixels(230))).toBeFalse();
+    expect(needsLightLogoOutline(solidPixels(0, 0))).toBeFalse();
   });
+
 });
+
+function solidPixels(value: number, alpha = 255): Uint8ClampedArray {
+  return new Uint8ClampedArray(Array.from({ length: 10 }, () => [value, value, value, alpha]).flat());
+}
