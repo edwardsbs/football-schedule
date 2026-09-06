@@ -1,24 +1,27 @@
-/* Team identity panels replace the old logo-only glow. Every identity gets a
-   quiet rounded surface; ranked teams glow blue and favorites glow white. */
+/* Team identity panels use the saved "Option C" treatment: a low background
+   lift and soft drop shadow without a visible outline. Ranked teams are blue;
+   favorites are white. */
 .team-highlight {
+  position: relative;
+  overflow: visible;
   border-radius: 7px;
-  margin: -0.15rem -0.32rem;
-  padding: 0.15rem 0.32rem;
-  transition: box-shadow 0.18s ease, background 0.18s ease;
+  margin: -0.25rem -0.32rem;
+  padding: 0.25rem 0.32rem;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
 }
 
 .team-highlight.ranked-team {
-  background: rgb(76 141 255 / 5%);
+  background: rgb(76 141 255 / 2.5%);
   box-shadow:
-    inset 0 0 0 1px rgb(76 141 255 / 18%),
-    0 0 5px rgb(76 141 255 / 18%);
+    0 4px 9px rgb(38 104 194 / 17%),
+    0 1px 1px rgb(115 174 255 / 12%);
 }
 
 .team-highlight.favorite-team {
-  background: rgb(255 255 255 / 5%);
+  background: rgb(255 255 255 / 1.8%);
   box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 16%),
-    0 0 5px rgb(255 255 255 / 18%);
+    0 4px 9px rgb(0 0 0 / 50%),
+    0 1px 1px rgb(255 255 255 / 11%);
 }
 
 .ranked-team app-team-badge .rank {
@@ -28,22 +31,17 @@
 /* Conference standings already use table cells for W/L/T, so highlight the
    complete row there to keep the team and its record inside the same box. */
 app-conference-alignment tr.ranked-team > * {
-  background: rgb(76 141 255 / 5%);
-  border-top-color: rgb(76 141 255 / 16%);
-  border-bottom-color: rgb(76 141 255 / 16%);
+  background: rgb(76 141 255 / 2.5%);
 }
 
 app-conference-alignment tr.favorite-team > * {
-  background: rgb(255 255 255 / 5%);
-  border-top-color: rgb(255 255 255 / 14%);
-  border-bottom-color: rgb(255 255 255 / 14%);
+  background: rgb(255 255 255 / 1.8%);
 }
 
-app-conference-alignment tr.ranked-team,
+app-conference-alignment tr.ranked-team {
+  filter: drop-shadow(0 4px 5px rgb(38 104 194 / 14%));
+}
+
 app-conference-alignment tr.favorite-team {
-  filter: drop-shadow(0 0 2.5px rgb(255 255 255 / 12%));
-}
-
-app-conference-alignment tr.ranked-team:not(.favorite-team) {
-  filter: drop-shadow(0 0 2.5px rgb(76 141 255 / 14%));
+  filter: drop-shadow(0 4px 5px rgb(0 0 0 / 36%));
 }
