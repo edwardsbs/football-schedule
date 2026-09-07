@@ -5,29 +5,24 @@ import { catchError, of, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game } from '../../core/models/game.model';
-import { addDays, filterFollowed, groupByKickoff, startOfLocalDay } from '../../core/timeline';
-import { GameRowComponent } from '../../shared/game-row/game-row.component';
+import { addDays, filterFollowed, startOfLocalDay } from '../../core/timeline';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
-
-const timeLabel = (iso: string) =>
-  new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+import { DayGameCardComponent } from './day-game-card.component';
 
 @Component({
   selector: 'app-day-view',
-  imports: [DatePipe, GameRowComponent, ImportantGamesTickerComponent],
+  imports: [DatePipe, DayGameCardComponent, ImportantGamesTickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './day-view.component.html',
-  styleUrls: ['../shared/timeline.scss'],
+  styleUrls: ['../shared/timeline.scss', './day-view.component.scss'],
 })
 export class DayViewComponent {
   private readonly api = inject(KickoffApi);
   private readonly live = inject(LiveGameStore);
-  private readonly reload = signal(0);
 
   readonly day = signal(startOfLocalDay(new Date()));
 
   private readonly range = computed(() => {
-    this.reload();
     const from = this.day();
     return { from: from.toISOString(), to: addDays(from, 1).toISOString() };
   });
@@ -46,12 +41,7 @@ export class DayViewComponent {
   readonly followedCount = computed(() => filterFollowed(this.games()).length);
   readonly visible = computed(() => (this.onlyMine() ? filterFollowed(this.games()) : this.games()));
 
-  readonly slots = computed(() => groupByKickoff(this.visible()));
   readonly total = computed(() => this.visible().length);
-
-  slotLabel(iso: string): string {
-    return timeLabel(iso);
-  }
 
   prev(): void {
     this.day.update((d) => addDays(d, -1));
@@ -64,8 +54,5 @@ export class DayViewComponent {
   }
   toggleMine(): void {
     this.onlyMine.update((v) => !v);
-  }
-  refresh(): void {
-    this.reload.update((v) => v + 1);
   }
 }

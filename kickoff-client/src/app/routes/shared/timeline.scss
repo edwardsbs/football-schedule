@@ -5,6 +5,16 @@
   padding: 1.5rem 1.25rem 3rem;
 }
 
+/* Keep a fixed watch rail from crowding schedule content when Windows display
+   scaling produces a mid-width CSS viewport on a full-size touchscreen. */
+@media (min-width: 1081px) and (max-width: 1650px) {
+  :host:has(app-important-games-ticker) {
+    max-width: none;
+    margin-left: 1rem;
+    margin-right: 13.5rem;
+  }
+}
+
 /* Shared prev/next + jump-to-current button styles -- used by the page-head's
    day/week nav and the season page's week spinner alike. */
 .arrow {

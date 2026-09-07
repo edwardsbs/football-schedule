@@ -210,19 +210,39 @@
 }
 
 @media (max-width: 1080px) {
-  .watch-rail,
-  .show-rail {
-    top: auto;
-    right: 5.5rem;
-    bottom: 0.75rem;
-  }
-
   .watch-rail {
-    width: min(19rem, calc(100vw - 6rem));
-    max-height: min(45dvh, 22rem);
+    position: static;
+    width: 100%;
+    max-height: none;
+    margin: 0.4rem 0 0.75rem;
   }
 
   .rail-games {
-    max-height: calc(min(45dvh, 22rem) - 44px);
+    display: flex;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .rail-game {
+    flex: 0 0 10rem;
+    border-right: 1px solid rgb(139 147 161 / 12%);
+    border-bottom: 0;
+  }
+
+  .completed-divider {
+    flex: 0 0 1px;
+    margin: 0.45rem 0.3rem;
+    padding: 0;
+    background: rgb(139 147 161 / 24%);
+
+    span,
+    &::after { display: none; }
+  }
+
+  .show-rail {
+    position: static;
+    display: block;
+    margin: 0.4rem 0 0.75rem auto;
   }
 }

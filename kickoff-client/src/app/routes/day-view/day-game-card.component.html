@@ -1,0 +1,70 @@
+<button
+  type="button"
+  class="game-card"
+  [class.dense]="dense()"
+  [class.live]="game().status === 'Live'"
+  [class.favorite]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
+  [class.circled]="fan.isCircled(game().id)"
+  [attr.aria-label]="'Open ' + game().away.displayName + ' at ' + game().home.displayName + ' details'"
+  (click)="open()"
+>
+  <span class="card-meta">
+    <span class="status" [class.live-text]="game().status === 'Live'">{{ statusLabel() }}</span>
+    <span class="network">
+      @if (game().broadcasts.length) { 📺 {{ game().broadcasts[0].network }} }
+      @else { {{ game().league === 'Ncaa' ? 'NCAA' : 'NFL' }} }
+    </span>
+  </span>
+
+  <span class="team-row">
+    <span class="team">
+      <app-team-badge
+        [name]="game().away.displayName"
+        [logoUrl]="game().away.logoUrl"
+        [abbreviation]="game().away.abbreviation"
+        [rank]="game().away.currentRank"
+        [size]="dense() ? 17 : 19"
+      />
+      <strong>{{ game().away.abbreviation }}</strong>
+      @if (game().away.isFcs) { <span class="fcs">FCS</span> }
+      <span class="record">{{ records.label(game().away.id) }}</span>
+      @if (game().score?.possessionTeamId === game().away.id) { <span class="possession" title="Possession"></span> }
+    </span>
+    @if (game().score?.possessionTeamId === game().away.id) {
+      @if (game().score?.downDistance; as downDistance) {
+        <span class="team-situation" [title]="downDistance">
+          @if (possessionDirection() === 'left') { <span class="direction">←</span> }
+          <span class="situation-text">{{ downDistance }}</span>
+          @if (possessionDirection() === 'right') { <span class="direction">→</span> }
+        </span>
+      }
+    }
+    <span class="score" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
+  </span>
+
+  <span class="team-row">
+    <span class="team">
+      <app-team-badge
+        [name]="game().home.displayName"
+        [logoUrl]="game().home.logoUrl"
+        [abbreviation]="game().home.abbreviation"
+        [rank]="game().home.currentRank"
+        [size]="dense() ? 17 : 19"
+      />
+      <strong>{{ game().home.abbreviation }}</strong>
+      @if (game().home.isFcs) { <span class="fcs">FCS</span> }
+      <span class="record">{{ records.label(game().home.id) }}</span>
+      @if (game().score?.possessionTeamId === game().home.id) { <span class="possession" title="Possession"></span> }
+    </span>
+    @if (game().score?.possessionTeamId === game().home.id) {
+      @if (game().score?.downDistance; as downDistance) {
+        <span class="team-situation" [title]="downDistance">
+          @if (possessionDirection() === 'left') { <span class="direction">←</span> }
+          <span class="situation-text">{{ downDistance }}</span>
+          @if (possessionDirection() === 'right') { <span class="direction">→</span> }
+        </span>
+      }
+    }
+    <span class="score" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
+  </span>
+</button>

@@ -39,17 +39,13 @@
     }
   </div>
 } @else {
-  @for (slot of slots(); track slot.key) {
-    <section class="slot">
-      <h3 class="slot-time">
-        {{ slotLabel(slot.kickoff) }}
-        <span class="cnt">{{ slot.count }} game{{ slot.count === 1 ? '' : 's' }}</span>
-      </h3>
-      <div class="rows">
-        @for (game of slot.games; track game.id; let i = $index) {
-          <app-game-row [game]="game" [alt]="i % 2 === 1" (changed)="refresh()" />
-        }
-      </div>
-    </section>
-  }
+  <section
+    class="day-dashboard"
+    [class.heavy]="total() > 51"
+    aria-label="Games by kickoff time"
+  >
+    @for (game of visible(); track game.id) {
+      <app-day-game-card [game]="game" [dense]="total() > 51" />
+    }
+  </section>
 }
