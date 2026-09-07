@@ -41,6 +41,8 @@
         [class.has-ranked]="game.home.currentRank !== null || game.away.currentRank !== null"
         [class.has-favorite]="fan.isFavorite(game.home.id) || fan.isFavorite(game.away.id)"
         [class.circled]="fan.isCircled(game.id)"
+        [class.field-goal-range]="inFieldGoalRange(game)"
+        [class.red-zone]="inRedZone(game)"
         (click)="open(game)"
         (keydown.enter)="open(game)"
         (keydown.space)="$event.preventDefault(); open(game)"

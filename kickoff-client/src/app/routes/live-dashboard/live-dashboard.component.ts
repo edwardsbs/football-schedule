@@ -8,6 +8,7 @@ import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score } from '../../core/models/game.model';
+import { isInFieldGoalRange, isInRedZone } from '../../core/field-position';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { LiveUpcomingSummaryComponent } from './live-upcoming-summary.component';
 
@@ -115,6 +116,14 @@ export class LiveDashboardComponent {
   homeWinPct(g: Game): number | null {
     const p = this.shownScore(g)?.homeWinProbability;
     return p == null ? null : Math.round(p * 100);
+  }
+
+  inFieldGoalRange(game: Game): boolean {
+    return isInFieldGoalRange(game);
+  }
+
+  inRedZone(game: Game): boolean {
+    return isInRedZone(game);
   }
 
   // --- actions ---

@@ -3,6 +3,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, forkJoin, of, switchMap, timer } from 'rxjs';
 import { Game } from '../../core/models/game.model';
 import { GameSummary } from '../../core/models/game-summary.model';
+import { isInFieldGoalRange, isInRedZone } from '../../core/field-position';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamBadgeComponent } from '../team-badge/team-badge.component';
@@ -95,6 +96,14 @@ export class ImportantGamesTickerComponent {
 
   protected alertLevel(game: Game): WatchAlertLevel {
     return watchAlertLevel(game, this.summaries().get(game.id));
+  }
+
+  protected inFieldGoalRange(game: Game): boolean {
+    return isInFieldGoalRange(game);
+  }
+
+  protected inRedZone(game: Game): boolean {
+    return isInRedZone(game);
   }
 
   protected summaryInsight(game: Game): string | null {

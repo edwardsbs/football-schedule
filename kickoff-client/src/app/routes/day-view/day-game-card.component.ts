@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Game } from '../../core/models/game.model';
+import { isInFieldGoalRange, isInRedZone } from '../../core/field-position';
 import { trackScorePulse } from '../../core/score-pulse';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
@@ -18,6 +19,8 @@ export class DayGameCardComponent {
   readonly dense = input(false);
   readonly compactFinal = input(false);
   protected readonly scorePulse = trackScorePulse(this.game);
+  protected readonly inFieldGoalRange = () => isInFieldGoalRange(this.game());
+  protected readonly inRedZone = () => isInRedZone(this.game());
 
   protected readonly fan = inject(FanStore);
   protected readonly records = inject(TeamRecordStore);

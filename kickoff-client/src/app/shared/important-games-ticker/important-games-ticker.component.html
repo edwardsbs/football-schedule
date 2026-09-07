@@ -33,6 +33,8 @@
             [class.completed]="isCompleted(game)"
             [class.close-alert]="alertLevel(game) === 'single'"
             [class.close-alert-double]="alertLevel(game) === 'double'"
+            [class.field-goal-range]="inFieldGoalRange(game)"
+            [class.red-zone]="inRedZone(game)"
             (click)="open(game)"
           >
             <span class="game-meta">

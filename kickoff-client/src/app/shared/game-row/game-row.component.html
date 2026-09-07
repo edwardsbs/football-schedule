@@ -11,6 +11,8 @@
   [class.score-pulse-field-goal]="scorePulse() === 'field-goal'"
   [class.score-pulse-touchdown]="scorePulse() === 'touchdown'"
   [class.score-pulse-other]="scorePulse() === 'other'"
+  [class.field-goal-range]="inFieldGoalRange()"
+  [class.red-zone]="inRedZone()"
   (click)="open()"
   (keydown.enter)="open()"
   (keydown.space)="$event.preventDefault(); open()"

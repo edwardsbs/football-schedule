@@ -84,6 +84,41 @@ app-game-row .row {
   42% { opacity: 1; box-shadow: inset 0 0 14px rgb(255 179 71 / 30%), 0 0 9px rgb(255 179 71 / 22%); }
 }
 
+/* Live scoring threat: a slow gold outline when the offense is at or inside
+   the opponent's 35. It does not change panel dimensions or fight the faster
+   one-shot touchdown/field-goal score animation. */
+app-day-game-card .game-card.field-goal-range,
+app-game-row .row.field-goal-range,
+app-live-dashboard .tile.field-goal-range,
+app-important-games-ticker .rail-game.field-goal-range {
+  outline: 1px solid rgb(212 177 61 / 24%);
+  outline-offset: -1px;
+  animation: kickoff-field-goal-range 3.2s ease-in-out infinite;
+}
+
+@keyframes kickoff-field-goal-range {
+  0%, 100% { outline-color: rgb(212 177 61 / 18%); }
+  50% { outline-color: rgb(236 202 83 / 78%); }
+}
+
+/* Red zone overrides the broader field-goal-range animation with a quicker,
+   warmer double-beat cadence. */
+app-day-game-card .game-card.red-zone,
+app-game-row .row.red-zone,
+app-live-dashboard .tile.red-zone,
+app-important-games-ticker .rail-game.red-zone {
+  outline: 2px solid rgb(241 118 45 / 25%);
+  outline-offset: -2px;
+  animation: kickoff-red-zone 1.65s ease-in-out infinite;
+}
+
+@keyframes kickoff-red-zone {
+  0%, 100% { outline-color: rgb(241 118 45 / 20%); }
+  28% { outline-color: rgb(255 139 66 / 88%); }
+  48% { outline-color: rgb(241 118 45 / 32%); }
+  68% { outline-color: rgb(255 139 66 / 68%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   app-day-game-card .game-card,
   app-game-row .row {
@@ -93,6 +128,23 @@ app-game-row .row {
       animation: none;
       opacity: 0.7;
     }
+  }
+
+  app-day-game-card .game-card.field-goal-range,
+  app-game-row .row.field-goal-range,
+  app-live-dashboard .tile.field-goal-range,
+  app-important-games-ticker .rail-game.field-goal-range {
+    animation: none;
+    outline-color: rgb(212 177 61 / 55%);
+  }
+
+
+  app-day-game-card .game-card.red-zone,
+  app-game-row .row.red-zone,
+  app-live-dashboard .tile.red-zone,
+  app-important-games-ticker .rail-game.red-zone {
+    animation: none;
+    outline-color: rgb(241 118 45 / 68%);
   }
 }
 
