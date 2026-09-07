@@ -46,11 +46,28 @@ public class ScoreSyncService(IKickoffContext db)
             game.AwayScore = u.Score.AwayScore;
             game.Period = u.Score.Period;
             game.Clock = u.Score.Clock;
-            game.PossessionTeamId = u.Score.PossessionTeamExternalId is { } possessionExternalId
-                && possessionTeamIds.TryGetValue(possessionExternalId, out var possessionTeamId)
-                    ? possessionTeamId
+            int? resolvedPossessionTeamId = u.Score.PossessionTeamExternalId is { } possessionExternalId
+                && possessionTeamIds.TryGetValue(possessionExternalId, out var mappedPossessionTeamId)
+                    ? mappedPossessionTeamId
                     : null;
-            game.DownDistance = u.Score.DownDistance;
+
+            // ESPN briefly omits the whole situation block between plays, during
+            // timeouts, and while changing quarters. Keep the last complete live
+            // situation instead of making possession/down-and-distance flicker.
+            // A real value replaces it immediately; non-live states clear it so a
+            // final game can never retain a stale possession marker.
+            if (u.Status is GameStatus.InProgress or GameStatus.Halftime)
+            {
+                if (resolvedPossessionTeamId is not null)
+                    game.PossessionTeamId = resolvedPossessionTeamId;
+                if (!string.IsNullOrWhiteSpace(u.Score.DownDistance))
+                    game.DownDistance = u.Score.DownDistance;
+            }
+            else
+            {
+                game.PossessionTeamId = null;
+                game.DownDistance = null;
+            }
             game.HomeWinProbability = u.Score.HomeWinProbability;
             game.LastUpdatedUtc = now;
         }

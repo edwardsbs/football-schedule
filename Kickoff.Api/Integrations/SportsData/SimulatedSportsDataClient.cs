@@ -66,6 +66,36 @@ public class SimulatedSportsDataClient : ISportsDataClient
         League league, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<TeamRanking>>([]);
 
+    public Task<FeedGameSummary?> GetGameSummaryAsync(
+        League league, string gameExternalId, CancellationToken ct = default)
+    {
+        if (!_games.TryGetValue(gameExternalId, out var game) || game.League != league)
+            return Task.FromResult<FeedGameSummary?>(null);
+
+        var score = game.Snapshot();
+        var summary = new FeedGameSummary(
+            _time.GetUtcNow(),
+            LastPlay: new FeedPlay(
+                null, score.DownDistance, "Simulated play", score.PossessionTeamExternalId,
+                score.Period, score.Clock, false, false, false, null,
+                score.HomeScore, score.AwayScore, null, null, null),
+            CurrentDrive: new FeedDrive(
+                score.PossessionTeamExternalId, "Simulated drive", null, null, null, null,
+                false, null, null),
+            ScoringPlays: [],
+            HomeWinProbability: score.HomeWinProbability,
+            WinProbability: score.HomeWinProbability is { } probability
+                ? [new FeedWinProbabilityPoint(0, null, probability)]
+                : [],
+            TeamStatistics: [],
+            Leaders: [],
+            Context: null,
+            Market: null,
+            Standings: [],
+            News: []);
+        return Task.FromResult<FeedGameSummary?>(summary);
+    }
+
     // --- internal simulation state ---
 
     private sealed class SimGame

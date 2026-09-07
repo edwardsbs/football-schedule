@@ -30,4 +30,8 @@ public interface ISportsDataClient
     /// <summary>The current primary Top 25 poll for a league.</summary>
     Task<IReadOnlyList<TeamRanking>> GetCurrentRankingsAsync(
         League league, CancellationToken ct = default);
+
+    /// <summary>Rich on-demand context for one game.</summary>
+    Task<FeedGameSummary?> GetGameSummaryAsync(
+        League league, string gameExternalId, CancellationToken ct = default);
 }

@@ -1,6 +1,10 @@
 import { ChangeDetectionStrategy, Component, Injectable, computed, inject, input, signal } from '@angular/core';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, forkJoin, of, switchMap, timer } from 'rxjs';
 import { Game } from '../../core/models/game.model';
+import { GameSummary } from '../../core/models/game-summary.model';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
+import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamBadgeComponent } from '../team-badge/team-badge.component';
 
 @Injectable({ providedIn: 'root' })
@@ -19,11 +23,40 @@ export class ImportantGamesTickerComponent {
   readonly games = input.required<Game[]>();
 
   private readonly detail = inject(GameDetailOverlay);
+  private readonly api = inject(KickoffApi);
   protected readonly visibility = inject(ImportantGamesTickerVisibility);
+  protected readonly summaries = signal<ReadonlyMap<number, GameSummary>>(new Map());
+
+  private readonly liveImportantIds = computed(() =>
+    this.games()
+      .filter((game) => game.status === 'Live' && isImportantGame(game) && !game.isMuted)
+      .slice(0, 6)
+      .map((game) => game.id),
+  );
 
   protected readonly importantGames = computed(() =>
-    sortImportantGames(this.games().filter(isImportantGame)),
+    sortImportantGames(this.games().filter(isImportantGame), this.summaries()),
   );
+
+  constructor() {
+    toObservable(this.liveImportantIds).pipe(
+      switchMap((ids) => ids.length === 0
+        ? of([] as Array<[number, GameSummary | null]>)
+        : timer(0, 15_000).pipe(
+            switchMap(() => forkJoin(ids.map((id) =>
+              this.api.getGameSummary(id).pipe(
+                catchError(() => of(null)),
+                switchMap((summary) => of([id, summary] as [number, GameSummary | null])),
+              ),
+            ))),
+          )),
+      takeUntilDestroyed(),
+    ).subscribe((entries) => {
+      this.summaries.set(new Map(
+        entries.filter((entry): entry is [number, GameSummary] => entry[1] !== null),
+      ));
+    });
+  }
 
   protected open(game: Game): void {
     this.detail.open(game.id);
@@ -61,7 +94,19 @@ export class ImportantGamesTickerComponent {
   }
 
   protected alertLevel(game: Game): WatchAlertLevel {
-    return watchAlertLevel(game);
+    return watchAlertLevel(game, this.summaries().get(game.id));
+  }
+
+  protected summaryInsight(game: Game): string | null {
+    const summary = this.summaries().get(game.id);
+    if (!summary) return null;
+    if (summary.lastPlay?.isTurnover) return `Turnover · ${summary.lastPlay.type ?? 'change of possession'}`;
+    if (summary.lastPlay?.isScoringPlay) return summary.lastPlay.type ?? 'Scoring play';
+    if (summary.currentDrive?.end?.yardsToEndzone != null && summary.currentDrive.end.yardsToEndzone <= 20) {
+      return `Red zone · ${summary.currentDrive.end.possessionText ?? `${summary.currentDrive.end.yardsToEndzone} yards out`}`;
+    }
+    if (summary.currentDrive?.description) return summary.currentDrive.description;
+    return summary.lastPlay?.type ?? null;
   }
 }
 
@@ -74,7 +119,10 @@ export function isImportantGame(game: Game): boolean {
     || game.away.currentRank != null;
 }
 
-export function sortImportantGames(games: Game[]): Game[] {
+export function sortImportantGames(
+  games: Game[],
+  summaries: ReadonlyMap<number, GameSummary> = new Map(),
+): Game[] {
   const statusOrder: Record<Game['status'], number> = {
     Live: 0,
     Upcoming: 1,
@@ -86,6 +134,11 @@ export function sortImportantGames(games: Game[]): Game[] {
     const statusDifference = statusOrder[a.status] - statusOrder[b.status];
     if (statusDifference !== 0) return statusDifference;
 
+    if (a.status === 'Live' && b.status === 'Live') {
+      const urgencyDifference = richUrgency(b, summaries.get(b.id)) - richUrgency(a, summaries.get(a.id));
+      if (urgencyDifference !== 0) return urgencyDifference;
+    }
+
     if (a.status === 'Final' && b.status === 'Final') {
       const interestDifference = completedInterestOrder(a) - completedInterestOrder(b);
       if (interestDifference !== 0) return interestDifference;
@@ -95,13 +148,24 @@ export function sortImportantGames(games: Game[]): Game[] {
   });
 }
 
+function richUrgency(game: Game, summary?: GameSummary): number {
+  const alert = watchAlertLevel(game, summary);
+  let urgency = alert === 'double' ? 200 : alert === 'single' ? 100 : 0;
+  const probability = summary?.homeWinProbability;
+  if (probability != null) urgency += Math.round((1 - Math.abs(0.5 - probability) * 2) * 30);
+  if (summary?.lastPlay?.isTurnover) urgency += 25;
+  if (summary?.currentDrive?.end?.yardsToEndzone != null && summary.currentDrive.end.yardsToEndzone <= 20) urgency += 18;
+  urgency += game.score?.period ?? 0;
+  return urgency;
+}
+
 function completedInterestOrder(game: Game): number {
   if (game.hasFavorite) return 0;
   if (game.isCircled) return 1;
   return 2;
 }
 
-export function watchAlertLevel(game: Game): WatchAlertLevel {
+export function watchAlertLevel(game: Game, summary?: GameSummary): WatchAlertLevel {
   const score = game.score;
   if (game.status !== 'Live' || !score) return 'none';
 
@@ -130,7 +194,15 @@ export function watchAlertLevel(game: Game): WatchAlertLevel {
     if (secondsRemaining != null && secondsRemaining <= 2 * 60 && isLateScoringThreat(game)) {
       return 'single';
     }
+
+    if (Math.abs(score.homeScore - score.awayScore) <= 8
+      && summary?.currentDrive?.end?.yardsToEndzone != null
+      && summary.currentDrive.end.yardsToEndzone <= 20) {
+      return 'single';
+    }
   }
+
+  if (summary?.lastPlay?.isTurnover && (score.period ?? 0) >= 3) return 'single';
 
   if (score.period === 3 && score.homeScore >= 28 && score.awayScore >= 28) return 'single';
 

@@ -6,6 +6,7 @@
 @use './app/shared/game-row/game-row-compact';
 @use './app/shared/team-records';
 @use './app/shared/team-highlight';
+@use './app/routes/game-detail/game-summary';
 
 :root {
   --bg: #0f1218;
@@ -93,4 +94,14 @@ app-game-row .row {
       opacity: 0.7;
     }
   }
+}
+
+app-important-games-ticker .rail-insight {
+  overflow: hidden;
+  color: #e3c45e;
+  font-size: 0.56rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

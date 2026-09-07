@@ -59,6 +59,9 @@
               </span>
               <span>{{ score(game, 'home') }}</span>
             </span>
+            @if (game.status === 'Live' && summaryInsight(game); as insight) {
+              <span class="rail-insight">{{ insight }}</span>
+            }
           </button>
         }
       </div>

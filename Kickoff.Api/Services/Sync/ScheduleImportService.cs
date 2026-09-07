@@ -136,8 +136,11 @@ public class ScheduleImportService(IKickoffContext db)
             game.HomeScore = game.AwayScore = null;
             game.Period = null;
             game.Clock = null;
-            game.PossessionTeamId = null;
-            game.DownDistance = null;
+            if (game.Status is not (GameStatus.InProgress or GameStatus.Halftime))
+            {
+                game.PossessionTeamId = null;
+                game.DownDistance = null;
+            }
             game.HomeWinProbability = null;
             return;
         }
@@ -146,11 +149,22 @@ public class ScheduleImportService(IKickoffContext db)
         game.AwayScore = score.AwayScore;
         game.Period = score.Period;
         game.Clock = score.Clock;
-        game.PossessionTeamId = score.PossessionTeamExternalId is { } possessionExternalId
+        int? resolvedPossessionTeamId = score.PossessionTeamExternalId is { } possessionExternalId
             && teamsByExternalId.TryGetValue(possessionExternalId, out var possessionTeam)
                 ? possessionTeam.Id
                 : null;
-        game.DownDistance = score.DownDistance;
+        if (game.Status is GameStatus.InProgress or GameStatus.Halftime)
+        {
+            if (resolvedPossessionTeamId is not null)
+                game.PossessionTeamId = resolvedPossessionTeamId;
+            if (!string.IsNullOrWhiteSpace(score.DownDistance))
+                game.DownDistance = score.DownDistance;
+        }
+        else
+        {
+            game.PossessionTeamId = null;
+            game.DownDistance = null;
+        }
         game.HomeWinProbability = score.HomeWinProbability;
         game.LastUpdatedUtc = DateTimeOffset.UtcNow;
     }

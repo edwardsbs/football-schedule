@@ -1,7 +1,7 @@
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, Subject, catchError, exhaustMap, merge, take, timer } from 'rxjs';
-import { Game } from '../models/game.model';
+import { Game, Score } from '../models/game.model';
 import { KickoffApi } from './kickoff-api';
 
 const POLL_MS = 10_000;
@@ -44,7 +44,7 @@ export class LiveGameStore {
       venue: update.venue,
       broadcasts: update.broadcasts,
       status: update.status,
-      score: game.isMuted ? null : update.score,
+      score: game.isMuted ? null : retainLiveSituation(game.score, update.score, update.status),
     };
   }
 
@@ -80,7 +80,28 @@ export class LiveGameStore {
   private cache(games: readonly Game[]): void {
     if (games.length === 0) return;
     const next = new Map(this.updatesById());
-    for (const game of games) next.set(game.id, game);
+    for (const game of games) {
+      const previous = next.get(game.id);
+      next.set(game.id, {
+        ...game,
+        score: retainLiveSituation(previous?.score ?? null, game.score, game.status),
+      });
+    }
     this.updatesById.set(next);
   }
+}
+
+/**
+ * Live providers commonly suppress their situation block while a play is being
+ * reviewed/updated. Preserve only the situational fields; scores, clock, period,
+ * and win probability always come from the newest snapshot.
+ */
+function retainLiveSituation(previous: Score | null, current: Score | null, status: Game['status']): Score | null {
+  if (status !== 'Live' || previous === null || current === null) return current;
+
+  return {
+    ...current,
+    possessionTeamId: current.possessionTeamId ?? previous.possessionTeamId,
+    downDistance: current.downDistance?.trim() ? current.downDistance : previous.downDistance,
+  };
 }

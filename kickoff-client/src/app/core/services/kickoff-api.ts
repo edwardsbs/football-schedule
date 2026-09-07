@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { FavoriteTeam, Game, MuteType, TeamRecord, TeamSummary } from '../models/game.model';
+import { GameSummary } from '../models/game-summary.model';
 
 /**
  * All Kickoff API calls. Uses relative `/api/...` URLs — proxied to the API in
@@ -25,6 +26,11 @@ export class KickoffApi {
 
   getGame(id: number): Observable<Game> {
     return this.http.get<Game>(`/api/games/${id}`);
+  }
+
+  /** Rich per-game context. Returns null when unavailable or spoiler-muted. */
+  getGameSummary(id: number): Observable<GameSummary | null> {
+    return this.http.get<GameSummary | null>(`/api/games/${id}/summary`);
   }
 
   /** Deliberate reveal: returns the score even while muted. */

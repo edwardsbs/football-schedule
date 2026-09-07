@@ -1,12 +1,13 @@
-import { DatePipe, Location } from '@angular/common';
+import { DatePipe, DecimalPipe, Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of, startWith, switchMap } from 'rxjs';
+import { catchError, map, of, startWith, switchMap, timer } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { FanStore } from '../../core/services/fan-store';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score, TeamSummary } from '../../core/models/game.model';
+import { GameSummary } from '../../core/models/game-summary.model';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 
 type ViewModel =
@@ -23,7 +24,7 @@ type ViewModel =
  */
 @Component({
   selector: 'app-game-detail',
-  imports: [DatePipe, TeamBadgeComponent],
+  imports: [DatePipe, DecimalPipe, TeamBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './game-detail.component.html',
   styleUrl: './game-detail.component.scss',
@@ -60,9 +61,60 @@ export class GameDetailComponent {
     { initialValue: { status: 'loading', game: null } as ViewModel },
   );
 
+  protected readonly summary = toSignal(
+    toObservable(this.gameId).pipe(
+      switchMap((id) => timer(0, 10_000).pipe(
+        switchMap(() => this.api.getGameSummary(id).pipe(catchError(() => of(null)))),
+      )),
+    ),
+    { initialValue: null as GameSummary | null },
+  );
+
   protected readonly game = computed(() => {
     const game = this.vm().game;
     return game ? this.live.overlay(game) : null;
+  });
+
+  protected readonly statRows = computed(() => {
+    const summary = this.summary();
+    const game = this.game();
+    if (!summary || !game) return [];
+    const away = summary.teamStatistics.find((team) => team.teamAbbreviation === game.away.abbreviation);
+    const home = summary.teamStatistics.find((team) => team.teamAbbreviation === game.home.abbreviation);
+    if (!away || !home) return [];
+
+    const preferred = ['totalYards', 'turnovers', 'thirdDownEff', 'passingYards', 'rushingYards', 'possessionTime'];
+    return preferred.flatMap((name) => {
+      const awayStat = away.statistics.find((stat) => stat.name === name);
+      const homeStat = home.statistics.find((stat) => stat.name === name);
+      if (!awayStat && !homeStat) return [];
+      return [{
+        name,
+        label: awayStat?.label ?? homeStat?.label ?? name,
+        away: awayStat?.displayValue ?? '—',
+        home: homeStat?.displayValue ?? '—',
+      }];
+    });
+  });
+
+  protected readonly recentScoringPlays = computed(() =>
+    [...(this.summary()?.scoringPlays ?? [])].slice(-4).reverse(),
+  );
+
+  protected readonly relevantStandings = computed(() => {
+    const summary = this.summary();
+    const game = this.game();
+    if (!summary || !game) return [];
+    const teamIds = new Set(
+      summary.teamStatistics
+        .filter((team) => team.teamAbbreviation === game.away.abbreviation || team.teamAbbreviation === game.home.abbreviation)
+        .map((team) => team.teamExternalId),
+    );
+    return summary.standings.flatMap((group) =>
+      group.entries
+        .filter((entry) => teamIds.has(entry.teamExternalId))
+        .map((entry) => ({ ...entry, group: group.shortName ?? group.name })),
+    );
   });
 
   /** Live-peek score, held only while the peek button is pressed. */
@@ -111,8 +163,22 @@ export class GameDetailComponent {
   }
 
   protected homeWinPct(): number | null {
-    const p = this.shownScore()?.homeWinProbability;
+    const p = this.summary()?.homeWinProbability ?? this.shownScore()?.homeWinProbability;
     return p == null ? null : Math.round(p * 100);
+  }
+
+  protected winProbabilityPoints(): string {
+    const points = this.summary()?.winProbability ?? [];
+    if (points.length === 0) return '';
+    if (points.length === 1) {
+      const y = 28 - points[0].homeWinPercentage * 28;
+      return `0,${y} 100,${y}`;
+    }
+    return points.map((point, index) => {
+      const x = index / (points.length - 1) * 100;
+      const y = 28 - point.homeWinPercentage * 28;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    }).join(' ');
   }
 
   back(): void {

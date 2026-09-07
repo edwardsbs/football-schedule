@@ -12,6 +12,7 @@ public record CircleRequest(string? Note);
 [Route("api/games")]
 public class GamesController(
     GameQueryService queries,
+    GameSummaryService summaries,
     MuteService mutes,
     CircledService circled,
     ICurrentUser user) : ControllerBase
@@ -42,6 +43,22 @@ public class GamesController(
     [HttpGet("{id:int}/reveal")]
     public async Task<ActionResult<GameDto>> Reveal(int id, CancellationToken ct) =>
         await queries.RevealAsync(id, user.Id, ct) is { } dto ? dto : NotFound();
+
+    /// <summary>
+    /// Rich, cached game context. A muted game's summary is withheld because
+    /// play descriptions, probabilities, and statistics can reveal its score.
+    /// </summary>
+    [HttpGet("{id:int}/summary")]
+    public async Task<IActionResult> Summary(int id, CancellationToken ct)
+    {
+        var game = await queries.GetByIdAsync(id, user.Id, ct);
+        if (game is null) return NotFound();
+        if (game.IsMuted) return NoContent();
+
+        return await summaries.GetAsync(id, ct) is { } summary
+            ? Ok(summary)
+            : NoContent();
+    }
 
     [HttpPut("{id:int}/mute")]
     public async Task<IActionResult> Mute(int id, [FromBody] MuteRequest body, CancellationToken ct)

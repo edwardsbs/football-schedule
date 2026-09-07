@@ -93,6 +93,40 @@ public class SyncPipelineTests
     }
 
     [Fact]
+    public async Task Live_score_sync_retains_situation_during_a_transient_feed_gap_and_clears_it_at_final()
+    {
+        using var ctx = TestDb.NewContext();
+        var client = new SimulatedSportsDataClient(new FakeTimeProvider(T0));
+        var import = new ScheduleImportService(ctx);
+        var scores = new ScoreSyncService(ctx);
+
+        await import.ImportAsync(await client.GetWeekScheduleAsync(League.Nfl, 2026, 1));
+        var game = await ctx.Games.Include(g => g.HomeTeam).FirstAsync();
+
+        await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.InProgress,
+            new ScoreSnapshot(10, 7, 2, "4:31", game.HomeTeam.ExternalId, "2nd & 6 at HOM 44", null))]);
+
+        await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.InProgress,
+            new ScoreSnapshot(10, 7, 2, "4:18", null, null, null))]);
+
+        Assert.Equal(game.HomeTeamId, game.PossessionTeamId);
+        Assert.Equal("2nd & 6 at HOM 44", game.DownDistance);
+        Assert.Equal("4:18", game.Clock);
+
+        await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.Final,
+            new ScoreSnapshot(24, 17, 4, "0:00", null, null, null))]);
+
+        Assert.Null(game.PossessionTeamId);
+        Assert.Null(game.DownDistance);
+    }
+
+    [Fact]
     public async Task Rankings_sync_replaces_the_previous_current_poll()
     {
         using var ctx = TestDb.NewContext();

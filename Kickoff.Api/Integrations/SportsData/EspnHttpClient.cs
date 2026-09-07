@@ -224,6 +224,14 @@ public class EspnHttpClient(
         return result;
     }
 
+    public async Task<FeedGameSummary?> GetGameSummaryAsync(
+        League league, string gameExternalId, CancellationToken ct = default)
+    {
+        var url = $"{BaseUrl}/{Sport(league)}/summary?event={Uri.EscapeDataString(gameExternalId)}";
+        using var doc = await GetJsonAsync(url, ct);
+        return doc is null ? null : EspnSummaryParser.Parse(doc.RootElement, DateTimeOffset.UtcNow);
+    }
+
     private static string Sport(League league) => league == League.Nfl ? "nfl" : "college-football";
 
     private static int MapSeasonType(string seasonType) => seasonType.ToUpperInvariant() switch

@@ -144,6 +144,120 @@
       </p>
     }
 
+    @if (summary(); as detail) {
+      @if (g.status === 'Live' && (detail.lastPlay || detail.currentDrive || homeWinPct() !== null)) {
+        <section class="game-pulse" aria-label="Live game pulse">
+          <div class="pulse-head">
+            <h2>Game pulse</h2>
+            @if (homeWinPct() !== null) {
+              <span>{{ g.home.abbreviation }} {{ homeWinPct() }}%</span>
+            }
+          </div>
+          @if (detail.winProbability.length) {
+            <svg class="win-chart" viewBox="0 0 100 28" preserveAspectRatio="none" role="img" [attr.aria-label]="g.home.displayName + ' win probability ' + homeWinPct() + ' percent'">
+              <line x1="0" y1="14" x2="100" y2="14"></line>
+              <polyline [attr.points]="winProbabilityPoints()"></polyline>
+            </svg>
+            <div class="chart-labels"><span>{{ g.away.abbreviation }}</span><span>Win probability</span><span>{{ g.home.abbreviation }}</span></div>
+          }
+          @if (detail.currentDrive; as drive) {
+            <div class="pulse-line">
+              <strong>Current drive</strong>
+              <span>{{ drive.description || drive.result || 'In progress' }}</span>
+              @if (drive.end?.possessionText) { <span class="field-chip">{{ drive.end?.possessionText }}</span> }
+            </div>
+          }
+          @if (detail.lastPlay; as play) {
+            <div class="pulse-line" [class.turnover]="play.isTurnover" [class.scoring]="play.isScoringPlay">
+              <strong>Last play</strong>
+              <span>{{ play.text || play.type }}</span>
+            </div>
+          }
+        </section>
+      }
+
+      @if (recentScoringPlays().length) {
+        <section class="summary-section scoring-summary">
+          <h2>Scoring summary</h2>
+          <div class="summary-list">
+            @for (play of recentScoringPlays(); track play.id || $index) {
+              <div class="summary-line">
+                <span class="summary-time">Q{{ play.period }} {{ play.clock }}</span>
+                <span>{{ play.text || play.type }}</span>
+                <strong>{{ play.awayScore }}–{{ play.homeScore }}</strong>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (statRows().length) {
+        <section class="summary-section">
+          <h2>Team comparison</h2>
+          <div class="stat-table">
+            <div class="stat-row stat-head"><strong>{{ g.away.abbreviation }}</strong><span></span><strong>{{ g.home.abbreviation }}</strong></div>
+            @for (stat of statRows(); track stat.name) {
+              <div class="stat-row"><strong>{{ stat.away }}</strong><span>{{ stat.label }}</span><strong>{{ stat.home }}</strong></div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (detail.leaders.length) {
+        <section class="summary-section">
+          <h2>Game leaders</h2>
+          <div class="leader-columns">
+            @for (team of detail.leaders; track team.teamExternalId) {
+              <div class="leader-team">
+                <h3>{{ team.teamAbbreviation }}</h3>
+                @for (leader of team.leaders.slice(0, 3); track leader.category) {
+                  <div class="leader-line">
+                    @if (leader.headshotUrl) { <img [src]="leader.headshotUrl" [alt]="leader.athlete" /> }
+                    <span><small>{{ leader.categoryLabel }}</small><strong>{{ leader.athlete }}</strong><em>{{ leader.displayValue }}</em></span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (relevantStandings().length) {
+        <section class="summary-section standings-context">
+          <h2>Standings context</h2>
+          <div class="standing-row">
+            @for (entry of relevantStandings(); track entry.teamExternalId) {
+              <span><strong>{{ entry.teamName }}</strong> {{ entry.record || '—' }} · {{ entry.group }}</span>
+            }
+          </div>
+        </section>
+      }
+
+      @if (detail.market; as market) {
+        <details class="summary-disclosure">
+          <summary>Market context</summary>
+          <div class="market-grid">
+            @if (market.details) { <span><small>Line</small><strong>{{ market.details }}</strong></span> }
+            @if (market.overUnder !== null) { <span><small>Over/under</small><strong>{{ market.overUnder }}</strong></span> }
+            @if (market.awayMoneyLine !== null) { <span><small>{{ g.away.abbreviation }}</small><strong>{{ market.awayMoneyLine }}</strong></span> }
+            @if (market.homeMoneyLine !== null) { <span><small>{{ g.home.abbreviation }}</small><strong>{{ market.homeMoneyLine }}</strong></span> }
+          </div>
+        </details>
+      }
+
+      @if (detail.news.length) {
+        <details class="summary-disclosure">
+          <summary>Headlines</summary>
+          <div class="headline-list">
+            @for (item of detail.news.slice(0, 4); track item.url || item.headline) {
+              @if (item.url) { <a [href]="item.url" target="_blank" rel="noopener noreferrer">{{ item.headline }}</a> }
+              @else { <span>{{ item.headline }}</span> }
+            }
+          </div>
+        </details>
+      }
+    }
+
     <section class="box">
       <h2>Game info</h2>
       <dl>
@@ -157,6 +271,18 @@
             <dd>{{ g.venue }}</dd>
           </div>
         }
+        @if (summary()?.context?.attendance; as attendance) {
+          <div>
+            <dt>Attendance</dt>
+            <dd>{{ attendance | number }}</dd>
+          </div>
+        }
+        @if (summary()?.context?.grass !== null && summary()?.context?.grass !== undefined) {
+          <div>
+            <dt>Surface</dt>
+            <dd>{{ summary()?.context?.grass ? 'Grass' : 'Artificial turf' }}</dd>
+          </div>
+        }
         @if (g.broadcasts.length) {
           <div>
             <dt>Broadcast</dt>
@@ -167,10 +293,10 @@
             </dd>
           </div>
         }
-        @if (homeWinPct(); as pct) {
+        @if (homeWinPct() !== null) {
           <div>
             <dt>{{ g.home.displayName }} win prob</dt>
-            <dd class="winprob">{{ pct }}%</dd>
+            <dd class="winprob">{{ homeWinPct() }}%</dd>
           </div>
         }
       </dl>

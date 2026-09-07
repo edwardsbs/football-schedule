@@ -1,12 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Game } from '../../core/models/game.model';
+import { KickoffApi } from '../../core/services/kickoff-api';
+import { of } from 'rxjs';
 import { ImportantGamesTickerComponent, isImportantGame, sortImportantGames, watchAlertLevel } from './important-games-ticker.component';
 
 describe('ImportantGamesTickerComponent', () => {
   let fixture: ComponentFixture<ImportantGamesTickerComponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [ImportantGamesTickerComponent] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [ImportantGamesTickerComponent],
+      providers: [{ provide: KickoffApi, useValue: { getGameSummary: () => of(null) } }],
+    }).compileComponents();
     fixture = TestBed.createComponent(ImportantGamesTickerComponent);
   });
 
