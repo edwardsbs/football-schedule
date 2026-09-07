@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Game } from '../../core/models/game.model';
+import { trackScorePulse } from '../../core/score-pulse';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { TeamRecordStore } from '../../core/services/team-record-store';
@@ -16,6 +17,7 @@ export class DayGameCardComponent {
   readonly game = input.required<Game>();
   readonly dense = input(false);
   readonly compactFinal = input(false);
+  protected readonly scorePulse = trackScorePulse(this.game);
 
   protected readonly fan = inject(FanStore);
   protected readonly records = inject(TeamRecordStore);

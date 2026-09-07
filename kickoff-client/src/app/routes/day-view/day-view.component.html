@@ -75,14 +75,14 @@
         <div
           class="day-dashboard"
           [class.heavy]="total() > 51"
-          [class.compact-finals]="group.kind === 'completed' && layout() === 'status'"
+          [class.compact-finals]="group.kind === 'completed' && layout() === 'status' && group.games.length > 6"
           [attr.aria-label]="group.label + ' games'"
         >
           @for (game of group.games; track game.id) {
             <app-day-game-card
               [game]="game"
               [dense]="total() > 51"
-              [compactFinal]="group.kind === 'completed' && layout() === 'status'"
+              [compactFinal]="group.kind === 'completed' && layout() === 'status' && group.games.length > 6"
             />
           }
         </div>

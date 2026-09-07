@@ -3,6 +3,9 @@
   class="game-card"
   [class.dense]="dense()"
   [class.compact-final]="compactFinal()"
+  [class.score-pulse-field-goal]="scorePulse() === 'field-goal'"
+  [class.score-pulse-touchdown]="scorePulse() === 'touchdown'"
+  [class.score-pulse-other]="scorePulse() === 'other'"
   [class.live]="game().status === 'Live'"
   [class.favorite]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
   [class.circled]="fan.isCircled(game().id)"
@@ -30,7 +33,6 @@
         <strong>{{ game().away.abbreviation }}</strong>
         <span class="final-score" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
       </span>
-      <span class="final-divider">·</span>
       <span class="final-team">
         <app-team-badge
           [name]="game().home.displayName"

@@ -5,6 +5,7 @@ import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score } from '../../core/models/game.model';
+import { trackScorePulse } from '../../core/score-pulse';
 import { TeamBadgeComponent } from '../team-badge/team-badge.component';
 
 /**
@@ -26,6 +27,7 @@ export class GameRowComponent {
   protected readonly records = inject(TeamRecordStore);
 
   readonly game = input.required<Game>();
+  protected readonly scorePulse = trackScorePulse(this.game);
   /** Alternating-row shading, set by the hosting list from its index. */
   readonly alt = input<boolean>(false);
   readonly changed = output<void>();
