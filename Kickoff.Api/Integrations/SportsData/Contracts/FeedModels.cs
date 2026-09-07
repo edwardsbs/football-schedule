@@ -29,7 +29,8 @@ public record ScoreSnapshot(
     string? Clock,
     string? PossessionTeamExternalId,
     string? DownDistance,
-    double? HomeWinProbability);
+    double? HomeWinProbability,
+    string? LastScoringPlay = null);
 
 public record FeedGame(
     string ExternalId,

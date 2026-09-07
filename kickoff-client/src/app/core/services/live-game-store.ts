@@ -44,7 +44,9 @@ export class LiveGameStore {
       venue: update.venue,
       broadcasts: update.broadcasts,
       status: update.status,
-      score: game.isMuted ? null : retainLiveSituation(game.score, update.score, update.status),
+      score: game.isMuted
+        ? null
+        : retainLiveSituation(game.score, update.score, update.status, update.home.id, update.away.id),
     };
   }
 
@@ -59,8 +61,8 @@ export class LiveGameStore {
     const finishedIds = [...this.currentLiveIds].filter((id) => !nextLiveIds.has(id));
 
     this.currentLiveIds = nextLiveIds;
-    this.liveGames.set(games);
     this.cache(games);
+    this.liveGames.set(games.map((game) => this.updatesById().get(game.id) ?? game));
 
     // Once a game becomes final it drops out of /games/live. Fetch it once more
     // so every open view receives the final score instead of reverting to its
@@ -84,7 +86,13 @@ export class LiveGameStore {
       const previous = next.get(game.id);
       next.set(game.id, {
         ...game,
-        score: retainLiveSituation(previous?.score ?? null, game.score, game.status),
+        score: retainLiveSituation(
+          previous?.score ?? null,
+          game.score,
+          game.status,
+          game.home.id,
+          game.away.id,
+        ),
       });
     }
     this.updatesById.set(next);
@@ -96,12 +104,43 @@ export class LiveGameStore {
  * reviewed/updated. Preserve only the situational fields; scores, clock, period,
  * and win probability always come from the newest snapshot.
  */
-function retainLiveSituation(previous: Score | null, current: Score | null, status: Game['status']): Score | null {
+function retainLiveSituation(
+  previous: Score | null,
+  current: Score | null,
+  status: Game['status'],
+  homeTeamId: number,
+  awayTeamId: number,
+): Score | null {
   if (status !== 'Live' || previous === null || current === null) return current;
+
+  const homeIncrease = current.homeScore - previous.homeScore;
+  const awayIncrease = current.awayScore - previous.awayScore;
+  const scoringSituation = inferScoringSituation(homeIncrease, awayIncrease);
+  const scoringTeamId = homeIncrease > 0 && awayIncrease <= 0
+    ? homeTeamId
+    : awayIncrease > 0 && homeIncrease <= 0
+      ? awayTeamId
+      : null;
+
+  if (scoringSituation && scoringTeamId !== null) {
+    return {
+      ...current,
+      possessionTeamId: scoringTeamId,
+      downDistance: scoringSituation,
+    };
+  }
 
   return {
     ...current,
     possessionTeamId: current.possessionTeamId ?? previous.possessionTeamId,
     downDistance: current.downDistance?.trim() ? current.downDistance : previous.downDistance,
   };
+}
+
+function inferScoringSituation(homeIncrease: number, awayIncrease: number): 'Touchdown' | 'Field Goal' | null {
+  if (homeIncrease > 0 && awayIncrease > 0) return null;
+  const increase = Math.max(homeIncrease, awayIncrease);
+  if (increase === 3) return 'Field Goal';
+  if (increase >= 6) return 'Touchdown';
+  return null;
 }

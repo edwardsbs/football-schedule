@@ -145,6 +145,15 @@ public class ScheduleImportService(IKickoffContext db)
             return;
         }
 
+        var homeIncrease = game.HomeScore is { } oldHome ? score.HomeScore - oldHome : 0;
+        var awayIncrease = game.AwayScore is { } oldAway ? score.AwayScore - oldAway : 0;
+        var scoringSituation = score.LastScoringPlay ?? InferScoringSituation(homeIncrease, awayIncrease);
+        int? scoringTeamId = homeIncrease > 0 && awayIncrease <= 0
+            ? game.HomeTeamId
+            : awayIncrease > 0 && homeIncrease <= 0
+                ? game.AwayTeamId
+                : null;
+
         game.HomeScore = score.HomeScore;
         game.AwayScore = score.AwayScore;
         game.Period = score.Period;
@@ -155,10 +164,18 @@ public class ScheduleImportService(IKickoffContext db)
                 : null;
         if (game.Status is GameStatus.InProgress or GameStatus.Halftime)
         {
-            if (resolvedPossessionTeamId is not null)
-                game.PossessionTeamId = resolvedPossessionTeamId;
-            if (!string.IsNullOrWhiteSpace(score.DownDistance))
-                game.DownDistance = score.DownDistance;
+            if (scoringSituation is not null && scoringTeamId is not null)
+            {
+                game.PossessionTeamId = scoringTeamId;
+                game.DownDistance = scoringSituation;
+            }
+            else
+            {
+                if (resolvedPossessionTeamId is not null)
+                    game.PossessionTeamId = resolvedPossessionTeamId;
+                if (!string.IsNullOrWhiteSpace(score.DownDistance))
+                    game.DownDistance = score.DownDistance;
+            }
         }
         else
         {
@@ -167,6 +184,15 @@ public class ScheduleImportService(IKickoffContext db)
         }
         game.HomeWinProbability = score.HomeWinProbability;
         game.LastUpdatedUtc = DateTimeOffset.UtcNow;
+    }
+
+    private static string? InferScoringSituation(int homeIncrease, int awayIncrease)
+    {
+        if (homeIncrease > 0 && awayIncrease > 0) return null;
+        var increase = Math.Max(homeIncrease, awayIncrease);
+        if (increase == 3) return "Field Goal";
+        if (increase >= 6) return "Touchdown";
+        return null;
     }
 
     private void SyncBroadcasts(Game game, IReadOnlyList<string> networks)

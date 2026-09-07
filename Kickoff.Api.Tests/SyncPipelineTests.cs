@@ -119,6 +119,22 @@ public class SyncPipelineTests
 
         await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
             game.ExternalId!,
+            GameStatus.InProgress,
+            new ScoreSnapshot(17, 7, 2, "4:11", null, null, null, "Touchdown"))]);
+
+        Assert.Equal(game.HomeTeamId, game.PossessionTeamId);
+        Assert.Equal("Touchdown", game.DownDistance);
+
+        await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.InProgress,
+            new ScoreSnapshot(17, 10, 2, "2:02", null, null, null, "Field Goal"))]);
+
+        Assert.Equal(game.AwayTeamId, game.PossessionTeamId);
+        Assert.Equal("Field Goal", game.DownDistance);
+
+        await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
+            game.ExternalId!,
             GameStatus.Final,
             new ScoreSnapshot(24, 17, 4, "0:00", null, null, null))]);
 

@@ -85,6 +85,22 @@ describe('LiveGameStore', () => {
     expect(overlaid.score?.homeWinProbability).toBe(0.61);
     expect(overlaid.score?.possessionTeamId).toBe(2);
     expect(overlaid.score?.downDistance).toBe('2nd & 6 at AWY 44');
+
+    tick(10_000);
+    http.expectOne('/api/games/live').flush([game({
+      status: 'Live',
+      score: { homeScore: 17, awayScore: 7, period: 2, clock: '4:11', possessionTeamId: null, downDistance: null, homeWinProbability: 0.74 },
+    })]);
+    expect(store.overlay(original).score?.possessionTeamId).toBe(1);
+    expect(store.overlay(original).score?.downDistance).toBe('Touchdown');
+
+    tick(10_000);
+    http.expectOne('/api/games/live').flush([game({
+      status: 'Live',
+      score: { homeScore: 17, awayScore: 10, period: 2, clock: '2:02', possessionTeamId: null, downDistance: null, homeWinProbability: 0.66 },
+    })]);
+    expect(store.overlay(original).score?.possessionTeamId).toBe(2);
+    expect(store.overlay(original).score?.downDistance).toBe('Field Goal');
     discardPeriodicTasks();
   }));
 });

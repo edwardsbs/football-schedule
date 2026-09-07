@@ -41,6 +41,15 @@ public class ScoreSyncService(IKickoffContext db)
         foreach (var game in games)
         {
             var u = byExt[game.ExternalId!];
+            var homeIncrease = game.HomeScore is { } oldHome ? u.Score.HomeScore - oldHome : 0;
+            var awayIncrease = game.AwayScore is { } oldAway ? u.Score.AwayScore - oldAway : 0;
+            var scoringSituation = u.Score.LastScoringPlay ?? InferScoringSituation(homeIncrease, awayIncrease);
+            int? scoringTeamId = homeIncrease > 0 && awayIncrease <= 0
+                ? game.HomeTeamId
+                : awayIncrease > 0 && homeIncrease <= 0
+                    ? game.AwayTeamId
+                    : null;
+
             game.Status = u.Status;
             game.HomeScore = u.Score.HomeScore;
             game.AwayScore = u.Score.AwayScore;
@@ -58,10 +67,18 @@ public class ScoreSyncService(IKickoffContext db)
             // final game can never retain a stale possession marker.
             if (u.Status is GameStatus.InProgress or GameStatus.Halftime)
             {
-                if (resolvedPossessionTeamId is not null)
-                    game.PossessionTeamId = resolvedPossessionTeamId;
-                if (!string.IsNullOrWhiteSpace(u.Score.DownDistance))
-                    game.DownDistance = u.Score.DownDistance;
+                if (scoringSituation is not null && scoringTeamId is not null)
+                {
+                    game.PossessionTeamId = scoringTeamId;
+                    game.DownDistance = scoringSituation;
+                }
+                else
+                {
+                    if (resolvedPossessionTeamId is not null)
+                        game.PossessionTeamId = resolvedPossessionTeamId;
+                    if (!string.IsNullOrWhiteSpace(u.Score.DownDistance))
+                        game.DownDistance = u.Score.DownDistance;
+                }
             }
             else
             {
@@ -74,5 +91,14 @@ public class ScoreSyncService(IKickoffContext db)
 
         await db.SaveChangesAsync(ct);
         return games.Count;
+    }
+
+    private static string? InferScoringSituation(int homeIncrease, int awayIncrease)
+    {
+        if (homeIncrease > 0 && awayIncrease > 0) return null;
+        var increase = Math.Max(homeIncrease, awayIncrease);
+        if (increase == 3) return "Field Goal";
+        if (increase >= 6) return "Touchdown";
+        return null;
     }
 }

@@ -419,6 +419,7 @@ public class EspnHttpClient(
 
         string? possessionTeamExternalId = null;
         string? downDistance = null;
+        string? lastScoringPlay = null;
         if (comp.TryGetProperty("situation", out var situation))
         {
             possessionTeamExternalId = situation.TryGetProperty("possession", out var possession)
@@ -429,6 +430,18 @@ public class EspnHttpClient(
                 : situation.TryGetProperty("shortDownDistanceText", out var shortDown)
                     ? shortDown.GetString()
                     : null;
+
+            if (situation.TryGetProperty("lastPlay", out var lastPlay))
+            {
+                var playType = lastPlay.TryGetProperty("type", out var type)
+                    && type.TryGetProperty("text", out var typeText)
+                        ? typeText.GetString()
+                        : null;
+                var playText = lastPlay.TryGetProperty("text", out var text)
+                    ? text.GetString()
+                    : null;
+                lastScoringPlay = ScoringSituationLabel(playType, playText);
+            }
         }
 
         // ESPN's scoreboard doesn't expose a win-probability field; leave null
@@ -440,7 +453,16 @@ public class EspnHttpClient(
             clock,
             possessionTeamExternalId,
             downDistance,
-            HomeWinProbability: null);
+            HomeWinProbability: null,
+            LastScoringPlay: lastScoringPlay);
+    }
+
+    private static string? ScoringSituationLabel(string? playType, string? playText)
+    {
+        var description = $"{playType} {playText}";
+        if (description.Contains("touchdown", StringComparison.OrdinalIgnoreCase)) return "Touchdown";
+        if (description.Contains("field goal", StringComparison.OrdinalIgnoreCase)) return "Field Goal";
+        return null;
     }
 
     private static GameStatus ParseStatus(JsonElement comp)
