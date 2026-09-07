@@ -35,6 +35,14 @@
     min-height: 57px;
     padding: 0.18rem 0.4rem;
   }
+
+  &.compact-final {
+    grid-template-rows: 0.65rem minmax(0, 1fr);
+    gap: 0.08rem;
+    height: 39px;
+    min-height: 39px;
+    padding: 0.2rem 0.35rem;
+  }
 }
 
 .card-meta {
@@ -117,6 +125,43 @@
   }
 
   .direction { color: var(--accent-gold, #c9a227); }
+}
+
+.final-matchup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.final-team {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) 1.25rem;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.final-divider { color: var(--muted, #8b93a1); font-size: 0.6rem; }
+
+.final-score {
+  color: var(--text, #e7ebf2);
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+
+  &.winner { font-size: 0.72rem; }
+  &.loser { color: #8f98a8; font-size: 0.61rem; }
 }
 
 @container (min-width: 260px) {

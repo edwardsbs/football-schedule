@@ -4,6 +4,95 @@
   padding-bottom: 0.75rem;
 }
 
+.day-layout-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.22rem;
+  width: fit-content;
+  margin: 0 0 0.55rem;
+  padding: 0.2rem;
+  border: 1px solid var(--border, #262c38);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface, #161a22) 76%, transparent);
+}
+
+.layout-label {
+  padding: 0 0.38rem;
+  color: var(--muted, #8b93a1);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.layout-tab {
+  min-height: 34px;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-strong, #aab2c0);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  &:hover { color: var(--text, #e7ebf2); background: var(--surface-2, #1c212b); }
+  &:focus-visible { outline: 2px solid var(--accent-gold, #c9a227); outline-offset: 1px; }
+  &.active {
+    border-color: rgb(201 162 39 / 45%);
+    background: rgb(201 162 39 / 10%);
+    color: #e3c45e;
+  }
+}
+
+.day-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.72rem;
+}
+
+.day-section { min-width: 0; }
+
+.day-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 1.5rem;
+  margin-bottom: 0.28rem;
+  color: var(--muted, #8b93a1);
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border, #262c38);
+  }
+
+  h2 {
+    order: 0;
+    margin: 0;
+    color: var(--text, #e7ebf2);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  span {
+    order: 1;
+    font-size: 0.63rem;
+    white-space: nowrap;
+  }
+
+  &::after { order: 2; }
+}
+
+.live-section .day-section-head h2 { color: #ff6a6f; }
+
+.completed-section {
+  .day-section-head { opacity: 0.78; }
+  app-day-game-card { opacity: 0.88; }
+}
+
 .day-dashboard {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
@@ -13,6 +102,11 @@
 
 .day-dashboard.heavy {
   grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.day-dashboard.compact-finals {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.22rem;
 }
 
 /* Windows display scaling can make a 1080p touchscreen report a much narrower
@@ -41,12 +135,17 @@
 }
 
 @media (max-width: 900px) {
+  .day-layout-tabs { width: 100%; }
+  .layout-tab { flex: 1 1 0; }
   .day-dashboard {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
 @media (max-width: 560px) {
+  .day-layout-tabs { align-items: stretch; flex-wrap: wrap; }
+  .layout-label { display: flex; align-items: center; }
+  .layout-tab { flex-basis: calc(50% - 0.3rem); }
   .day-dashboard {
     grid-template-columns: minmax(0, 1fr) !important;
   }

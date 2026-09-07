@@ -2,6 +2,7 @@
   type="button"
   class="game-card"
   [class.dense]="dense()"
+  [class.compact-final]="compactFinal()"
   [class.live]="game().status === 'Live'"
   [class.favorite]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
   [class.circled]="fan.isCircled(game().id)"
@@ -16,7 +17,34 @@
     </span>
   </span>
 
-  <span class="team-row">
+  @if (compactFinal()) {
+    <span class="final-matchup">
+      <span class="final-team">
+        <app-team-badge
+          [name]="game().away.displayName"
+          [logoUrl]="game().away.logoUrl"
+          [abbreviation]="game().away.abbreviation"
+          [rank]="game().away.currentRank"
+          [size]="14"
+        />
+        <strong>{{ game().away.abbreviation }}</strong>
+        <span class="final-score" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
+      </span>
+      <span class="final-divider">·</span>
+      <span class="final-team">
+        <app-team-badge
+          [name]="game().home.displayName"
+          [logoUrl]="game().home.logoUrl"
+          [abbreviation]="game().home.abbreviation"
+          [rank]="game().home.currentRank"
+          [size]="14"
+        />
+        <strong>{{ game().home.abbreviation }}</strong>
+        <span class="final-score" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
+      </span>
+    </span>
+  } @else {
+    <span class="team-row">
     <span class="team">
       <app-team-badge
         [name]="game().away.displayName"
@@ -40,9 +68,9 @@
       }
     }
     <span class="score" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
-  </span>
+    </span>
 
-  <span class="team-row">
+    <span class="team-row">
     <span class="team">
       <app-team-badge
         [name]="game().home.displayName"
@@ -66,5 +94,6 @@
       }
     }
     <span class="score" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
-  </span>
+    </span>
+  }
 </button>

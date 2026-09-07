@@ -15,6 +15,7 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
 export class DayGameCardComponent {
   readonly game = input.required<Game>();
   readonly dense = input(false);
+  readonly compactFinal = input(false);
 
   protected readonly fan = inject(FanStore);
   protected readonly records = inject(TeamRecordStore);

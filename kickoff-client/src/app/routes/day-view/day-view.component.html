@@ -26,6 +26,32 @@
   </div>
 </div>
 
+<div class="day-layout-tabs" role="group" aria-label="Group Day schedule">
+  <span class="layout-label">View</span>
+  <button
+    type="button"
+    class="layout-tab"
+    [class.active]="layout() === 'status'"
+    [attr.aria-pressed]="layout() === 'status'"
+    (click)="setLayout('status')"
+  >Status lanes</button>
+  <button
+    type="button"
+    class="layout-tab"
+    [class.active]="layout() === 'kickoff'"
+    [attr.aria-pressed]="layout() === 'kickoff'"
+    (click)="setLayout('kickoff')"
+  >Kickoff windows</button>
+  <button
+    type="button"
+    class="layout-tab"
+    [class.active]="layout() === 'conference'"
+    [attr.aria-pressed]="layout() === 'conference'"
+    title="Groups each matchup by the home team's conference or NFL division"
+    (click)="setLayout('conference')"
+  >Conference bands</button>
+</div>
+
 <app-important-games-ticker [games]="games()" />
 
 @if (total() === 0) {
@@ -39,13 +65,28 @@
     }
   </div>
 } @else {
-  <section
-    class="day-dashboard"
-    [class.heavy]="total() > 51"
-    aria-label="Games by kickoff time"
-  >
-    @for (game of visible(); track game.id) {
-      <app-day-game-card [game]="game" [dense]="total() > 51" />
+  <div class="day-groups" [class.status-layout]="layout() === 'status'">
+    @for (group of groups(); track group.key) {
+      <section class="day-section" [class.live-section]="group.kind === 'live'" [class.completed-section]="group.kind === 'completed'">
+        <header class="day-section-head">
+          <h2>{{ group.label }}</h2>
+          <span>{{ group.games.length }} game{{ group.games.length === 1 ? '' : 's' }}</span>
+        </header>
+        <div
+          class="day-dashboard"
+          [class.heavy]="total() > 51"
+          [class.compact-finals]="group.kind === 'completed' && layout() === 'status'"
+          [attr.aria-label]="group.label + ' games'"
+        >
+          @for (game of group.games; track game.id) {
+            <app-day-game-card
+              [game]="game"
+              [dense]="total() > 51"
+              [compactFinal]="group.kind === 'completed' && layout() === 'status'"
+            />
+          }
+        </div>
+      </section>
     }
-  </section>
+  </div>
 }

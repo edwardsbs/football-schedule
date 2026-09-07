@@ -8,6 +8,7 @@ import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, startOfLocalDay } from '../../core/timeline';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { DayGameCardComponent } from './day-game-card.component';
+import { DayLayout, groupDayGames } from './day-view-groups';
 
 @Component({
   selector: 'app-day-view',
@@ -38,8 +39,10 @@ export class DayViewComponent {
 
   /** "My games" filter: only favorite-team or circled games (mixes NCAA + NFL). */
   readonly onlyMine = signal(false);
+  readonly layout = signal<DayLayout>('status');
   readonly followedCount = computed(() => filterFollowed(this.games()).length);
   readonly visible = computed(() => (this.onlyMine() ? filterFollowed(this.games()) : this.games()));
+  readonly groups = computed(() => groupDayGames(this.visible(), this.layout()));
 
   readonly total = computed(() => this.visible().length);
 
@@ -54,5 +57,8 @@ export class DayViewComponent {
   }
   toggleMine(): void {
     this.onlyMine.update((v) => !v);
+  }
+  setLayout(layout: DayLayout): void {
+    this.layout.set(layout);
   }
 }
