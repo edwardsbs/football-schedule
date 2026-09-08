@@ -14,16 +14,34 @@ describe('Day view grouping', () => {
   it('separates kickoff windows using local kickoff hour', () => {
     const games = [
       game(1, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 11, 0)),
-      game(2, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 14, 30)),
-      game(3, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 16, 0)),
-      game(4, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 19, 0)),
+      game(2, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 12, 0)),
+      game(3, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 14, 0)),
+      game(4, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 17, 0)),
+      game(5, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 19, 0)),
     ];
 
     expect(groupDayGames(games, 'kickoff').map((group) => group.key)).toEqual([
-      'morning',
-      'early-afternoon',
-      'late-afternoon',
-      'prime-time',
+      'before-noon',
+      'noon',
+      'afternoon',
+      'early-evening',
+      'evening',
+    ]);
+  });
+
+  it('keeps the minute before each boundary in the earlier kickoff window', () => {
+    const games = [
+      game(1, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 11, 59)),
+      game(2, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 13, 59)),
+      game(3, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 16, 59)),
+      game(4, 'Upcoming', 'Ncaa', new Date(2026, 8, 5, 18, 59)),
+    ];
+
+    expect(groupDayGames(games, 'kickoff').map((group) => group.key)).toEqual([
+      'before-noon',
+      'noon',
+      'afternoon',
+      'early-evening',
     ]);
   });
 

@@ -175,7 +175,9 @@
     padding-right: 15rem;
   }
 
-  :host:has(.schedule-header.ncaa-league) {
+  :host:has(.schedule-header.ncaa-league),
+  :host:has(.season-playoff-rail),
+  :host:has(.season-show-playoff-rail) {
     padding-left: 18.25rem;
   }
 }
@@ -206,6 +208,7 @@
     margin: 0 auto 1rem;
     border-radius: 8px;
   }
+
 }
 
 @media (max-width: 560px) {

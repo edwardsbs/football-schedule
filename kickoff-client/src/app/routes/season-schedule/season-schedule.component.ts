@@ -10,12 +10,14 @@ import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
-import { filterFollowed, groupByWeek, startOfLocalDay, WeekGroup } from '../../core/timeline';
+import { filterFollowed, groupByWeek } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { LeagueSectionToggleComponent } from '../../shared/league-section-toggle/league-section-toggle.component';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
+import { MOCK_2025_PLAYOFF_PICTURE } from './nfl-playoff-picture.mock';
+import { defaultScheduleWeek } from './schedule-week-selection';
 
 type ViewMode = 'byWeek' | 'full';
 
@@ -92,28 +94,9 @@ export class SeasonScheduleComponent {
   /** Defaults on (week-by-week), per the ask. */
   readonly viewMode = signal<ViewMode>('byWeek');
 
-  /** Whichever real week's date range today falls in, or the closest one if
-   * today lands in a gap between weeks (a bye/off day). Null once the season
-   * has no games at all. */
-  private readonly currentWeekNumber = computed<number | null>(() => {
-    const ws = this.weeks();
-    if (ws.length === 0) return null;
-    const today = startOfLocalDay(new Date()).getTime();
-
-    let best: WeekGroup = ws[0];
-    let bestDist = Infinity;
-    for (const w of ws) {
-      const first = new Date(w.days[0].date).getTime();
-      const last = new Date(w.days[w.days.length - 1].date).getTime();
-      if (today >= first && today <= last) return w.number;
-      const dist = today < first ? first - today : today - last;
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = w;
-      }
-    }
-    return best.number;
-  });
+  /** Each league advances independently at local midnight after the final
+   * scheduled game day in its provider week. */
+  private readonly currentWeekNumber = computed<number | null>(() => defaultScheduleWeek(this.weeks()));
 
   /** Null until the user manually picks a week -- until then, tracks whatever
    * week is "current" as the season's data changes. */
@@ -127,6 +110,8 @@ export class SeasonScheduleComponent {
   });
 
   readonly rankingRailOpen = signal(true);
+  readonly playoffRailOpen = signal(true);
+  readonly mockPlayoffConferences = MOCK_2025_PLAYOFF_PICTURE;
   readonly seasonYear = new Date(seasonRange().from).getFullYear();
 
   private readonly rankingSelection = computed(() => {

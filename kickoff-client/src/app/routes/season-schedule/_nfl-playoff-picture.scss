@@ -1,0 +1,224 @@
+app-season-schedule {
+  .playoff-picture-rail,
+  .show-playoff-rail {
+    position: fixed;
+    z-index: 15;
+    left: 1rem;
+    top: 5.25rem;
+  }
+
+  .playoff-picture-rail {
+    display: flex;
+    flex-direction: column;
+    width: 252px;
+    max-height: calc(100dvh - 6.25rem);
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--border, #262c38) 82%, #fff);
+    border-top: 3px solid #4c80c5;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface, #161a22) 96%, #000);
+    box-shadow: 0 18px 45px rgb(0 0 0 / 34%);
+
+    > footer {
+      flex: none;
+      padding: 0.5rem;
+      border-top: 1px solid var(--border, #262c38);
+      color: var(--muted, #8b93a1);
+      font-size: 0.52rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+  }
+
+  .playoff-picture-head {
+    flex: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.72rem 0.7rem 0.65rem;
+    border-bottom: 1px solid var(--border, #262c38);
+    background: linear-gradient(135deg, rgb(1 51 105 / 38%), transparent 72%);
+
+    > div { display: grid; gap: 0.08rem; }
+
+    span,
+    small {
+      color: var(--muted, #8b93a1);
+      font-size: 0.54rem;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    span { color: #79a7df; }
+    strong { font-size: 0.98rem; letter-spacing: 0.015em; }
+
+    button {
+      min-height: 34px;
+      padding: 0.3rem 0.5rem;
+      border: 1px solid var(--border, #262c38);
+      border-radius: 6px;
+      background: var(--surface-2, #1c212b);
+      color: var(--muted-strong, #aab2c0);
+      font: inherit;
+      font-size: 0.65rem;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+  }
+
+  .playoff-picture-body {
+    min-height: 0;
+    padding: 0.25rem 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #414a59 #0c0f15;
+
+    &::-webkit-scrollbar { width: 10px; }
+    &::-webkit-scrollbar-track { border-left: 1px solid #202631; background: #0c0f15; }
+    &::-webkit-scrollbar-thumb {
+      min-height: 42px;
+      border: 2px solid #0c0f15;
+      border-radius: 999px;
+      background: #414a59;
+    }
+    &::-webkit-scrollbar-thumb:hover { background: #596476; }
+  }
+
+  .playoff-conference {
+    padding: 0.25rem 0.42rem 0.5rem;
+
+    & + & { border-top: 1px solid var(--border, #262c38); }
+
+    h2 {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0.22rem 0.28rem 0.3rem;
+
+      span { color: #8db5e5; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; }
+      small { color: var(--muted, #8b93a1); font-size: 0.49rem; text-transform: uppercase; }
+    }
+
+    h3 {
+      margin: 0.28rem 0 0;
+      padding: 0.3rem 0.28rem 0.18rem;
+      border-top: 1px dashed #3b4655;
+      color: #d2a75f;
+      font-size: 0.52rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    ol { margin: 0; padding: 0; list-style: none; }
+
+    li,
+    .playoff-bubble-team {
+      display: grid;
+      grid-template-columns: 1.15rem 25px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.32rem;
+      min-height: 38px;
+      padding: 0.2rem 0.28rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--border, #262c38) 64%, transparent);
+    }
+
+    .playoff-bubble-team {
+      border: 1px solid rgb(210 167 95 / 26%);
+      border-radius: 6px;
+      background: rgb(210 167 95 / 5%);
+    }
+  }
+
+  .playoff-seed,
+  .playoff-record {
+    color: var(--muted-strong, #aab2c0);
+    font-size: 0.64rem;
+    font-weight: 850;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .playoff-team {
+    display: grid;
+    min-width: 0;
+    line-height: 1.05;
+
+    strong { font-size: 0.7rem; }
+    small {
+      margin-top: 0.14rem;
+      overflow: hidden;
+      color: var(--muted, #8b93a1);
+      font-size: 0.51rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .show-playoff-rail {
+    display: grid;
+    place-items: center;
+    gap: 0.22rem;
+    width: 72px;
+    padding: 0.55rem 0.4rem;
+    border: 1px solid color-mix(in srgb, #4c80c5 55%, var(--border, #262c38));
+    border-radius: 0 8px 8px 0;
+    background: var(--surface, #161a22);
+    color: var(--text, #e7ebf2);
+    font: inherit;
+    cursor: pointer;
+
+    img { width: 24px; height: 28px; object-fit: contain; }
+    strong { font-size: 0.64rem; line-height: 1.05; }
+  }
+}
+
+@media (max-width: 1080px) {
+  app-season-schedule {
+    .season-playoff-rail,
+    .season-show-playoff-rail { position: static; }
+
+    .season-playoff-rail {
+      width: 100%;
+      max-height: 520px;
+      margin-bottom: 1rem;
+
+      .playoff-picture-body {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .playoff-conference + .playoff-conference {
+        border-top: 0;
+        border-left: 1px solid var(--border, #262c38);
+      }
+    }
+
+    .season-show-playoff-rail {
+      width: auto;
+      margin: 0 auto 1rem;
+      border-radius: 8px;
+    }
+  }
+}
+
+@media (max-width: 560px) {
+  app-season-schedule .season-playoff-rail {
+    max-height: none;
+
+    .playoff-picture-body { grid-template-columns: 1fr; }
+    .playoff-conference + .playoff-conference {
+      border-top: 1px solid var(--border, #262c38);
+      border-left: 0;
+    }
+  }
+}

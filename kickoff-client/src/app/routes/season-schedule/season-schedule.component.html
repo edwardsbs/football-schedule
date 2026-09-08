@@ -1,3 +1,77 @@
+@if (league() === 'nfl' && viewMode() === 'byWeek') {
+  @if (playoffRailOpen()) {
+    <aside class="playoff-picture-rail season-playoff-rail" aria-label="Mock 2025 NFL playoff picture">
+      <header class="playoff-picture-head">
+        <div>
+          <span>2025 reference</span>
+          <strong>Playoff Picture</strong>
+          <small>Temporary layout data</small>
+        </div>
+        <button type="button" (click)="playoffRailOpen.set(false)">Hide</button>
+      </header>
+
+      <div class="playoff-picture-body">
+        @for (conference of mockPlayoffConferences; track conference.name) {
+          <section class="playoff-conference" [attr.aria-labelledby]="'playoff-' + conference.name">
+            <h2 [id]="'playoff-' + conference.name">
+              <span>{{ conference.name }}</span>
+              <small>2025 final field</small>
+            </h2>
+            <ol>
+              @for (team of conference.teams; track team.abbreviation) {
+                <li>
+                  <span class="playoff-seed">{{ team.seed }}</span>
+                  <app-team-badge
+                    [name]="team.displayName"
+                    [logoUrl]="team.logoUrl"
+                    [abbreviation]="team.abbreviation"
+                    [size]="25"
+                  />
+                  <span class="playoff-team">
+                    <strong>{{ team.abbreviation }}</strong>
+                    <small>{{ team.displayName }}</small>
+                  </span>
+                  <span class="playoff-record">{{ team.record }}</span>
+                </li>
+              }
+            </ol>
+
+            <h3>Last team out</h3>
+            @for (team of conference.bubble; track team.abbreviation) {
+              <div class="playoff-bubble-team">
+                <span class="playoff-seed">—</span>
+                <app-team-badge
+                  [name]="team.displayName"
+                  [logoUrl]="team.logoUrl"
+                  [abbreviation]="team.abbreviation"
+                  [size]="25"
+                />
+                <span class="playoff-team">
+                  <strong>{{ team.abbreviation }}</strong>
+                  <small>{{ team.displayName }}</small>
+                </span>
+                <span class="playoff-record">{{ team.record }}</span>
+              </div>
+            }
+          </section>
+        }
+      </div>
+
+      <footer>Mock only · not a 2026 projection</footer>
+    </aside>
+  } @else {
+    <button
+      type="button"
+      class="show-playoff-rail season-show-playoff-rail"
+      aria-label="Show mock NFL playoff picture"
+      (click)="playoffRailOpen.set(true)"
+    >
+      <img src="/nfl-logo.png" alt="" aria-hidden="true" />
+      <strong>Playoff<br />Picture</strong>
+    </button>
+  }
+}
+
 @if (showRankingRail()) {
   <aside class="ranking-rail season-ranking-rail" aria-label="NCAA AP and CFP rankings for selected week">
     <header class="ranking-rail-head">

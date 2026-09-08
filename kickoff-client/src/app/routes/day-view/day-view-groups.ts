@@ -55,15 +55,18 @@ function kickoffGroups(games: readonly Game[]) {
   return collectGroups(games, (game): GroupDefinition => {
     const hour = new Date(game.kickoffUtc).getHours();
     if (hour < 12) {
-      return { key: 'morning', label: 'Morning · before noon', order: 0, kind: 'standard' };
+      return { key: 'before-noon', label: 'Before noon', order: 0, kind: 'standard' };
     }
-    if (hour < 16) {
-      return { key: 'early-afternoon', label: 'Early afternoon · noon–3:59 PM', order: 1, kind: 'standard' };
+    if (hour < 14) {
+      return { key: 'noon', label: 'Noon–1:59 PM', order: 1, kind: 'standard' };
     }
-    if (hour < 18) {
-      return { key: 'late-afternoon', label: 'Late afternoon · 4:00–5:59 PM', order: 2, kind: 'standard' };
+    if (hour < 17) {
+      return { key: 'afternoon', label: '2:00–4:59 PM', order: 2, kind: 'standard' };
     }
-    return { key: 'prime-time', label: 'Prime time · 6:00 PM and later', order: 3, kind: 'standard' };
+    if (hour < 19) {
+      return { key: 'early-evening', label: '5:00–6:59 PM', order: 3, kind: 'standard' };
+    }
+    return { key: 'evening', label: '7:00 PM and later', order: 4, kind: 'standard' };
   });
 }
 
