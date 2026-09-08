@@ -8,6 +8,7 @@
   [class.alt]="alt()"
   [class.fav]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
   [class.circled]="fan.isCircled(game().id)"
+  [class.full-team-names]="fullTeamNames()"
   [class.score-pulse-field-goal]="scorePulse() === 'field-goal'"
   [class.score-pulse-touchdown]="scorePulse() === 'touchdown'"
   [class.score-pulse-other]="scorePulse() === 'other'"
@@ -41,7 +42,7 @@
           [reserveRankSpace]="true"
           [size]="28"
         />
-        <span class="abbr">{{ game().away.abbreviation }}</span>
+        <span class="abbr">{{ fullTeamNames() ? game().away.displayName : game().away.abbreviation }}</span>
         @if (game().away.isFcs) {
           <span class="fcs-tag" title="Football Championship Subdivision">FCS</span>
         }
@@ -91,7 +92,7 @@
           [reserveRankSpace]="true"
           [size]="28"
         />
-        <span class="abbr">{{ game().home.abbreviation }}</span>
+        <span class="abbr">{{ fullTeamNames() ? game().home.displayName : game().home.abbreviation }}</span>
         @if (game().home.isFcs) {
           <span class="fcs-tag" title="Football Championship Subdivision">FCS</span>
         }
@@ -134,7 +135,7 @@
       type="button"
       class="icon-btn circle-btn"
       [class.on]="fan.isCircled(game().id)"
-      [attr.aria-label]="fan.isCircled(game().id) ? 'Remove from Upcoming' : 'Circle this game'"
+      [attr.aria-label]="fan.isCircled(game().id) ? 'Remove circle from this game' : 'Circle this game'"
       (click)="$event.stopPropagation(); fan.toggleCircle(game().id)"
     >{{ fan.isCircled(game().id) ? '◉' : '○' }}</button>
 

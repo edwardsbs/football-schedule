@@ -4,7 +4,7 @@ import { FavoriteTeam, Game, TeamInterest } from '../models/game.model';
 
 /**
  * App-wide favorites + circled state. Loaded once at startup and updated
- * optimistically on toggle, so the My Teams strip, the Upcoming list, and the
+ * optimistically on toggle, so My Teams, the My Games planner, and the
  * per-team / per-game highlights across every view stay in sync.
  */
 @Injectable({ providedIn: 'root' })

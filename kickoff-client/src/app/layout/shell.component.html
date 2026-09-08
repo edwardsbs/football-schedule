@@ -3,29 +3,41 @@
     <a class="brand" routerLink="/live">
       <span class="mark">🏈</span> Kickoff
     </a>
-    <nav class="nav">
-      @for (link of links; track link.path) {
-        <a
-          [routerLink]="link.path"
-          [class.active]="isLinkActive(link)"
-          [class.starts-group]="link.startsGroup"
-          [attr.aria-current]="isLinkActive(link) ? 'page' : null"
-          [attr.aria-label]="link.logoOnly ? link.label : null"
-        >
-          @if (link.leagueLogo) {
-            <img
-              class="league-nav-logo"
-              [class.ncaa]="link.leagueSection === 'ncaa'"
-              [class.nfl]="link.leagueSection === 'nfl'"
-              [src]="link.leagueLogo"
-              alt=""
-              aria-hidden="true"
-            />
-          }
-          @if (!link.logoOnly) { {{ link.label }} }
-        </a>
+    <div class="nav-strip">
+      @if (navCanScrollLeft()) {
+        <button type="button" class="nav-scroll-btn left" aria-label="Show earlier tabs" (click)="scrollNav(-1)">
+          <span class="nav-chevron left" aria-hidden="true"></span>
+        </button>
       }
-    </nav>
+      <nav class="nav" #navEl (scroll)="onNavScroll()">
+        @for (link of links; track link.path) {
+          <a
+            [routerLink]="link.path"
+            [class.active]="isLinkActive(link)"
+            [class.starts-group]="link.startsGroup"
+            [attr.aria-current]="isLinkActive(link) ? 'page' : null"
+            [attr.aria-label]="link.logoOnly ? link.label : null"
+          >
+            @if (link.leagueLogo) {
+              <img
+                class="league-nav-logo"
+                [class.ncaa]="link.leagueSection === 'ncaa'"
+                [class.nfl]="link.leagueSection === 'nfl'"
+                [src]="link.leagueLogo"
+                alt=""
+                aria-hidden="true"
+              />
+            }
+            @if (!link.logoOnly) { {{ link.label }} }
+          </a>
+        }
+      </nav>
+      @if (navCanScrollRight()) {
+        <button type="button" class="nav-scroll-btn right" aria-label="Show later tabs" (click)="scrollNav(1)">
+          <span class="nav-chevron right" aria-hidden="true"></span>
+        </button>
+      }
+    </div>
     <button
       type="button"
       class="wipe-btn"

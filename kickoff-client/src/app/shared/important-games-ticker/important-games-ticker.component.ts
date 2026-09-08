@@ -22,6 +22,7 @@ export class ImportantGamesTickerVisibility {
 })
 export class ImportantGamesTickerComponent {
   readonly games = input.required<Game[]>();
+  readonly showKickoffDay = input<boolean>(false);
 
   private readonly detail = inject(GameDetailOverlay);
   private readonly api = inject(KickoffApi);
@@ -86,6 +87,10 @@ export class ImportantGamesTickerComponent {
     return new Date(game.kickoffUtc).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   }
 
+  protected kickoffDayLabel(game: Game): string {
+    return watchKickoffDayLabel(game.kickoffUtc);
+  }
+
   protected score(game: Game, side: 'home' | 'away'): string {
     if (!game.score) return '—';
     return String(side === 'home' ? game.score.homeScore : game.score.awayScore);
@@ -118,6 +123,12 @@ export class ImportantGamesTickerComponent {
     if (summary.currentDrive?.description) return summary.currentDrive.description;
     return summary.lastPlay?.type ?? null;
   }
+}
+
+export function watchKickoffDayLabel(kickoffUtc: string): string {
+  const kickoff = new Date(kickoffUtc);
+  const weekday = kickoff.toLocaleDateString([], { weekday: 'short' });
+  return `${weekday} ${kickoff.getMonth() + 1}/${kickoff.getDate()}`;
 }
 
 export type WatchAlertLevel = 'none' | 'single' | 'double';

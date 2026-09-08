@@ -39,8 +39,8 @@ export const routes: Routes = [
       },
       {
         path: 'upcoming',
-        title: 'Upcoming · Kickoff',
-        loadComponent: () => import('./routes/upcoming/upcoming.component').then((m) => m.UpcomingComponent),
+        pathMatch: 'full',
+        redirectTo: 'my-teams',
       },
       {
         path: 'my-teams',

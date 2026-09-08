@@ -17,14 +17,25 @@
             <p class="hint">Star a team or circle a game to see it here.</p>
           </div>
         } @else {
-          @for (day of groups(); track day.key) {
+          @for (group of groups(); track group.key) {
             <section class="day-group">
-              <h3 class="day-head">{{ day.date | date: 'EEEE, MMM d' }}</h3>
+              <h3 class="day-head">
+                <span>{{ group.label }}</span>
+                <span class="group-count">{{ group.games.length }}</span>
+              </h3>
               <div class="rows">
-                @for (slot of day.slots; track slot.key) {
-                  @for (game of slot.games; track game.id) {
-                    <app-game-row [game]="game" (changed)="refresh()" />
-                  }
+                @for (game of group.games; track game.id) {
+                  <div class="planner-row">
+                    <div
+                      class="countdown"
+                      [class.live]="game.status === 'Live'"
+                      [class.final]="game.status === 'Final'"
+                    >
+                      <strong>{{ countdown(game) }}</strong>
+                      <span>{{ game.kickoffUtc | date: 'EEE, MMM d' }}</span>
+                    </div>
+                    <app-game-row [game]="game" [fullTeamNames]="true" (changed)="refresh()" />
+                  </div>
                 }
               </div>
             </section>

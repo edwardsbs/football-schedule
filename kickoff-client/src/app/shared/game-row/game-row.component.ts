@@ -28,6 +28,7 @@ export class GameRowComponent {
   protected readonly records = inject(TeamRecordStore);
 
   readonly game = input.required<Game>();
+  readonly fullTeamNames = input<boolean>(false);
   protected readonly scorePulse = trackScorePulse(this.game);
   protected readonly inFieldGoalRange = () => isInFieldGoalRange(this.game());
   protected readonly inRedZone = () => isInRedZone(this.game());

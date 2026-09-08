@@ -8,9 +8,19 @@
         {{ total() }} game{{ total() === 1 ? '' : 's' }}{{ onlyMine() ? ' · favorites & circled' : '' }}
         · NCAA + NFL
       </span>
-      <button type="button" class="today" (click)="today()">Today</button>
     </div>
   </header>
+
+  <div class="date-actions" role="group" aria-label="Choose schedule date">
+    <button type="button" class="date-action" (click)="today()">Go To Today</button>
+    <button type="button" class="date-action" (click)="openCalendar()">
+      <svg class="date-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 2v3M17 2v3M3.5 8.5h17M5.5 4h13a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+        <path d="M7 12h2M11 12h2M15 12h2M7 16h2M11 16h2M15 16h2" />
+      </svg>
+      Select A Date
+    </button>
+  </div>
 
   <div class="filter-row">
     <button
@@ -26,16 +36,54 @@
   </div>
 </div>
 
+@if (calendarOpen()) {
+  <div class="calendar-backdrop" (click)="closeCalendar()">
+    <section
+      class="calendar-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="day-calendar-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="calendar-modal-head">
+        <div>
+          <span class="calendar-eyebrow">Select a date</span>
+          <h2 id="day-calendar-title">{{ calendarMonth() | date: 'MMMM y' }}</h2>
+        </div>
+        <button type="button" class="calendar-close" aria-label="Close calendar" (click)="closeCalendar()">✕</button>
+      </header>
+
+      <div class="calendar-month-nav">
+        <button type="button" aria-label="Previous month" (click)="moveCalendar(-1)">‹</button>
+        <span>{{ day() | date: 'EEEE, MMMM d, y' }}</span>
+        <button type="button" aria-label="Next month" (click)="moveCalendar(1)">›</button>
+      </div>
+
+      <div class="calendar-weekdays" aria-hidden="true">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div class="calendar-grid" role="grid" aria-label="Calendar days">
+        @for (cell of calendarDays(); track cell.key) {
+          <button
+            type="button"
+            class="calendar-day"
+            [class.outside]="!cell.inMonth"
+            [class.selected]="cell.selected"
+            [class.current-day]="cell.today"
+            [attr.aria-label]="cell.date | date: 'fullDate'"
+            [attr.aria-selected]="cell.selected"
+            [attr.aria-current]="cell.today ? 'date' : null"
+            (click)="selectCalendarDay(cell.date)"
+          >{{ cell.dayNumber }}</button>
+        }
+      </div>
+    </section>
+  </div>
+}
+
 <div class="day-tools">
   <div class="day-layout-tabs" role="group" aria-label="Group Day schedule">
     <span class="layout-label">View</span>
-    <button
-      type="button"
-      class="layout-tab"
-      [class.active]="layout() === 'status'"
-      [attr.aria-pressed]="layout() === 'status'"
-      (click)="setLayout('status')"
-    >Status lanes</button>
     <button
       type="button"
       class="layout-tab"
@@ -43,6 +91,13 @@
       [attr.aria-pressed]="layout() === 'kickoff'"
       (click)="setLayout('kickoff')"
     >Kickoff windows</button>
+    <button
+      type="button"
+      class="layout-tab"
+      [class.active]="layout() === 'status'"
+      [attr.aria-pressed]="layout() === 'status'"
+      (click)="setLayout('status')"
+    >Status lanes</button>
     <button
       type="button"
       class="layout-tab"

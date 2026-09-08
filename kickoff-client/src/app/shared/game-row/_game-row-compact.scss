@@ -124,6 +124,17 @@ app-game-row .scores {
   }
 }
 
+app-game-row .full-team-names {
+  .team-identity {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  .team-record { margin-left: 2.15rem; }
+  .team-main .abbr { font-size: 0.9rem; }
+}
+
 @container (max-width: 410px) {
   app-game-row .row {
     grid-template-columns: 2.4rem minmax(5rem, 1fr) 1.8rem 3.7rem 4.9rem;

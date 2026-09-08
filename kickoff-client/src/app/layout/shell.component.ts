@@ -15,6 +15,7 @@ import { FanStore } from '../core/services/fan-store';
 import { LiveGameStore } from '../core/services/live-game-store';
 import { MyGamesModalComponent } from '../shared/my-games-modal/my-games-modal.component';
 import { GameDetailModalComponent } from '../shared/game-detail-modal/game-detail-modal.component';
+import { horizontalScrollAvailability } from './nav-scroll';
 
 interface NavLink {
   path: string;
@@ -56,10 +57,13 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
 
   private readonly contentEl = viewChild.required<ElementRef<HTMLDivElement>>('contentEl');
   private readonly trackEl = viewChild.required<ElementRef<HTMLDivElement>>('trackEl');
+  private readonly navEl = viewChild.required<ElementRef<HTMLElement>>('navEl');
 
   readonly scrollable = signal(false);
   readonly thumbHeightPx = signal(MIN_THUMB_PX);
   readonly thumbTopPx = signal(0);
+  readonly navCanScrollLeft = signal(false);
+  readonly navCanScrollRight = signal(false);
 
   /** Cached from the last size measurement, so scroll-driven updates stay cheap. */
   private viewportHeight = 0;
@@ -101,10 +105,12 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
     const el = this.contentEl().nativeElement;
 
     this.measureSize();
+    this.measureNavOverflow();
 
     this.resizeObserver = new ResizeObserver(() => this.queueMeasure());
     this.resizeObserver.observe(el);
     this.resizeObserver.observe(this.trackEl().nativeElement);
+    this.resizeObserver.observe(this.navEl().nativeElement);
 
     this.mutationObserver = new MutationObserver(() => this.queueMeasure());
     this.mutationObserver.observe(el, { childList: true, subtree: true });
@@ -140,7 +146,24 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
     requestAnimationFrame(() => {
       this.measurePending = false;
       this.measureSize();
+      this.measureNavOverflow();
     });
+  }
+
+  onNavScroll(): void {
+    this.measureNavOverflow();
+  }
+
+  scrollNav(direction: 1 | -1): void {
+    const nav = this.navEl().nativeElement;
+    nav.scrollBy({ left: direction * Math.max(220, nav.clientWidth * 0.7), behavior: 'smooth' });
+  }
+
+  private measureNavOverflow(): void {
+    const nav = this.navEl().nativeElement;
+    const availability = horizontalScrollAvailability(nav.scrollLeft, nav.clientWidth, nav.scrollWidth);
+    this.navCanScrollLeft.set(availability.left);
+    this.navCanScrollRight.set(availability.right);
   }
 
   private measureSize(): void {
@@ -215,7 +238,6 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
     { path: '/live', label: 'Live', startsGroup: true },
     { path: '/day', label: 'Day' },
     { path: '/week', label: 'Week' },
-    { path: '/upcoming', label: 'Upcoming' },
     { path: '/my-teams', label: 'My Teams' },
     { path: '/playoffs/nfl', label: 'Super Bowl' },
     { path: '/playoffs/ncaa', label: 'CFP Bracket' },

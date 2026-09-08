@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
@@ -14,8 +14,11 @@ import {
   isDayPanelSizePreference,
 } from './day-panel-size';
 import { DayLayout, groupDayGames } from './day-view-groups';
+import { buildCalendarMonth, moveCalendarMonth, startOfCalendarMonth } from './day-calendar';
+import { formatDaySelection, parseDaySelection } from './day-selection';
 
 const PANEL_SIZE_STORAGE_KEY = 'kickoff.day.panel-size';
+const SELECTED_DAY_STORAGE_KEY = 'kickoff.day.selected-date';
 
 @Component({
   selector: 'app-day-view',
@@ -28,7 +31,10 @@ export class DayViewComponent {
   private readonly api = inject(KickoffApi);
   private readonly live = inject(LiveGameStore);
 
-  readonly day = signal(startOfLocalDay(new Date()));
+  readonly day = signal(readSelectedDay());
+  readonly calendarOpen = signal(false);
+  readonly calendarMonth = signal(startOfCalendarMonth(this.day()));
+  readonly calendarDays = computed(() => buildCalendarMonth(this.calendarMonth(), this.day()));
 
   private readonly range = computed(() => {
     const from = this.day();
@@ -46,7 +52,7 @@ export class DayViewComponent {
 
   /** "My games" filter: only favorite-team or circled games (mixes NCAA + NFL). */
   readonly onlyMine = signal(false);
-  readonly layout = signal<DayLayout>('status');
+  readonly layout = signal<DayLayout>('kickoff');
   readonly followedCount = computed(() => filterFollowed(this.games()).length);
   readonly visible = computed(() => (this.onlyMine() ? filterFollowed(this.games()) : this.games()));
   readonly groups = computed(() => groupDayGames(this.visible(), this.layout()));
@@ -60,13 +66,37 @@ export class DayViewComponent {
   });
 
   prev(): void {
-    this.day.update((d) => addDays(d, -1));
+    this.selectDay(addDays(this.day(), -1));
   }
   next(): void {
-    this.day.update((d) => addDays(d, 1));
+    this.selectDay(addDays(this.day(), 1));
   }
   today(): void {
     this.day.set(startOfLocalDay(new Date()));
+    try {
+      localStorage.removeItem(SELECTED_DAY_STORAGE_KEY);
+    } catch {
+      // Storage can be unavailable in privacy-restricted browser contexts.
+    }
+  }
+  openCalendar(): void {
+    this.calendarMonth.set(startOfCalendarMonth(this.day()));
+    this.calendarOpen.set(true);
+  }
+  closeCalendar(): void {
+    this.calendarOpen.set(false);
+  }
+  moveCalendar(offset: number): void {
+    this.calendarMonth.update((month) => moveCalendarMonth(month, offset));
+  }
+  selectCalendarDay(day: Date): void {
+    this.selectDay(day);
+    this.closeCalendar();
+  }
+
+  @HostListener('document:keydown.escape')
+  closeCalendarWithEscape(): void {
+    this.closeCalendar();
   }
   toggleMine(): void {
     this.onlyMine.update((v) => !v);
@@ -82,6 +112,26 @@ export class DayViewComponent {
       // Storage can be unavailable in privacy-restricted browser contexts.
     }
   }
+
+  private selectDay(day: Date): void {
+    const selected = startOfLocalDay(day);
+    this.day.set(selected);
+    try {
+      localStorage.setItem(SELECTED_DAY_STORAGE_KEY, formatDaySelection(selected));
+    } catch {
+      // Storage can be unavailable in privacy-restricted browser contexts.
+    }
+  }
+}
+
+function readSelectedDay(): Date {
+  try {
+    const selected = parseDaySelection(localStorage.getItem(SELECTED_DAY_STORAGE_KEY) ?? '');
+    if (selected) return selected;
+  } catch {
+    // Storage can be unavailable in privacy-restricted browser contexts.
+  }
+  return startOfLocalDay(new Date());
 }
 
 function readPanelSizePreference(): DayPanelSizePreference {

@@ -53,6 +53,298 @@ app-shell .nav a.starts-group {
   margin-left: 0.65rem;
 }
 
+app-shell .nav-strip {
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+
+  .nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    touch-action: pan-x;
+  }
+}
+
+app-shell .nav-scroll-btn {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: linear-gradient(90deg, #10141b, var(--surface-2, #1c212b));
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  &.left {
+    border-right: 1px solid var(--border, #262c38);
+    background: linear-gradient(90deg, var(--surface-2, #1c212b), #10141b);
+  }
+
+  &.right { border-left: 1px solid var(--border, #262c38); }
+  &:active { background: #2a303c; }
+  &:focus-visible { outline: 2px solid #c9a227; outline-offset: -2px; }
+}
+
+app-shell .nav-chevron {
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+
+  &.left { border-right: 10px solid #aab2c0; }
+  &.right { border-left: 10px solid #aab2c0; }
+}
+
+@media (pointer: coarse) {
+  app-shell .nav-scroll-btn {
+    width: 44px;
+    min-height: 48px;
+  }
+}
+
+app-my-games-modal .panel-body {
+  scrollbar-width: thin;
+  scrollbar-color: #414a59 #0c0f15;
+
+  &::-webkit-scrollbar { width: 10px; }
+
+  &::-webkit-scrollbar-track {
+    border-left: 1px solid #202631;
+    background: #0c0f15;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    min-height: 42px;
+    border: 2px solid #0c0f15;
+    border-radius: 999px;
+    background: #414a59;
+  }
+
+  &::-webkit-scrollbar-thumb:hover { background: #596476; }
+}
+
+app-important-games-ticker .game-meta .game-status {
+  display: inline-flex;
+  align-items: baseline;
+  flex: none;
+  gap: 0.22rem;
+  overflow: visible;
+
+  .kickoff-day {
+    color: var(--muted-strong, #aab2c0);
+    font-size: 0.5rem;
+    font-weight: 800;
+    letter-spacing: 0.015em;
+  }
+}
+
+app-day-view {
+  .schedule-header.compact {
+    display: flex;
+
+    .page-head { flex: 0 1 auto; }
+  }
+
+  .date-actions {
+    display: inline-flex;
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .filter-row { flex: none; }
+
+  .date-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 9.25rem;
+    min-height: 44px;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 7px;
+    background: var(--surface, #161a22);
+    color: var(--text, #e7ebf2);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+
+    &:active { background: var(--surface-2, #1c212b); }
+    &:focus-visible { outline: 2px solid #c9a227; outline-offset: 1px; }
+  }
+
+  .date-action-icon {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+
+  .calendar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(4, 6, 9, 0.72);
+    backdrop-filter: blur(3px);
+  }
+
+  .calendar-modal {
+    width: min(94vw, 520px);
+    max-height: min(92vh, 680px);
+    padding: 1rem;
+    overflow-y: auto;
+    border: 1px solid #3a4352;
+    border-radius: 16px;
+    background: var(--surface, #161a22);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7);
+  }
+
+  .calendar-modal-head,
+  .calendar-month-nav {
+    display: flex;
+    align-items: center;
+  }
+
+  .calendar-modal-head {
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.65rem;
+
+    h2 { margin: 0.12rem 0 0; font-size: 1.4rem; }
+  }
+
+  .calendar-eyebrow {
+    color: var(--accent-gold, #c9a227);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .calendar-close,
+  .calendar-month-nav button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 8px;
+    background: var(--surface-2, #1c212b);
+    color: var(--text, #e7ebf2);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .calendar-close:focus-visible,
+  .calendar-month-nav button:focus-visible,
+  .calendar-day:focus-visible { outline: 2px solid #e3c45e; outline-offset: 1px; }
+
+  .calendar-month-nav {
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+
+    button { font-size: 1.45rem; }
+    span {
+      overflow: hidden;
+      color: var(--muted-strong, #aab2c0);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .calendar-weekdays,
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+
+  .calendar-weekdays {
+    margin-bottom: 0.3rem;
+    color: var(--muted, #8b93a1);
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .calendar-day {
+    aspect-ratio: 1;
+    min-height: 48px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: var(--surface-2, #1c212b);
+    color: var(--text, #e7ebf2);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 750;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+
+    &.outside { color: #687181; background: #12161d; }
+    &.current-day { border-color: var(--accent-gold, #c9a227); }
+    &.selected { background: var(--accent-gold, #c9a227); color: #11151b; }
+    &:active { transform: scale(0.96); }
+  }
+}
+
+@media (pointer: coarse) {
+  app-day-view .date-action { min-height: 48px; }
+}
+
+@media (max-width: 900px) {
+  app-day-view .schedule-header.compact {
+    flex-wrap: wrap;
+
+    .page-head { flex: 1 1 auto; }
+    .date-actions { order: 3; flex-basis: 100%; }
+  }
+}
+
+@media (max-height: 700px) {
+  app-day-view {
+    .calendar-modal { width: min(92vw, 470px); padding: 0.7rem; }
+    .calendar-modal-head { margin-bottom: 0.35rem; }
+    .calendar-modal-head h2 { font-size: 1.15rem; }
+    .calendar-month-nav { margin-bottom: 0.4rem; }
+    .calendar-weekdays, .calendar-grid { gap: 0.2rem; }
+    .calendar-day { min-height: 38px; }
+  }
+}
+
+@media (max-width: 560px) {
+  app-day-view {
+    .date-actions { width: 100%; }
+    .date-action { flex: 1 1 0; min-width: 0; }
+    .filter-chip { width: 100%; justify-content: center; }
+  }
+}
+
 /* The wipe shield is global because it sits above every interactive app
    surface, including dialogs rendered beside the shell. */
 app-shell .wipe-shield {

@@ -39,7 +39,12 @@
             (click)="open(game)"
           >
             <span class="game-meta">
-              <span [class.live]="game.status === 'Live'">{{ statusLabel(game) }}</span>
+              <span class="game-status">
+                @if (showKickoffDay()) {
+                  <span class="kickoff-day">{{ kickoffDayLabel(game) }}</span>
+                }
+                <span [class.live]="game.status === 'Live'">{{ statusLabel(game) }}</span>
+              </span>
               <span>{{ interestLabel(game) }}</span>
             </span>
             <span class="team-line">

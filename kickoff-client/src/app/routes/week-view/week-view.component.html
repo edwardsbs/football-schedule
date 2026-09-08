@@ -23,7 +23,7 @@
   </div>
 </div>
 
-<app-important-games-ticker [games]="games()" />
+<app-important-games-ticker [games]="games()" [showKickoffDay]="true" />
 
 <app-week-strip [items]="weekStripItems()" (pick)="pickWeek($event)" (prev)="prev()" (next)="next()" />
 <button type="button" class="current-week-link" (click)="thisWeek()">Jump to this week</button>

@@ -1,10 +1,13 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map, timer } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { Game } from '../../core/models/game.model';
-import { addDays, filterFollowed, groupByDay, startOfLocalDay } from '../../core/timeline';
+import { addDays, filterFollowed, startOfLocalDay } from '../../core/timeline';
 import { GameRowComponent } from '../game-row/game-row.component';
+import { groupMyGames, myGameCountdown } from './my-games-groups';
 
 /**
  * Global "My Games" quick-look: favorite-team + circled games (mixing NCAA and
@@ -26,10 +29,11 @@ export class MyGamesModalComponent {
   readonly closed = output<void>();
 
   private readonly games = signal<Game[]>([]);
+  private readonly now = toSignal(timer(0, 1000).pipe(map(() => Date.now())), { initialValue: Date.now() });
   readonly loading = signal(false);
 
   readonly followed = computed(() => filterFollowed(this.live.overlayAll(this.games())));
-  readonly groups = computed(() => groupByDay(this.followed()));
+  readonly groups = computed(() => groupMyGames(this.followed(), new Date(this.now())));
 
   constructor() {
     effect(() => {
@@ -52,6 +56,10 @@ export class MyGamesModalComponent {
 
   refresh(): void {
     this.fetch();
+  }
+
+  countdown(game: Game): string {
+    return myGameCountdown(game, this.now());
   }
 
   close(): void {

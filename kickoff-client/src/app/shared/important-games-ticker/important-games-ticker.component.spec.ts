@@ -2,7 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Game } from '../../core/models/game.model';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { of } from 'rxjs';
-import { ImportantGamesTickerComponent, isImportantGame, sortImportantGames, watchAlertLevel } from './important-games-ticker.component';
+import {
+  ImportantGamesTickerComponent,
+  isImportantGame,
+  sortImportantGames,
+  watchAlertLevel,
+  watchKickoffDayLabel,
+} from './important-games-ticker.component';
 
 describe('ImportantGamesTickerComponent', () => {
   let fixture: ComponentFixture<ImportantGamesTickerComponent>;
@@ -24,6 +30,11 @@ describe('ImportantGamesTickerComponent', () => {
 
   it('omits ordinary games', () => {
     expect(isImportantGame(game())).toBeFalse();
+  });
+
+  it('formats a compact local weekday and date for the Week rail', () => {
+    const kickoff = new Date(2026, 8, 10, 19, 35).toISOString();
+    expect(watchKickoffDayLabel(kickoff)).toBe('Thu 9/10');
   });
 
   it('orders live first, upcoming by kickoff, and completed games last', () => {

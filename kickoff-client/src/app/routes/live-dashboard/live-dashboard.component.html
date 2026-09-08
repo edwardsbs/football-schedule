@@ -69,7 +69,7 @@
             type="button"
             class="icon-btn circle-btn"
             [class.on]="fan.isCircled(game.id)"
-            [attr.aria-label]="fan.isCircled(game.id) ? 'Remove from Upcoming' : 'Circle this game'"
+            [attr.aria-label]="fan.isCircled(game.id) ? 'Remove circle from this game' : 'Circle this game'"
             (click)="$event.stopPropagation(); fan.toggleCircle(game.id)"
           >{{ fan.isCircled(game.id) ? '◉' : '○' }}</button>
 
