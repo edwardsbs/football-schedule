@@ -13,34 +13,29 @@
   [class.live]="game().status === 'Live'"
   [class.favorite]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
   [class.circled]="fan.isCircled(game().id)"
+  [class.long-press-armed]="longPressArmed()"
   role="button"
   tabindex="0"
-  [attr.aria-label]="'Open ' + game().away.displayName + ' at ' + game().home.displayName + ' details'"
-  (click)="open()"
+  [attr.aria-label]="cardAriaLabel()"
+  (pointerdown)="startPress($event)"
+  (pointermove)="trackPress($event)"
+  (pointerup)="finishPress($event)"
+  (pointercancel)="cancelPress()"
+  (pointerleave)="cancelPress()"
+  (contextmenu)="suppressContextMenu($event)"
   (keydown.enter)="openFromKeyboard($event)"
   (keydown.space)="openFromKeyboard($event)"
 >
-  @if (gameDayState(); as state) {
-    <button
-      type="button"
-      class="game-day-toggle"
-      [class.selected]="state === 'selected'"
-      [attr.aria-label]="state === 'selected' ? 'Remove from Game Day' : 'Add to Game Day'"
-      [attr.title]="state === 'selected' ? 'On Game Day · tap to remove' : 'Add to Game Day'"
-      [attr.aria-pressed]="state === 'selected'"
-      (click)="toggleGameDay($event)"
-      (keydown)="$event.stopPropagation()"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3" y="4" width="18" height="16" rx="3" />
-        <path d="M7 8h10M7 16h3" />
-        @if (state === 'selected') {
-          <path class="state-mark" d="m11.5 13 2 2 4-4.5" />
-        } @else {
-          <path class="state-mark" d="M15 10v6M12 13h6" />
-        }
+  @if (gameDayState() === 'selected') {
+    <span class="game-day-marker" title="On Game Day · press and hold to remove" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M5.5 3.5h13v17l-6.5-4-6.5 4v-17Z" />
+        <path d="m9 10.5 2 2 4-4.5" />
       </svg>
-    </button>
+    </span>
+  }
+  @if (gameDayState() !== null) {
+    <span class="hold-progress" aria-hidden="true"></span>
   }
   <span class="card-meta">
     <span class="status" [class.live-text]="game().status === 'Live'">{{ statusLabel() }}</span>

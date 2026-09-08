@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { Game } from '../../core/models/game.model';
 import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from '../../core/field-position';
 import { trackScorePulse } from '../../core/score-pulse';
@@ -16,6 +16,10 @@ import { DayPanelSize } from './day-panel-size';
   styleUrl: './day-game-card.component.scss',
 })
 export class DayGameCardComponent {
+  private static readonly LONG_PRESS_MS = 650;
+  private static readonly HOLD_INTENT_MS = 150;
+  private static readonly MOVE_CANCEL_DISTANCE_PX = 14;
+
   readonly game = input.required<Game>();
   readonly panelSize = input<DayPanelSize>('small');
   readonly gameDayState = input<'available' | 'selected' | null>(null);
@@ -30,6 +34,17 @@ export class DayGameCardComponent {
   protected readonly fan = inject(FanStore);
   protected readonly records = inject(TeamRecordStore);
   private readonly detail = inject(GameDetailOverlay);
+  private readonly destroyRef = inject(DestroyRef);
+  private longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  private holdIntentTimer: ReturnType<typeof setTimeout> | null = null;
+  private pressOrigin: { x: number; y: number } | null = null;
+  private pressMoved = false;
+  private longPressTriggered = false;
+  protected readonly longPressArmed = signal(false);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => this.clearLongPressTimer());
+  }
 
   protected open(): void {
     this.detail.open(this.game().id);
@@ -40,9 +55,79 @@ export class DayGameCardComponent {
     this.open();
   }
 
-  protected toggleGameDay(event: Event): void {
-    event.stopPropagation();
-    this.gameDayToggle.emit();
+  protected startPress(event: PointerEvent): void {
+    if (!event.isPrimary || event.button !== 0) return;
+    this.clearLongPressTimer();
+    this.pressOrigin = { x: event.clientX, y: event.clientY };
+    this.pressMoved = false;
+    this.longPressTriggered = false;
+
+    if (this.gameDayState() === null) return;
+    this.holdIntentTimer = setTimeout(() => {
+      this.holdIntentTimer = null;
+      this.longPressArmed.set(true);
+    }, DayGameCardComponent.HOLD_INTENT_MS);
+    this.longPressTimer = setTimeout(() => {
+      this.longPressTimer = null;
+      this.longPressArmed.set(false);
+      this.longPressTriggered = true;
+      this.gameDayToggle.emit();
+      if ('vibrate' in navigator) navigator.vibrate(18);
+    }, DayGameCardComponent.LONG_PRESS_MS);
+  }
+
+  protected trackPress(event: PointerEvent): void {
+    if (!this.pressOrigin || this.pressMoved) return;
+    const xDistance = Math.abs(event.clientX - this.pressOrigin.x);
+    const yDistance = Math.abs(event.clientY - this.pressOrigin.y);
+    if (Math.max(xDistance, yDistance) < DayGameCardComponent.MOVE_CANCEL_DISTANCE_PX) return;
+    this.pressMoved = true;
+    this.cancelLongPress();
+  }
+
+  protected finishPress(event: PointerEvent): void {
+    if (!this.pressOrigin) return;
+    const openDetails = !this.pressMoved && !this.longPressTriggered && !this.longPressArmed();
+    this.clearPressState();
+    if (openDetails) {
+      event.preventDefault();
+      this.open();
+    }
+  }
+
+  protected cancelPress(): void {
+    this.clearPressState();
+  }
+
+  protected suppressContextMenu(event: Event): void {
+    if (this.gameDayState() !== null) event.preventDefault();
+  }
+
+  protected cardAriaLabel(): string {
+    const game = this.game();
+    const openLabel = `Open ${game.away.displayName} at ${game.home.displayName} details`;
+    if (this.gameDayState() === 'selected') return `${openLabel}. On Game Day; press and hold to remove`;
+    if (this.gameDayState() === 'available') return `${openLabel}. Press and hold to add to Game Day`;
+    return openLabel;
+  }
+
+  private clearPressState(): void {
+    this.cancelLongPress();
+    this.pressOrigin = null;
+    this.pressMoved = false;
+    this.longPressTriggered = false;
+  }
+
+  private cancelLongPress(): void {
+    this.clearLongPressTimer();
+    this.longPressArmed.set(false);
+  }
+
+  private clearLongPressTimer(): void {
+    if (this.longPressTimer) clearTimeout(this.longPressTimer);
+    if (this.holdIntentTimer) clearTimeout(this.holdIntentTimer);
+    this.longPressTimer = null;
+    this.holdIntentTimer = null;
   }
 
   protected statusLabel(): string {

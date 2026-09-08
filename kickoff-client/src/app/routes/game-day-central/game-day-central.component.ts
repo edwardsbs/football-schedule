@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { catchError, of, switchMap } from 'rxjs';
 import { Game } from '../../core/models/game.model';
 import { GameDayBoardStore } from '../../core/services/game-day-board-store';
+import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { SelectedDayStore } from '../../core/services/selected-day-store';
@@ -26,6 +27,7 @@ export class GameDayCentralComponent {
   private readonly live = inject(LiveGameStore);
   private readonly selectedDay = inject(SelectedDayStore);
   readonly board = inject(GameDayBoardStore);
+  private readonly fan = inject(FanStore);
 
   readonly day = this.selectedDay.day;
   readonly calendarOpen = signal(false);
@@ -48,8 +50,8 @@ export class GameDayCentralComponent {
     const range = this.range();
     return this.live.overlayRange(this.loadedGames(), range.from, range.to);
   });
-  readonly watching = computed(() => this.games().filter((game) => this.board.isWatching(game.id)));
-  readonly otherGames = computed(() => this.games().filter((game) => !this.board.isWatching(game.id)));
+  readonly watching = computed(() => this.games().filter((game) => this.isOnGameDay(game)));
+  readonly otherGames = computed(() => this.games().filter((game) => !this.isOnGameDay(game)));
   readonly watchingSize = computed(() => automaticDayPanelSize(this.watching().length));
   readonly otherSize = computed(() => automaticDayPanelSize(this.otherGames().length));
   readonly interestingCount = computed(() => this.otherGames().filter(isGettingInteresting).length);
@@ -86,6 +88,18 @@ export class GameDayCentralComponent {
 
   interesting(game: Game): boolean {
     return isGettingInteresting(game);
+  }
+
+  addToGameDay(game: Game): void {
+    this.board.promote(game.id);
+  }
+
+  removeFromGameDay(game: Game): void {
+    this.board.demote(game.id, this.fan.isCircled(game.id));
+  }
+
+  private isOnGameDay(game: Game): boolean {
+    return this.board.isWatching(game.id, this.fan.isCircled(game.id));
   }
 
   @HostListener('document:keydown.escape')

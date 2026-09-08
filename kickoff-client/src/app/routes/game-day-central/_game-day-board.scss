@@ -96,54 +96,68 @@ app-game-day-central {
 }
 
 app-day-game-card {
-  .game-card:has(.game-day-toggle) .card-meta { padding-right: 1.8rem; }
+  .game-card:has(.game-day-marker) .card-meta { padding-right: 1.4rem; }
 
-  .game-day-toggle {
+  .game-day-marker {
     position: absolute;
     z-index: 5;
-    top: 0.28rem;
-    right: 0.3rem;
+    top: 0.38rem;
+    right: 0.42rem;
     display: grid;
     place-items: center;
-    width: 27px;
-    height: 27px;
-    padding: 0;
-    border: 1px solid rgb(227 196 94 / 52%);
-    border-radius: 8px;
-    background: rgb(20 25 34 / 94%);
-    color: #e3c45e;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 38%);
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    width: 16px;
+    height: 18px;
+    color: #f0c928;
+    filter: drop-shadow(0 1px 3px rgb(0 0 0 / 64%));
+    pointer-events: none;
 
-    &::before { content: ''; position: absolute; inset: -6px; }
     svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
+      width: 100%;
+      height: 100%;
+      fill: #f0c928;
       stroke: currentColor;
       stroke-linecap: round;
       stroke-linejoin: round;
-      stroke-width: 1.65;
+      stroke-width: 1.7;
     }
 
-    .state-mark { stroke-width: 2.2; }
-    &.selected {
-      border-color: #e3c45e;
-      background: #c9a227;
-      color: #11151b;
-      box-shadow: 0 0 0 2px rgb(201 162 39 / 14%);
-    }
-    &:active { transform: scale(0.92); }
-    &:focus-visible { outline: 2px solid #fff1aa; outline-offset: 1px; }
+    path + path { fill: none; stroke: #11151b; stroke-width: 2.15; }
   }
+
+  .game-card.long-press-armed {
+    outline: 2px solid rgb(240 201 40 / 48%);
+    outline-offset: -3px;
+  }
+
+  .hold-progress {
+    position: absolute;
+    z-index: 7;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    border-radius: 0 999px 999px 0;
+    background: #f0c928;
+    box-shadow: 0 0 7px rgb(240 201 40 / 72%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .game-card.long-press-armed .hold-progress {
+    opacity: 1;
+    animation: game-day-hold-progress 500ms linear forwards;
+  }
+}
+
+@keyframes game-day-hold-progress {
+  from { width: 0; }
+  to { width: 100%; }
 }
 
 @media (pointer: coarse) {
   app-day-game-card {
-    .game-card:has(.game-day-toggle) .card-meta { padding-right: 2.25rem; }
-    .game-day-toggle { top: 0.22rem; right: 0.24rem; width: 34px; height: 34px; }
+    .game-card:has(.game-day-marker) .card-meta { padding-right: 1.65rem; }
+    .game-day-marker { top: 0.34rem; right: 0.4rem; width: 18px; height: 20px; }
   }
   app-game-day-central .control-board-date .arrow { width: 48px; height: 48px; }
 }

@@ -85,7 +85,7 @@
             [game]="game"
             [panelSize]="watchingSize()"
             gameDayState="selected"
-            (gameDayToggle)="board.demote(game.id)"
+            (gameDayToggle)="removeFromGameDay(game)"
           />
         </div>
       }
@@ -118,7 +118,7 @@
             [game]="game"
             [panelSize]="otherSize()"
             gameDayState="available"
-            (gameDayToggle)="board.promote(game.id)"
+            (gameDayToggle)="addToGameDay(game)"
           />
         </div>
       }

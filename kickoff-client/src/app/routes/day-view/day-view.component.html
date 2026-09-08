@@ -174,12 +174,12 @@
           [attr.aria-label]="group.label + ' games'"
         >
           @for (game of group.games; track game.id) {
-            <div class="game-board-card" [class.watching]="gameDayBoard.isWatching(game.id)">
+            <div class="game-board-card" [class.watching]="isOnGameDay(game)">
               <app-day-game-card
                 [game]="game"
                 [panelSize]="resolvedPanelSize()"
-                [gameDayState]="gameDayBoard.isWatching(game.id) ? 'selected' : 'available'"
-                (gameDayToggle)="toggleGameDay(game.id)"
+                [gameDayState]="isOnGameDay(game) ? 'selected' : 'available'"
+                (gameDayToggle)="toggleGameDay(game)"
               />
             </div>
           }

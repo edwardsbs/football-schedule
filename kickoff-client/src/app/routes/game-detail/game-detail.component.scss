@@ -53,9 +53,9 @@
   min-width: 0;
 
   .team-highlight {
-    flex: 0 1 25rem;
-    width: 25rem;
-    max-width: calc(100% - 5.5rem);
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
   }
 
   & + .team-row {
@@ -169,6 +169,12 @@
   &:hover { border-color: var(--muted, #8b93a1); }
 
   &.on { border-color: #4c8dff; color: #7fb0ff; }
+
+  &.game-day-chip.on {
+    border-color: var(--accent-gold, #c9a227);
+    background: color-mix(in srgb, var(--accent-gold, #c9a227) 12%, var(--surface, #161a22));
+    color: #f0c928;
+  }
 
   &.primary {
     background: var(--accent-gold, #c9a227);

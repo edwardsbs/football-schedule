@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { KickoffApi } from './kickoff-api';
+import { GameDayBoardStore } from './game-day-board-store';
 import { FavoriteTeam, Game, TeamInterest } from '../models/game.model';
 
 /**
@@ -10,6 +11,7 @@ import { FavoriteTeam, Game, TeamInterest } from '../models/game.model';
 @Injectable({ providedIn: 'root' })
 export class FanStore {
   private readonly api = inject(KickoffApi);
+  private readonly gameDay = inject(GameDayBoardStore);
 
   readonly favorites = signal<FavoriteTeam[]>([]);
   readonly interests = signal<TeamInterest[]>([]);
@@ -57,8 +59,12 @@ export class FanStore {
   }
 
   toggleCircle(gameId: number): void {
-    const op = this.isCircled(gameId) ? this.api.uncircle(gameId) : this.api.circle(gameId);
-    op.subscribe(() => this.reloadCircled());
+    const adding = !this.isCircled(gameId);
+    const op = adding ? this.api.circle(gameId) : this.api.uncircle(gameId);
+    op.subscribe(() => {
+      if (adding) this.gameDay.allowAutomaticInclusion(gameId);
+      this.reloadCircled();
+    });
   }
 
   toggleInterest(teamId: number): void {

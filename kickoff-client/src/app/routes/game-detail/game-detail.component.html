@@ -117,6 +117,14 @@
         (click)="fan.toggleCircle(g.id)"
       >{{ fan.isCircled(g.id) ? '◉ Circled' : '○ Circle this game' }}</button>
 
+      <button
+        type="button"
+        class="chip game-day-chip"
+        [class.on]="isOnGameDay(g)"
+        [attr.aria-pressed]="isOnGameDay(g)"
+        (click)="toggleGameDay(g)"
+      >{{ isOnGameDay(g) ? '★ On Game Day' : '☆ Add to Game Day' }}</button>
+
       @if (!g.isMuted) {
         <button type="button" class="chip" (click)="mute()">🔇 Mute</button>
         <button type="button" class="chip" (click)="watchLater()">🕒 Watch later</button>

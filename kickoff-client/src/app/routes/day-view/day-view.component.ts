@@ -5,6 +5,7 @@ import { catchError, of, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { GameDayBoardStore } from '../../core/services/game-day-board-store';
+import { FanStore } from '../../core/services/fan-store';
 import { SelectedDayStore } from '../../core/services/selected-day-store';
 import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed } from '../../core/timeline';
@@ -32,6 +33,7 @@ export class DayViewComponent {
   private readonly live = inject(LiveGameStore);
   private readonly selectedDay = inject(SelectedDayStore);
   readonly gameDayBoard = inject(GameDayBoardStore);
+  private readonly fan = inject(FanStore);
 
   readonly day = this.selectedDay.day;
   readonly calendarOpen = signal(false);
@@ -113,8 +115,12 @@ export class DayViewComponent {
     }
   }
 
-  toggleGameDay(gameId: number): void {
-    this.gameDayBoard.toggle(gameId);
+  isOnGameDay(game: Game): boolean {
+    return this.gameDayBoard.isWatching(game.id, this.fan.isCircled(game.id));
+  }
+
+  toggleGameDay(game: Game): void {
+    this.gameDayBoard.toggle(game.id, this.fan.isCircled(game.id));
   }
 
   private selectDay(day: Date): void {

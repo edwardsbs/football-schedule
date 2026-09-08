@@ -4,6 +4,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, of, startWith, switchMap, timer } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { FanStore } from '../../core/services/fan-store';
+import { GameDayBoardStore } from '../../core/services/game-day-board-store';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score, TeamSummary } from '../../core/models/game.model';
@@ -34,6 +35,7 @@ export class GameDetailComponent {
   private readonly location = inject(Location);
   private readonly live = inject(LiveGameStore);
   protected readonly fan = inject(FanStore);
+  protected readonly gameDay = inject(GameDayBoardStore);
   protected readonly records = inject(TeamRecordStore);
 
   readonly id = input.required<string>();
@@ -187,6 +189,14 @@ export class GameDetailComponent {
     } else {
       this.location.back();
     }
+  }
+
+  isOnGameDay(game: Game): boolean {
+    return this.gameDay.isWatching(game.id, this.fan.isCircled(game.id));
+  }
+
+  toggleGameDay(game: Game): void {
+    this.gameDay.toggle(game.id, this.fan.isCircled(game.id));
   }
 
   // --- spoiler controls (refetch after each, so the DTO's muted projection updates) ---

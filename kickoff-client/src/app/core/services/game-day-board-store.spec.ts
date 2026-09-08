@@ -1,8 +1,13 @@
 import { GameDayBoardStore } from './game-day-board-store';
 
 describe('GameDayBoardStore', () => {
-  beforeEach(() => localStorage.removeItem('kickoff.game-day.watched-games'));
-  afterEach(() => localStorage.removeItem('kickoff.game-day.watched-games'));
+  const clearStorage = () => {
+    localStorage.removeItem('kickoff.game-day.watched-games');
+    localStorage.removeItem('kickoff.game-day.auto-excluded-games');
+  };
+
+  beforeEach(clearStorage);
+  afterEach(clearStorage);
 
   it('promotes and demotes games without moving them automatically', () => {
     const store = new GameDayBoardStore();
@@ -18,5 +23,17 @@ describe('GameDayBoardStore', () => {
     firstVisit.promote(77);
 
     expect(new GameDayBoardStore().isWatching(77)).toBeTrue();
+  });
+
+  it('automatically includes circled games but permits an explicit removal', () => {
+    const store = new GameDayBoardStore();
+    expect(store.isWatching(88, true)).toBeTrue();
+
+    store.demote(88, true);
+    expect(store.isWatching(88, true)).toBeFalse();
+    expect(new GameDayBoardStore().isWatching(88, true)).toBeFalse();
+
+    store.allowAutomaticInclusion(88);
+    expect(store.isWatching(88, true)).toBeTrue();
   });
 });
