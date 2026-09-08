@@ -18,6 +18,7 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
 import { MOCK_2025_PLAYOFF_PICTURE } from './nfl-playoff-picture.mock';
 import { defaultScheduleWeek } from './schedule-week-selection';
+import { pollWeekForScheduleWeek } from './season-ranking-week';
 
 type ViewMode = 'byWeek' | 'full';
 
@@ -117,14 +118,14 @@ export class SeasonScheduleComponent {
   private readonly rankingSelection = computed(() => {
     const week = this.weekNumber();
     return this.league() === 'ncaa' && this.viewMode() === 'byWeek' && week !== null
-      ? { seasonYear: this.seasonYear, week }
+      ? { seasonYear: this.seasonYear, scheduleWeek: week, pollWeek: pollWeekForScheduleWeek(week) }
       : null;
   });
 
   readonly rankingSet = toSignal(
     toObservable(this.rankingSelection).pipe(
       switchMap((selection) => selection
-        ? this.api.getNcaaRankings(selection.seasonYear, selection.week).pipe(catchError(() => of(null)))
+        ? this.api.getNcaaRankings(selection.seasonYear, selection.pollWeek).pipe(catchError(() => of(null)))
         : of(null)),
     ),
     { initialValue: null as NcaaRankings | null },
@@ -186,6 +187,12 @@ export class SeasonScheduleComponent {
   }
 
   rankingPollContext(poll: RankingPoll): string {
+    const scheduleWeek = this.rankingSelection()?.scheduleWeek;
+    if (scheduleWeek !== undefined) {
+      return poll.isExactWeek
+        ? `For schedule Week ${scheduleWeek} · ${poll.seasonYear}`
+        : `${poll.label} · latest available for schedule Week ${scheduleWeek}`;
+    }
     return poll.isExactWeek
       ? `${poll.label} · ${poll.seasonYear}`
       : `${poll.label} · latest available for Week ${poll.requestedWeek}`;

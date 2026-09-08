@@ -8,6 +8,7 @@
 @use './app/shared/team-highlight';
 @use './app/routes/game-detail/game-summary';
 @use './app/routes/season-schedule/nfl-playoff-picture';
+@use './app/routes/game-day-central/game-day-board';
 
 :root {
   --bg: #0f1218;
@@ -147,7 +148,8 @@ app-important-games-ticker .game-meta .game-status {
   }
 }
 
-app-day-view {
+app-day-view,
+app-game-day-central {
   .schedule-header.compact {
     display: flex;
 
@@ -315,7 +317,8 @@ app-day-view {
 }
 
 @media (pointer: coarse) {
-  app-day-view .date-action { min-height: 48px; }
+  app-day-view .date-action,
+  app-game-day-central .date-action { min-height: 48px; }
 }
 
 @media (max-width: 900px) {
@@ -328,7 +331,8 @@ app-day-view {
 }
 
 @media (max-height: 700px) {
-  app-day-view {
+  app-day-view,
+  app-game-day-central {
     .calendar-modal { width: min(92vw, 470px); padding: 0.7rem; }
     .calendar-modal-head { margin-bottom: 0.35rem; }
     .calendar-modal-head h2 { font-size: 1.15rem; }
@@ -339,7 +343,8 @@ app-day-view {
 }
 
 @media (max-width: 560px) {
-  app-day-view {
+  app-day-view,
+  app-game-day-central {
     .date-actions { width: 100%; }
     .date-action { flex: 1 1 0; min-width: 0; }
     .filter-chip { width: 100%; justify-content: center; }

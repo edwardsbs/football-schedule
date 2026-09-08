@@ -24,7 +24,9 @@ export function buildCalendarMonth(
   today = new Date(),
 ): DayCalendarCell[] {
   const firstOfMonth = startOfCalendarMonth(month);
-  const firstCell = addDays(firstOfMonth, -firstOfMonth.getDay());
+  // Convert JavaScript's Sunday-first index to Monday=0 ... Sunday=6.
+  const mondayFirstOffset = (firstOfMonth.getDay() + 6) % 7;
+  const firstCell = addDays(firstOfMonth, -mondayFirstOffset);
   const selectedKey = formatDaySelection(startOfLocalDay(selectedDay));
   const todayKey = formatDaySelection(startOfLocalDay(today));
 

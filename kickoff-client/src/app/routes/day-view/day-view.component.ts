@@ -4,8 +4,10 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
+import { GameDayBoardStore } from '../../core/services/game-day-board-store';
+import { SelectedDayStore } from '../../core/services/selected-day-store';
 import { Game } from '../../core/models/game.model';
-import { addDays, filterFollowed, startOfLocalDay } from '../../core/timeline';
+import { addDays, filterFollowed } from '../../core/timeline';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { DayGameCardComponent } from './day-game-card.component';
 import {
@@ -15,10 +17,8 @@ import {
 } from './day-panel-size';
 import { DayLayout, groupDayGames } from './day-view-groups';
 import { buildCalendarMonth, moveCalendarMonth, startOfCalendarMonth } from './day-calendar';
-import { formatDaySelection, parseDaySelection } from './day-selection';
 
 const PANEL_SIZE_STORAGE_KEY = 'kickoff.day.panel-size';
-const SELECTED_DAY_STORAGE_KEY = 'kickoff.day.selected-date';
 
 @Component({
   selector: 'app-day-view',
@@ -30,8 +30,10 @@ const SELECTED_DAY_STORAGE_KEY = 'kickoff.day.selected-date';
 export class DayViewComponent {
   private readonly api = inject(KickoffApi);
   private readonly live = inject(LiveGameStore);
+  private readonly selectedDay = inject(SelectedDayStore);
+  readonly gameDayBoard = inject(GameDayBoardStore);
 
-  readonly day = signal(readSelectedDay());
+  readonly day = this.selectedDay.day;
   readonly calendarOpen = signal(false);
   readonly calendarMonth = signal(startOfCalendarMonth(this.day()));
   readonly calendarDays = computed(() => buildCalendarMonth(this.calendarMonth(), this.day()));
@@ -72,12 +74,7 @@ export class DayViewComponent {
     this.selectDay(addDays(this.day(), 1));
   }
   today(): void {
-    this.day.set(startOfLocalDay(new Date()));
-    try {
-      localStorage.removeItem(SELECTED_DAY_STORAGE_KEY);
-    } catch {
-      // Storage can be unavailable in privacy-restricted browser contexts.
-    }
+    this.selectedDay.goToToday();
   }
   openCalendar(): void {
     this.calendarMonth.set(startOfCalendarMonth(this.day()));
@@ -113,25 +110,13 @@ export class DayViewComponent {
     }
   }
 
-  private selectDay(day: Date): void {
-    const selected = startOfLocalDay(day);
-    this.day.set(selected);
-    try {
-      localStorage.setItem(SELECTED_DAY_STORAGE_KEY, formatDaySelection(selected));
-    } catch {
-      // Storage can be unavailable in privacy-restricted browser contexts.
-    }
+  toggleGameDay(gameId: number): void {
+    this.gameDayBoard.toggle(gameId);
   }
-}
 
-function readSelectedDay(): Date {
-  try {
-    const selected = parseDaySelection(localStorage.getItem(SELECTED_DAY_STORAGE_KEY) ?? '');
-    if (selected) return selected;
-  } catch {
-    // Storage can be unavailable in privacy-restricted browser contexts.
+  private selectDay(day: Date): void {
+    this.selectedDay.select(day);
   }
-  return startOfLocalDay(new Date());
 }
 
 function readPanelSizePreference(): DayPanelSizePreference {

@@ -1,12 +1,12 @@
 import { buildCalendarMonth, moveCalendarMonth, startOfCalendarMonth } from './day-calendar';
 
 describe('Day calendar', () => {
-  it('builds a six-week Sunday-first calendar around the selected month', () => {
+  it('builds a six-week Monday-first calendar around the selected month', () => {
     const cells = buildCalendarMonth(new Date(2026, 8, 1), new Date(2026, 8, 12), new Date(2026, 8, 8));
 
     expect(cells.length).toBe(42);
-    expect(cells[0].key).toBe('2026-08-30');
-    expect(cells[41].key).toBe('2026-10-10');
+    expect(cells[0].key).toBe('2026-08-31');
+    expect(cells[41].key).toBe('2026-10-11');
     expect(cells.find((cell) => cell.selected)?.key).toBe('2026-09-12');
     expect(cells.find((cell) => cell.today)?.key).toBe('2026-09-08');
   });

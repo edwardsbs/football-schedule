@@ -24,6 +24,12 @@ export const routes: Routes = [
         loadComponent: () => import('./routes/day-view/day-view.component').then((m) => m.DayViewComponent),
       },
       {
+        path: 'game-day',
+        title: 'Game Day Central · Kickoff',
+        loadComponent: () =>
+          import('./routes/game-day-central/game-day-central.component').then((m) => m.GameDayCentralComponent),
+      },
+      {
         path: 'season/:league',
         title: 'Season · Kickoff',
         loadComponent: () =>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { Game } from '../../core/models/game.model';
 import { isInFieldGoalRange, isInRedZone } from '../../core/field-position';
 import { trackScorePulse } from '../../core/score-pulse';
@@ -18,6 +18,8 @@ import { DayPanelSize } from './day-panel-size';
 export class DayGameCardComponent {
   readonly game = input.required<Game>();
   readonly panelSize = input<DayPanelSize>('small');
+  readonly gameDayState = input<'available' | 'selected' | null>(null);
+  readonly gameDayToggle = output<void>();
   protected readonly scorePulse = trackScorePulse(this.game);
   protected readonly inFieldGoalRange = () => isInFieldGoalRange(this.game());
   protected readonly inRedZone = () => isInRedZone(this.game());
@@ -28,6 +30,16 @@ export class DayGameCardComponent {
 
   protected open(): void {
     this.detail.open(this.game().id);
+  }
+
+  protected openFromKeyboard(event: Event): void {
+    event.preventDefault();
+    this.open();
+  }
+
+  protected toggleGameDay(event: Event): void {
+    event.stopPropagation();
+    this.gameDayToggle.emit();
   }
 
   protected statusLabel(): string {

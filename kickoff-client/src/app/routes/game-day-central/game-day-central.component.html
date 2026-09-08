@@ -1,0 +1,127 @@
+<header class="control-board-head">
+  <div class="control-board-title">
+    <span class="eyebrow">Your live command center</span>
+    <h1>Game Day Central</h1>
+    <p>Keep the games you care about up top. Every other game stays available below.</p>
+  </div>
+
+  <div class="control-board-date">
+    <div class="nav">
+      <button type="button" class="arrow" (click)="prev()" aria-label="Previous day">‹</button>
+      <strong>{{ day() | date: 'EEE, MMM d' }}</strong>
+      <button type="button" class="arrow" (click)="next()" aria-label="Next day">›</button>
+    </div>
+    <div class="date-actions" role="group" aria-label="Choose control board date">
+      <button type="button" class="date-action" (click)="today()">Go To Today</button>
+      <button type="button" class="date-action" (click)="openCalendar()">
+        <svg class="date-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 2v3M17 2v3M3.5 8.5h17M5.5 4h13a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+          <path d="M7 12h2M11 12h2M15 12h2M7 16h2M11 16h2M15 16h2" />
+        </svg>
+        Select A Date
+      </button>
+    </div>
+  </div>
+</header>
+
+<app-important-games-ticker [games]="games()" />
+
+@if (calendarOpen()) {
+  <div class="calendar-backdrop" (click)="closeCalendar()">
+    <section class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="central-calendar-title" (click)="$event.stopPropagation()">
+      <header class="calendar-modal-head">
+        <div>
+          <span class="calendar-eyebrow">Select a date</span>
+          <h2 id="central-calendar-title">{{ calendarMonth() | date: 'MMMM y' }}</h2>
+        </div>
+        <button type="button" class="calendar-close" aria-label="Close calendar" (click)="closeCalendar()">✕</button>
+      </header>
+      <div class="calendar-month-nav">
+        <button type="button" aria-label="Previous month" (click)="moveCalendar(-1)">‹</button>
+        <span>{{ day() | date: 'EEEE, MMMM d, y' }}</span>
+        <button type="button" aria-label="Next month" (click)="moveCalendar(1)">›</button>
+      </div>
+      <div class="calendar-weekdays" aria-hidden="true">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+      </div>
+      <div class="calendar-grid" role="grid" aria-label="Calendar days">
+        @for (cell of calendarDays(); track cell.key) {
+          <button
+            type="button"
+            class="calendar-day"
+            [class.outside]="!cell.inMonth"
+            [class.selected]="cell.selected"
+            [class.current-day]="cell.today"
+            [attr.aria-label]="cell.date | date: 'fullDate'"
+            [attr.aria-selected]="cell.selected"
+            [attr.aria-current]="cell.today ? 'date' : null"
+            (click)="selectCalendarDay(cell.date)"
+          >{{ cell.dayNumber }}</button>
+        }
+      </div>
+    </section>
+  </div>
+}
+
+<section class="control-board-section watching-board">
+  <header class="control-board-section-head">
+    <div>
+      <span class="board-kicker">Priority board</span>
+      <h2>Watching</h2>
+    </div>
+    <span class="board-count">{{ watching().length }}</span>
+  </header>
+
+  @if (watching().length === 0) {
+    <div class="board-empty">
+      <strong>Your top board is ready.</strong>
+      <span>Promote a game from below, or add one from the <a routerLink="/day">Day schedule</a>.</span>
+    </div>
+  } @else {
+    <div class="control-board-grid" [class.panels-medium]="watchingSize() === 'medium'" [class.panels-live]="watchingSize() === 'live'">
+      @for (game of watching(); track game.id) {
+        <div class="game-board-card watching">
+          <app-day-game-card
+            [game]="game"
+            [panelSize]="watchingSize()"
+            gameDayState="selected"
+            (gameDayToggle)="board.demote(game.id)"
+          />
+        </div>
+      }
+    </div>
+  }
+</section>
+
+<section class="control-board-section other-board">
+  <header class="control-board-section-head">
+    <div>
+      <span class="board-kicker">Full scoreboard</span>
+      <h2>Other Games</h2>
+    </div>
+    <div class="board-head-meta">
+      @if (interestingCount() > 0) { <span class="interesting-total">{{ interestingCount() }} getting interesting</span> }
+      <span class="board-count">{{ otherGames().length }}</span>
+    </div>
+  </header>
+
+  @if (games().length === 0) {
+    <div class="board-empty"><strong>No games on this date.</strong><span>Choose another day above.</span></div>
+  } @else if (otherGames().length === 0) {
+    <div class="board-empty"><strong>Every game is on your Watching board.</strong></div>
+  } @else {
+    <div class="control-board-grid other-grid" [class.panels-medium]="otherSize() === 'medium'" [class.panels-live]="otherSize() === 'live'">
+      @for (game of otherGames(); track game.id) {
+        <div class="game-board-card" [class.getting-interesting]="interesting(game)">
+          @if (interesting(game)) { <span class="interesting-flag">Getting Interesting</span> }
+          <app-day-game-card
+            [game]="game"
+            [panelSize]="otherSize()"
+            gameDayState="available"
+            (gameDayToggle)="board.promote(game.id)"
+          />
+        </div>
+      }
+    </div>
+  }
+</section>

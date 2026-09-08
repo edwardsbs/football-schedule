@@ -237,6 +237,7 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
     },
     { path: '/live', label: 'Live', startsGroup: true },
     { path: '/day', label: 'Day' },
+    { path: '/game-day', label: 'Game Day' },
     { path: '/week', label: 'Week' },
     { path: '/my-teams', label: 'My Teams' },
     { path: '/playoffs/nfl', label: 'Super Bowl' },
