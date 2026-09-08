@@ -1,0 +1,49 @@
+app-shell .demo-btn {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #3b4350;
+  border-radius: 8px;
+  background: #11161e;
+  color: #707989;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.55;
+  }
+
+  &.active {
+    border-color: rgb(201 162 39 / 62%);
+    background: rgb(201 162 39 / 10%);
+    color: #e3c45e;
+  }
+  &:active { transform: scale(0.94); }
+  &:focus-visible { outline: 2px solid #e3c45e; outline-offset: 2px; }
+}
+
+app-shell .demo-live-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff5e63;
+  box-shadow: 0 0 6px rgb(255 94 99 / 80%);
+}
+
+@media (pointer: coarse) {
+  app-shell .demo-btn { width: 44px; height: 44px; }
+}

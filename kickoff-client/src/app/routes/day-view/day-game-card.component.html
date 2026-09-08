@@ -6,8 +6,10 @@
   [class.score-pulse-field-goal]="scorePulse() === 'field-goal'"
   [class.score-pulse-touchdown]="scorePulse() === 'touchdown'"
   [class.score-pulse-other]="scorePulse() === 'other'"
+  [class.across-midfield]="acrossMidfield()"
   [class.field-goal-range]="inFieldGoalRange()"
   [class.red-zone]="inRedZone()"
+  [class.has-live-situation]="game().status === 'Live' && !!game().score?.downDistance"
   [class.live]="game().status === 'Live'"
   [class.favorite]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
   [class.circled]="fan.isCircled(game().id)"
@@ -48,11 +50,7 @@
     </span>
   </span>
 
-    <span
-      class="team-row"
-      [class.interest-team]="fan.isInterest(game().away.id)"
-      [class.has-situation]="game().score?.possessionTeamId === game().away.id && !!game().score?.downDistance"
-    >
+  <span class="team-row" [class.interest-team]="fan.isInterest(game().away.id)">
     <span class="team">
       <app-team-badge
         [name]="game().away.displayName"
@@ -66,23 +64,18 @@
       <span class="record">{{ records.label(game().away.id) }}</span>
       @if (game().score?.possessionTeamId === game().away.id) { <span class="possession" title="Possession"></span> }
     </span>
-    @if (game().score?.possessionTeamId === game().away.id) {
-      @if (game().score?.downDistance; as downDistance) {
-        <span class="team-situation" [title]="downDistance">
-          @if (possessionDirection() === 'left') { <span class="direction">←</span> }
-          <span class="situation-text">{{ downDistance }}</span>
-          @if (possessionDirection() === 'right') { <span class="direction">→</span> }
-        </span>
-      }
-    }
-    <span class="score" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
-    </span>
+    <span class="score" [class.score-changed]="scoringSide() === 'away'" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
+  </span>
 
-    <span
-      class="team-row"
-      [class.interest-team]="fan.isInterest(game().home.id)"
-      [class.has-situation]="game().score?.possessionTeamId === game().home.id && !!game().score?.downDistance"
-    >
+  @if (game().status === 'Live' && game().score?.downDistance; as downDistance) {
+    <span class="game-situation" [title]="downDistance">
+      @if (possessionDirection() === 'left') { <span class="direction">←</span> }
+      <span class="situation-text">{{ downDistance }}</span>
+      @if (possessionDirection() === 'right') { <span class="direction">→</span> }
+    </span>
+  }
+
+  <span class="team-row" [class.interest-team]="fan.isInterest(game().home.id)">
     <span class="team">
       <app-team-badge
         [name]="game().home.displayName"
@@ -96,15 +89,6 @@
       <span class="record">{{ records.label(game().home.id) }}</span>
       @if (game().score?.possessionTeamId === game().home.id) { <span class="possession" title="Possession"></span> }
     </span>
-    @if (game().score?.possessionTeamId === game().home.id) {
-      @if (game().score?.downDistance; as downDistance) {
-        <span class="team-situation" [title]="downDistance">
-          @if (possessionDirection() === 'left') { <span class="direction">←</span> }
-          <span class="situation-text">{{ downDistance }}</span>
-          @if (possessionDirection() === 'right') { <span class="direction">→</span> }
-        </span>
-      }
-    }
-    <span class="score" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
-    </span>
+    <span class="score" [class.score-changed]="scoringSide() === 'home'" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
+  </span>
 </article>

@@ -62,6 +62,7 @@ export class SeasonScheduleComponent {
   private readonly records = inject(TeamRecordStore);
   readonly fan = inject(FanStore);
   private readonly reload = signal(0);
+  private readonly scheduleRange = seasonRange();
 
   readonly league = input.required<string>();
 
@@ -74,14 +75,19 @@ export class SeasonScheduleComponent {
     toObservable(this.backendLeague).pipe(
       switchMap((league) => {
         if (!league) return of<Game[]>([]);
-        const { from, to } = seasonRange();
+        const { from, to } = this.scheduleRange;
         return this.api.getRange(from, to, league).pipe(catchError(() => of<Game[]>([])));
       }),
     ),
     { initialValue: [] as Game[] },
   );
 
-  readonly games = computed(() => this.live.overlayAll(this.loadedGames()));
+  readonly games = computed(() => {
+    const league = this.backendLeague();
+    return league
+      ? this.live.overlayRange(this.loadedGames(), this.scheduleRange.from, this.scheduleRange.to, league)
+      : [];
+  });
 
   /** "My games" filter: only favorite-team or circled games. */
   readonly onlyMine = signal(false);
@@ -113,7 +119,7 @@ export class SeasonScheduleComponent {
   readonly rankingRailOpen = signal(true);
   readonly playoffRailOpen = signal(true);
   readonly mockPlayoffConferences = MOCK_2025_PLAYOFF_PICTURE;
-  readonly seasonYear = new Date(seasonRange().from).getFullYear();
+  readonly seasonYear = new Date(this.scheduleRange.from).getFullYear();
 
   private readonly rankingSelection = computed(() => {
     const week = this.weekNumber();

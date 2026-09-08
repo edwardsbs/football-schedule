@@ -42,6 +42,10 @@
         [class.has-favorite]="fan.isFavorite(game.home.id) || fan.isFavorite(game.away.id)"
         [class.has-interest]="game.hasInterest"
         [class.circled]="fan.isCircled(game.id)"
+        [class.score-pulse-field-goal]="scorePulseKind(game.id) === 'field-goal'"
+        [class.score-pulse-touchdown]="scorePulseKind(game.id) === 'touchdown'"
+        [class.score-pulse-other]="scorePulseKind(game.id) === 'other'"
+        [class.across-midfield]="acrossMidfield(game)"
         [class.field-goal-range]="inFieldGoalRange(game)"
         [class.red-zone]="inRedZone(game)"
         (click)="open(game)"
@@ -109,7 +113,7 @@
                 {{ records.label(side.id) }}
               </span>
             </div>
-            <span class="score">
+            <span class="score" [class.score-changed]="scoreChanged(game.id, i === 0 ? 'away' : 'home')">
               @if (shownScore(game); as sc) {
                 {{ i === 0 ? sc.awayScore : sc.homeScore }}
               } @else if (game.isMuted) {

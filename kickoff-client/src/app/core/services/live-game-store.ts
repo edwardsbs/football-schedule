@@ -1,8 +1,9 @@
-import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, Subject, catchError, exhaustMap, merge, take, timer } from 'rxjs';
 import { Game, Score } from '../models/game.model';
 import { KickoffApi } from './kickoff-api';
+import { DemoGameStore } from './demo-game-store';
 
 const POLL_MS = 10_000;
 
@@ -14,12 +15,14 @@ const POLL_MS = 10_000;
 @Injectable({ providedIn: 'root' })
 export class LiveGameStore {
   private readonly api = inject(KickoffApi);
+  private readonly demo = inject(DemoGameStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly refreshRequested = new Subject<void>();
   private readonly updatesById = signal<ReadonlyMap<number, Game>>(new Map());
   private currentLiveIds = new Set<number>();
 
-  readonly liveGames = signal<readonly Game[]>([]);
+  private readonly providerLiveGames = signal<readonly Game[]>([]);
+  readonly liveGames = computed<readonly Game[]>(() => mergeUniqueGames(this.providerLiveGames(), this.demo.games()));
 
   constructor() {
     merge(timer(0, POLL_MS), this.refreshRequested)
@@ -35,6 +38,8 @@ export class LiveGameStore {
   }
 
   overlay(game: Game): Game {
+    const demoGame = this.demo.game(game.id);
+    if (demoGame) return demoGame;
     const update = this.updatesById().get(game.id);
     if (!update) return game;
 
@@ -56,13 +61,29 @@ export class LiveGameStore {
     return games.map((game) => this.overlay(game));
   }
 
+  overlayRange(
+    games: readonly Game[],
+    fromUtc: string,
+    toUtc: string,
+    league?: 'Nfl' | 'Ncaa',
+  ): Game[] {
+    const from = new Date(fromUtc).getTime();
+    const to = new Date(toUtc).getTime();
+    const demos = this.demo.games().filter((game) => {
+      const kickoff = new Date(game.kickoffUtc).getTime();
+      return kickoff >= from && kickoff < to && (!league || game.league === league);
+    });
+    return mergeUniqueGames(this.overlayAll(games), demos)
+      .sort((a, b) => new Date(a.kickoffUtc).getTime() - new Date(b.kickoffUtc).getTime());
+  }
+
   private acceptLiveSnapshot(games: Game[]): void {
     const nextLiveIds = new Set(games.map((game) => game.id));
     const finishedIds = [...this.currentLiveIds].filter((id) => !nextLiveIds.has(id));
 
     this.currentLiveIds = nextLiveIds;
     this.cache(games);
-    this.liveGames.set(games.map((game) => this.updatesById().get(game.id) ?? game));
+    this.providerLiveGames.set(games.map((game) => this.updatesById().get(game.id) ?? game));
 
     // Once a game becomes final it drops out of /games/live. Fetch it once more
     // so every open view receives the final score instead of reverting to its
@@ -97,6 +118,13 @@ export class LiveGameStore {
     }
     this.updatesById.set(next);
   }
+}
+
+function mergeUniqueGames(first: readonly Game[], second: readonly Game[]): Game[] {
+  const merged = new Map<number, Game>();
+  for (const game of first) merged.set(game.id, game);
+  for (const game of second) merged.set(game.id, game);
+  return [...merged.values()];
 }
 
 /**

@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, forkJoin, of, switchMap, timer } from 'rxjs';
 import { TeamRecord } from '../models/game.model';
+import { DemoGameStore } from './demo-game-store';
 import { KickoffApi } from './kickoff-api';
 
 /**
@@ -11,6 +12,7 @@ import { KickoffApi } from './kickoff-api';
 @Injectable({ providedIn: 'root' })
 export class TeamRecordStore {
   private readonly api = inject(KickoffApi);
+  private readonly demo = inject(DemoGameStore);
   private readonly byTeamId = signal(new Map<number, TeamRecord>());
 
   constructor() {
@@ -36,7 +38,7 @@ export class TeamRecordStore {
   }
 
   record(teamId: number): TeamRecord | null {
-    return this.byTeamId().get(teamId) ?? null;
+    return this.demo.record(teamId) ?? this.byTeamId().get(teamId) ?? null;
   }
 
   label(teamId: number): string {

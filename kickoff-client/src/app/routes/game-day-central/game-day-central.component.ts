@@ -44,7 +44,10 @@ export class GameDayCentralComponent {
     { initialValue: [] as Game[] },
   );
 
-  readonly games = computed(() => this.live.overlayAll(this.loadedGames()));
+  readonly games = computed(() => {
+    const range = this.range();
+    return this.live.overlayRange(this.loadedGames(), range.from, range.to);
+  });
   readonly watching = computed(() => this.games().filter((game) => this.board.isWatching(game.id)));
   readonly otherGames = computed(() => this.games().filter((game) => !this.board.isWatching(game.id)));
   readonly watchingSize = computed(() => automaticDayPanelSize(this.watching().length));

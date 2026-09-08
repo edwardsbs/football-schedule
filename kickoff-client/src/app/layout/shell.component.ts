@@ -13,6 +13,7 @@ import { NavigationEnd, NavigationStart, Router, RouterLink, RouterOutlet } from
 import { filter } from 'rxjs';
 import { FanStore } from '../core/services/fan-store';
 import { LiveGameStore } from '../core/services/live-game-store';
+import { DemoGameStore } from '../core/services/demo-game-store';
 import { MyGamesModalComponent } from '../shared/my-games-modal/my-games-modal.component';
 import { GameDetailModalComponent } from '../shared/game-detail-modal/game-detail-modal.component';
 import { horizontalScrollAvailability } from './nav-scroll';
@@ -54,6 +55,7 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
   readonly myGamesOpen = signal(false);
   readonly wipeSeconds = signal(0);
   readonly currentUrl = signal('/');
+  readonly demo = inject(DemoGameStore);
 
   private readonly contentEl = viewChild.required<ElementRef<HTMLDivElement>>('contentEl');
   private readonly trackEl = viewChild.required<ElementRef<HTMLDivElement>>('trackEl');

@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, Injectable, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injectable, computed, effect, inject, input, signal } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, forkJoin, of, switchMap, timer } from 'rxjs';
 import { Game } from '../../core/models/game.model';
 import { GameSummary } from '../../core/models/game-summary.model';
-import { isInFieldGoalRange, isInRedZone } from '../../core/field-position';
+import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from '../../core/field-position';
+import { SCORE_HIGHLIGHT_MS, ScorePulseKind, ScoreSide, classifyScoreChange, scoreIncreaseSide } from '../../core/score-pulse';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamBadgeComponent } from '../team-badge/team-badge.component';
@@ -26,8 +27,14 @@ export class ImportantGamesTickerComponent {
 
   private readonly detail = inject(GameDetailOverlay);
   private readonly api = inject(KickoffApi);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly visibility = inject(ImportantGamesTickerVisibility);
   protected readonly summaries = signal<ReadonlyMap<number, GameSummary>>(new Map());
+  private readonly previousScores = new Map<number, { home: number; away: number }>();
+  private readonly pulseTimers = new Map<number, ReturnType<typeof setTimeout>>();
+  private readonly highlightTimers = new Map<number, ReturnType<typeof setTimeout>>();
+  private readonly scorePulses = signal<ReadonlyMap<number, ScorePulseKind>>(new Map());
+  private readonly scoringSides = signal<ReadonlyMap<number, ScoreSide>>(new Map());
 
   private readonly liveImportantIds = computed(() =>
     this.games()
@@ -41,6 +48,24 @@ export class ImportantGamesTickerComponent {
   );
 
   constructor() {
+    effect(() => {
+      for (const game of this.games()) {
+        if (!game.score) continue;
+        const current = { home: game.score.homeScore, away: game.score.awayScore };
+        const previous = this.previousScores.get(game.id);
+        if (previous) {
+          const pulse = classifyScoreChange(previous, current);
+          if (pulse) this.showScoreFeedback(game.id, pulse, scoreIncreaseSide(previous, current));
+        }
+        this.previousScores.set(game.id, current);
+      }
+    });
+
+    this.destroyRef.onDestroy(() => {
+      for (const timerId of this.pulseTimers.values()) clearTimeout(timerId);
+      for (const timerId of this.highlightTimers.values()) clearTimeout(timerId);
+    });
+
     toObservable(this.liveImportantIds).pipe(
       switchMap((ids) => ids.length === 0
         ? of([] as Array<[number, GameSummary | null]>)
@@ -96,6 +121,14 @@ export class ImportantGamesTickerComponent {
     return String(side === 'home' ? game.score.homeScore : game.score.awayScore);
   }
 
+  protected scorePulseKind(gameId: number): ScorePulseKind {
+    return this.scorePulses().get(gameId) ?? null;
+  }
+
+  protected scoreChanged(gameId: number, side: ScoreSide): boolean {
+    return this.scoringSides().get(gameId) === side;
+  }
+
   protected isCompleted(game: Game): boolean {
     return game.status === 'Final';
   }
@@ -106,6 +139,10 @@ export class ImportantGamesTickerComponent {
 
   protected inFieldGoalRange(game: Game): boolean {
     return isInFieldGoalRange(game);
+  }
+
+  protected acrossMidfield(game: Game): boolean {
+    return isAcrossMidfield(game);
   }
 
   protected inRedZone(game: Game): boolean {
@@ -122,6 +159,39 @@ export class ImportantGamesTickerComponent {
     }
     if (summary.currentDrive?.description) return summary.currentDrive.description;
     return summary.lastPlay?.type ?? null;
+  }
+
+  private showScoreFeedback(
+    gameId: number,
+    pulse: Exclude<ScorePulseKind, null>,
+    scoringSide: ScoreSide | null,
+  ): void {
+    const pulses = new Map(this.scorePulses());
+    pulses.set(gameId, pulse);
+    this.scorePulses.set(pulses);
+
+    const pulseTimer = this.pulseTimers.get(gameId);
+    if (pulseTimer) clearTimeout(pulseTimer);
+    this.pulseTimers.set(gameId, setTimeout(() => {
+      const cleared = new Map(this.scorePulses());
+      cleared.delete(gameId);
+      this.scorePulses.set(cleared);
+      this.pulseTimers.delete(gameId);
+    }, 3_000));
+
+    if (!scoringSide) return;
+    const sides = new Map(this.scoringSides());
+    sides.set(gameId, scoringSide);
+    this.scoringSides.set(sides);
+
+    const highlightTimer = this.highlightTimers.get(gameId);
+    if (highlightTimer) clearTimeout(highlightTimer);
+    this.highlightTimers.set(gameId, setTimeout(() => {
+      const cleared = new Map(this.scoringSides());
+      cleared.delete(gameId);
+      this.scoringSides.set(cleared);
+      this.highlightTimers.delete(gameId);
+    }, SCORE_HIGHLIGHT_MS));
   }
 }
 

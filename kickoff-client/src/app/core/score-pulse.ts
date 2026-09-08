@@ -5,6 +5,12 @@ import { KickoffApi } from './services/kickoff-api';
 import { catchError, of, take } from 'rxjs';
 
 export type ScorePulseKind = 'field-goal' | 'touchdown' | 'other' | null;
+export type ScoreSide = 'home' | 'away';
+
+export interface ScorePulseTracker {
+  kind: Signal<ScorePulseKind>;
+  scoringSide: Signal<ScoreSide | null>;
+}
 
 interface ScoreSnapshot {
   home: number;
@@ -12,6 +18,7 @@ interface ScoreSnapshot {
 }
 
 const PULSE_CLEAR_MS = 3_000;
+export const SCORE_HIGHLIGHT_MS = 3_400;
 
 /**
  * Watches a rendered game's score without flashing on its initial value.
@@ -19,12 +26,14 @@ const PULSE_CLEAR_MS = 3_000;
  * sequence as +6, +7, or +8. Larger jumps remain prominent because more than
  * one scoring play may land between polls.
  */
-export function trackScorePulse(game: Signal<Game>): Signal<ScorePulseKind> {
+export function trackScorePulse(game: Signal<Game>): ScorePulseTracker {
   const destroyRef = inject(DestroyRef);
   const api = inject(KickoffApi);
   const pulse = signal<ScorePulseKind>(null);
+  const scoringSide = signal<ScoreSide | null>(null);
   let previous: ScoreSnapshot | null = null;
   let clearTimer: ReturnType<typeof setTimeout> | null = null;
+  let scoreHighlightTimer: ReturnType<typeof setTimeout> | null = null;
 
   effect(() => {
     const current = scoreSnapshot(game().score);
@@ -32,11 +41,17 @@ export function trackScorePulse(game: Signal<Game>): Signal<ScorePulseKind> {
       const kind = classifyScoreChange(previous, current);
       if (kind) {
         pulse.set(kind);
+        scoringSide.set(scoreIncreaseSide(previous, current));
         if (clearTimer) clearTimeout(clearTimer);
+        if (scoreHighlightTimer) clearTimeout(scoreHighlightTimer);
         clearTimer = setTimeout(() => {
           pulse.set(null);
           clearTimer = null;
         }, PULSE_CLEAR_MS);
+        scoreHighlightTimer = setTimeout(() => {
+          scoringSide.set(null);
+          scoreHighlightTimer = null;
+        }, SCORE_HIGHLIGHT_MS);
 
         // Confirm the precise scoring type from ESPN's cached summary. The
         // inferred pulse remains the fallback when rich data is unavailable.
@@ -53,9 +68,13 @@ export function trackScorePulse(game: Signal<Game>): Signal<ScorePulseKind> {
 
   destroyRef.onDestroy(() => {
     if (clearTimer) clearTimeout(clearTimer);
+    if (scoreHighlightTimer) clearTimeout(scoreHighlightTimer);
   });
 
-  return pulse.asReadonly();
+  return {
+    kind: pulse.asReadonly(),
+    scoringSide: scoringSide.asReadonly(),
+  };
 }
 
 export function classifyScoringPlay(play: SummaryPlay | null): Exclude<ScorePulseKind, null> | null {
@@ -75,6 +94,13 @@ export function classifyScoreChange(
   if (increase === 3) return 'field-goal';
   if (increase >= 6) return 'touchdown';
   return 'other';
+}
+
+export function scoreIncreaseSide(previous: ScoreSnapshot, current: ScoreSnapshot): ScoreSide | null {
+  const homeIncrease = current.home - previous.home;
+  const awayIncrease = current.away - previous.away;
+  if (homeIncrease <= 0 && awayIncrease <= 0) return null;
+  return homeIncrease >= awayIncrease ? 'home' : 'away';
 }
 
 function scoreSnapshot(score: Score | null): ScoreSnapshot | null {

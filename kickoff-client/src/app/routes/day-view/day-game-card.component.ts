@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { Game } from '../../core/models/game.model';
-import { isInFieldGoalRange, isInRedZone } from '../../core/field-position';
+import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from '../../core/field-position';
 import { trackScorePulse } from '../../core/score-pulse';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
@@ -20,7 +20,10 @@ export class DayGameCardComponent {
   readonly panelSize = input<DayPanelSize>('small');
   readonly gameDayState = input<'available' | 'selected' | null>(null);
   readonly gameDayToggle = output<void>();
-  protected readonly scorePulse = trackScorePulse(this.game);
+  private readonly scoreFeedback = trackScorePulse(this.game);
+  protected readonly scorePulse = this.scoreFeedback.kind;
+  protected readonly scoringSide = this.scoreFeedback.scoringSide;
+  protected readonly acrossMidfield = () => isAcrossMidfield(this.game());
   protected readonly inFieldGoalRange = () => isInFieldGoalRange(this.game());
   protected readonly inRedZone = () => isInRedZone(this.game());
 

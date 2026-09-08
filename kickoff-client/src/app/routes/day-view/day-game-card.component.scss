@@ -24,10 +24,13 @@
 
   &:active { background: var(--surface-2, #1c212b); }
   &:focus-visible { outline: 2px solid var(--accent-gold, #c9a227); outline-offset: -2px; }
-  &.live { border-color: rgb(229 72 77 / 42%); }
   &.favorite { box-shadow: inset 3px 0 0 var(--accent-gold, #c9a227), inset 0 1px 0 rgb(255 255 255 / 3%); }
   &.circled { border-color: rgb(76 141 255 / 48%); }
   &.favorite.circled { border-color: rgb(76 141 255 / 48%); }
+
+  &.has-live-situation {
+    grid-template-rows: 0.9rem minmax(0, 1fr) auto minmax(0, 1fr);
+  }
 
   &.panel-medium {
     min-height: 116px;
@@ -38,6 +41,10 @@
     min-height: 176px;
     padding: 0.75rem 0.85rem;
     border-radius: 12px;
+  }
+
+  &.panel-small {
+    min-height: 102px;
   }
 
 }
@@ -65,10 +72,6 @@
   gap: 0.25rem;
   min-width: 0;
   font-variant-numeric: tabular-nums;
-
-  &.has-situation {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 1.4rem;
-  }
 }
 
 .team {
@@ -107,14 +110,17 @@
   &.loser { color: #9ca5b4; font-size: 0.72rem; }
 }
 
-.team-row.has-situation .score { grid-column: 3; }
+.game-card.panel-small {
+  .record { display: none; }
+}
 
-.team-situation {
-  grid-column: 2;
+.game-situation {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.16rem;
+  justify-self: center;
+  max-width: calc(100% - 2.5rem);
   min-width: 0;
   overflow: hidden;
   color: var(--text, #e7ebf2);
@@ -131,7 +137,7 @@
 }
 
 @container (min-width: 260px) {
-  .team-situation { font-size: 0.78rem; }
+  .game-situation { font-size: 0.78rem; }
 }
 
 .game-card.panel-medium,
@@ -146,8 +152,7 @@
     &.loser { font-size: 0.95rem; }
   }
   .team-row { grid-template-columns: minmax(0, 1fr) 1.8rem; }
-  .team-row.has-situation { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) 1.8rem; }
-  .team-situation { font-size: 0.8rem; }
+  .game-situation { font-size: 0.8rem; }
 }
 
 .game-card.panel-live {
@@ -162,8 +167,7 @@
     &.loser { font-size: 1.18rem; }
   }
   .team-row { grid-template-columns: minmax(0, 1fr) 2rem; }
-  .team-row.has-situation { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 2rem; }
-  .team-situation { font-size: 0.86rem; }
+  .game-situation { font-size: 0.86rem; }
   .possession { width: 13px; height: 9px; }
 }
 

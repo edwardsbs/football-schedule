@@ -32,7 +32,11 @@ export class MyGamesModalComponent {
   private readonly now = toSignal(timer(0, 1000).pipe(map(() => Date.now())), { initialValue: Date.now() });
   readonly loading = signal(false);
 
-  readonly followed = computed(() => filterFollowed(this.live.overlayAll(this.games())));
+  readonly followed = computed(() => {
+    const from = startOfLocalDay(addDays(new Date(), -3));
+    const to = addDays(from, 24);
+    return filterFollowed(this.live.overlayRange(this.games(), from.toISOString(), to.toISOString()));
+  });
   readonly groups = computed(() => groupMyGames(this.followed(), new Date(this.now())));
 
   constructor() {

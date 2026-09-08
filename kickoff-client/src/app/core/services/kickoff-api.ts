@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { FavoriteTeam, Game, MuteType, TeamInterest, TeamRecord, TeamSummary } from '../models/game.model';
 import { GameSummary } from '../models/game-summary.model';
 import { NcaaRankings } from '../models/ranking.model';
+import { DemoGameStore } from './demo-game-store';
 
 /**
  * All Kickoff API calls. Uses relative `/api/...` URLs — proxied to the API in
@@ -12,6 +13,7 @@ import { NcaaRankings } from '../models/ranking.model';
 @Injectable({ providedIn: 'root' })
 export class KickoffApi {
   private readonly http = inject(HttpClient);
+  private readonly demo = inject(DemoGameStore);
 
   getLive(): Observable<Game[]> {
     return this.http.get<Game[]>('/api/games/live');
@@ -26,28 +28,36 @@ export class KickoffApi {
   }
 
   getGame(id: number): Observable<Game> {
+    const demoGame = this.demo.game(id);
+    if (demoGame) return of(demoGame);
     return this.http.get<Game>(`/api/games/${id}`);
   }
 
   /** Rich per-game context. Returns null when unavailable or spoiler-muted. */
   getGameSummary(id: number): Observable<GameSummary | null> {
+    if (this.demo.isDemoGame(id)) return of(this.demo.summary(id));
     return this.http.get<GameSummary | null>(`/api/games/${id}/summary`);
   }
 
   /** Deliberate reveal: returns the score even while muted. */
   reveal(id: number): Observable<Game> {
+    const demoGame = this.demo.game(id);
+    if (demoGame) return of(demoGame);
     return this.http.get<Game>(`/api/games/${id}/reveal`);
   }
 
   mute(id: number, type: MuteType): Observable<void> {
+    if (this.demo.setMuted(id, true)) return of(void 0);
     return this.http.put<void>(`/api/games/${id}/mute`, { type });
   }
 
   unmute(id: number): Observable<void> {
+    if (this.demo.setMuted(id, false)) return of(void 0);
     return this.http.delete<void>(`/api/games/${id}/mute`);
   }
 
   markWatched(id: number): Observable<void> {
+    if (this.demo.isDemoGame(id)) return of(void 0);
     return this.http.post<void>(`/api/games/${id}/watched`, {});
   }
 
@@ -86,10 +96,12 @@ export class KickoffApi {
   }
 
   circle(id: number, note?: string): Observable<void> {
+    if (this.demo.isDemoGame(id)) return of(void 0);
     return this.http.put<void>(`/api/games/${id}/circle`, { note: note ?? null });
   }
 
   uncircle(id: number): Observable<void> {
+    if (this.demo.isDemoGame(id)) return of(void 0);
     return this.http.delete<void>(`/api/games/${id}/circle`);
   }
 

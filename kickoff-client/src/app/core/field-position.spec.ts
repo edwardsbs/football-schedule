@@ -1,5 +1,5 @@
 import { Game } from './models/game.model';
-import { isInFieldGoalRange, isInRedZone } from './field-position';
+import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from './field-position';
 
 describe('isInFieldGoalRange', () => {
   it('recognizes possession at or inside the opponent 35', () => {
@@ -20,6 +20,13 @@ describe('isInFieldGoalRange', () => {
     expect(isInRedZone(game('1st & 10 at AWY 20', 1))).toBeTrue();
     expect(isInRedZone(game('2nd & 4 at AWY 12', 1))).toBeTrue();
     expect(isInRedZone(game('1st & 10 at AWY 21', 1))).toBeFalse();
+  });
+
+  it('recognizes the offense only after it has crossed midfield', () => {
+    expect(isAcrossMidfield(game('1st & 10 at AWY 49', 1))).toBeTrue();
+    expect(isAcrossMidfield(game('2nd & 4 at OPP 41', 1))).toBeTrue();
+    expect(isAcrossMidfield(game('1st & 10 at AWY 50', 1))).toBeFalse();
+    expect(isAcrossMidfield(game('1st & 10 at HOM 49', 1))).toBeFalse();
   });
 
   it('requires a visible live game with known possession', () => {

@@ -50,7 +50,10 @@ export class DayViewComponent {
     { initialValue: [] as Game[] },
   );
 
-  readonly games = computed(() => this.live.overlayAll(this.loadedGames()));
+  readonly games = computed(() => {
+    const range = this.range();
+    return this.live.overlayRange(this.loadedGames(), range.from, range.to);
+  });
 
   /** "My games" filter: only favorite-team or circled games (mixes NCAA + NFL). */
   readonly onlyMine = signal(false);

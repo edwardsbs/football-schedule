@@ -50,6 +50,23 @@
       <span aria-hidden="true">▣</span>
       Wipe@if (wipeSeconds() > 0) {&nbsp;{{ wipeSeconds() }}}
     </button>
+    <button
+      type="button"
+      class="demo-btn"
+      [class.active]="demo.enabled()"
+      [attr.aria-pressed]="demo.enabled()"
+      [attr.aria-label]="demo.enabled() ? 'Stop mock game simulator' : 'Start mock game simulator'"
+      [attr.title]="demo.enabled()
+        ? 'Mock NFL + NCAA games running · tap to stop'
+        : 'Run mock NFL + NCAA games'"
+      (click)="demo.toggle()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="3" />
+        <path d="M6 12h3l1.5-3.5 3 7 1.5-3.5h3" />
+      </svg>
+      @if (demo.enabled()) { <span class="demo-live-dot"></span> }
+    </button>
     <button type="button" class="my-games-btn" (click)="myGamesOpen.set(true)">
       <span class="ico">★◉</span> My Games
     </button>

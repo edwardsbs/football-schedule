@@ -1,4 +1,4 @@
-import { classifyScoreChange, classifyScoringPlay } from './score-pulse';
+import { classifyScoreChange, classifyScoringPlay, scoreIncreaseSide } from './score-pulse';
 import { SummaryPlay } from './models/game-summary.model';
 
 describe('score pulse classification', () => {
@@ -26,6 +26,12 @@ describe('score pulse classification', () => {
   it('uses the provider scoring-play type when available', () => {
     expect(classifyScoringPlay(play('Passing Touchdown'))).toBe('touchdown');
     expect(classifyScoringPlay(play('Field Goal Good'))).toBe('field-goal');
+  });
+
+  it('identifies only the side whose score increased', () => {
+    expect(scoreIncreaseSide(score(10, 7), score(13, 7))).toBe('home');
+    expect(scoreIncreaseSide(score(10, 7), score(10, 14))).toBe('away');
+    expect(scoreIncreaseSide(score(10, 7), score(10, 7))).toBeNull();
   });
 });
 

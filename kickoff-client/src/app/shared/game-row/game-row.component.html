@@ -12,6 +12,7 @@
   [class.score-pulse-field-goal]="scorePulse() === 'field-goal'"
   [class.score-pulse-touchdown]="scorePulse() === 'touchdown'"
   [class.score-pulse-other]="scorePulse() === 'other'"
+  [class.across-midfield]="acrossMidfield()"
   [class.field-goal-range]="inFieldGoalRange()"
   [class.red-zone]="inRedZone()"
   (click)="open()"
@@ -60,12 +61,14 @@
     @if (shownScore(); as sc) {
       <span
         class="s"
+        [class.score-changed]="scoringSide() === 'away'"
         [class.winner]="game().status === 'Final' && sc.awayScore > sc.homeScore"
         [class.loser]="game().status === 'Final' && sc.awayScore < sc.homeScore"
       >{{ sc.awayScore }}</span>
       <span class="sep">–</span>
       <span
         class="s"
+        [class.score-changed]="scoringSide() === 'home'"
         [class.winner]="game().status === 'Final' && sc.homeScore > sc.awayScore"
         [class.loser]="game().status === 'Final' && sc.homeScore < sc.awayScore"
       >{{ sc.homeScore }}</span>

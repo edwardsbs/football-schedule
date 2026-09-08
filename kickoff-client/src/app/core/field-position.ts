@@ -3,6 +3,7 @@ import { Game } from './models/game.model';
 /** A snap from the opponent's 35 produces roughly a 52-yard field-goal try. */
 export const DEFAULT_FIELD_GOAL_RANGE_YARD_LINE = 35;
 export const RED_ZONE_YARD_LINE = 20;
+export const OPPONENT_TERRITORY_YARD_LINE = 49;
 
 /**
  * Returns true only when the live scoreboard explicitly places the possessing
@@ -17,6 +18,11 @@ export function isInFieldGoalRange(
 
 export function isInRedZone(game: Game): boolean {
   return isAtOrInsideOpponentYardLine(game, RED_ZONE_YARD_LINE);
+}
+
+/** The offense has crossed midfield and is operating on the opponent's side. */
+export function isAcrossMidfield(game: Game): boolean {
+  return isAtOrInsideOpponentYardLine(game, OPPONENT_TERRITORY_YARD_LINE);
 }
 
 function isAtOrInsideOpponentYardLine(game: Game, rangeYardLine: number): boolean {

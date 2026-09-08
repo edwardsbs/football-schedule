@@ -152,10 +152,10 @@ app-day-game-card {
    1080px the rail component becomes a horizontal strip in normal flow. */
 @media (min-width: 1081px) {
   app-game-day-central:has(app-important-games-ticker) {
-    width: min(100%, 1500px);
+    width: min(1500px, calc(100% - 18rem));
     max-width: none;
     margin-left: 1rem;
-    margin-right: 16.5rem;
+    margin-right: auto;
   }
 }
 

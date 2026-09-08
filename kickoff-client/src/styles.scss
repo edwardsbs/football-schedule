@@ -9,6 +9,7 @@
 @use './app/routes/game-detail/game-summary';
 @use './app/routes/season-schedule/nfl-playoff-picture';
 @use './app/routes/game-day-central/game-day-board';
+@use './app/layout/demo-game-control';
 
 :root {
   --bg: #0f1218;
@@ -437,11 +438,13 @@ app-important-games-ticker .rail-game.interest::before {
   background: #49b8b8;
 }
 
-/* A score update is announced on both schedule rows and Day cards without
-   changing their layout. Field goals stay restrained; touchdown sequences use
-   a thicker, brighter border. */
+/* Score-event feedback is temporary and never changes layout. Field goals use
+   an even cadence; touchdowns intentionally break rhythm like a stadium light
+   burst. */
 app-day-game-card .game-card,
-app-game-row .row {
+app-game-row .row,
+app-live-dashboard .tile,
+app-important-games-ticker .rail-game {
   position: relative;
 
   &.score-pulse-field-goal::after,
@@ -455,14 +458,22 @@ app-game-row .row {
     pointer-events: none;
   }
 
+  /* A score event temporarily owns the motion language. The persistent field
+     position color stays visible underneath without running a second pulse. */
+  &.score-pulse-field-goal,
+  &.score-pulse-touchdown,
+  &.score-pulse-other {
+    animation: none !important;
+  }
+
   &.score-pulse-field-goal::after {
-    border: 2px solid rgb(201 162 39 / 52%);
-    animation: kickoff-field-goal-pulse 0.52s ease-out 4;
+    border: 2px solid rgb(201 162 39 / 72%);
+    animation: kickoff-field-goal-pulse 0.68s ease-in-out 3;
   }
 
   &.score-pulse-touchdown::after {
     border: 3px solid rgb(255 179 71 / 88%);
-    animation: kickoff-touchdown-pulse 0.62s ease-out 4;
+    animation: kickoff-touchdown-pulse 2.45s linear 1;
   }
 
   &.score-pulse-other::after {
@@ -472,53 +483,103 @@ app-game-row .row {
 }
 
 @keyframes kickoff-field-goal-pulse {
-  0%, 100% { opacity: 0.08; box-shadow: inset 0 0 0 transparent; }
-  42% { opacity: 0.7; box-shadow: inset 0 0 7px rgb(201 162 39 / 12%); }
+  0%, 100% { opacity: 0.12; box-shadow: inset 0 0 0 transparent; }
+  50% { opacity: 0.88; box-shadow: inset 0 0 8px rgb(201 162 39 / 18%); }
 }
 
 @keyframes kickoff-touchdown-pulse {
-  0%, 100% { opacity: 0.12; box-shadow: inset 0 0 0 transparent; }
-  42% { opacity: 1; box-shadow: inset 0 0 14px rgb(255 179 71 / 30%), 0 0 9px rgb(255 179 71 / 22%); }
+  0%, 100% { opacity: 0.08; box-shadow: inset 0 0 0 transparent; }
+  9% { opacity: 1; box-shadow: inset 0 0 16px rgb(255 179 71 / 34%), 0 0 10px rgb(255 179 71 / 24%); }
+  17% { opacity: 0.16; }
+  31% { opacity: 0.92; box-shadow: inset 0 0 9px rgb(255 179 71 / 22%); }
+  38% { opacity: 0.22; }
+  63% { opacity: 1; box-shadow: inset 0 0 18px rgb(255 179 71 / 38%), 0 0 12px rgb(255 179 71 / 26%); }
+  72% { opacity: 0.12; }
+  86% { opacity: 0.76; box-shadow: inset 0 0 7px rgb(255 179 71 / 18%); }
 }
 
-/* Live scoring threat: a slow gold outline when the offense is at or inside
-   the opponent's 35. It does not change panel dimensions or fight the faster
-   one-shot touchdown/field-goal score animation. */
-app-day-game-card .game-card.field-goal-range,
-app-game-row .row.field-goal-range,
-app-live-dashboard .tile.field-goal-range,
+/* Field position builds urgency in four distinct stages. Crossing midfield is
+   a steady red cue; field-goal range gets a heavier, slow pulse; the red zone
+   gets the heaviest, faster pulse. */
+app-day-game-card .game-card.game-card.across-midfield,
+app-live-dashboard .tile.tile.across-midfield {
+  border-color: rgb(229 72 77 / 76%);
+}
+
+app-day-game-card .game-card.game-card.field-goal-range,
+app-live-dashboard .tile.tile.field-goal-range {
+  border-width: 2px;
+  border-color: rgb(229 72 77 / 84%);
+  animation: kickoff-field-position-slow-border 2.8s ease-in-out infinite;
+}
+
+app-day-game-card .game-card.game-card.red-zone,
+app-live-dashboard .tile.tile.red-zone {
+  border-width: 3px;
+  border-color: rgb(255 78 73 / 96%);
+  animation: kickoff-field-position-fast-border 1.05s ease-in-out infinite;
+}
+
+app-game-row .row.row.across-midfield,
+app-important-games-ticker .rail-game.across-midfield {
+  box-shadow: inset 0 0 0 1px rgb(229 72 77 / 76%);
+}
+
+app-game-row .row.row.field-goal-range,
 app-important-games-ticker .rail-game.field-goal-range {
-  outline: 1px solid rgb(212 177 61 / 24%);
-  outline-offset: -1px;
-  animation: kickoff-field-goal-range 3.2s ease-in-out infinite;
+  box-shadow: inset 0 0 0 2px rgb(229 72 77 / 84%);
+  animation: kickoff-field-position-slow-inset 2.8s ease-in-out infinite;
 }
 
-@keyframes kickoff-field-goal-range {
-  0%, 100% { outline-color: rgb(212 177 61 / 18%); }
-  50% { outline-color: rgb(236 202 83 / 78%); }
-}
-
-/* Red zone overrides the broader field-goal-range animation with a quicker,
-   warmer double-beat cadence. */
-app-day-game-card .game-card.red-zone,
-app-game-row .row.red-zone,
-app-live-dashboard .tile.red-zone,
+app-game-row .row.row.red-zone,
 app-important-games-ticker .rail-game.red-zone {
-  outline: 2px solid rgb(241 118 45 / 25%);
-  outline-offset: -2px;
-  animation: kickoff-red-zone 1.65s ease-in-out infinite;
+  box-shadow: inset 0 0 0 3px rgb(255 78 73 / 96%);
+  animation: kickoff-field-position-fast-inset 1.05s ease-in-out infinite;
 }
 
-@keyframes kickoff-red-zone {
-  0%, 100% { outline-color: rgb(241 118 45 / 20%); }
-  28% { outline-color: rgb(255 139 66 / 88%); }
-  48% { outline-color: rgb(241 118 45 / 32%); }
-  68% { outline-color: rgb(255 139 66 / 68%); }
+@keyframes kickoff-field-position-slow-border {
+  0%, 100% { border-color: rgb(229 72 77 / 58%); box-shadow: 0 0 0 rgb(229 72 77 / 0%); }
+  50% { border-color: rgb(255 91 86 / 96%); box-shadow: 0 0 8px rgb(229 72 77 / 24%); }
+}
+
+@keyframes kickoff-field-position-fast-border {
+  0%, 100% { border-color: rgb(255 78 73 / 68%); box-shadow: 0 0 2px rgb(255 78 73 / 12%); }
+  50% { border-color: rgb(255 112 90 / 100%); box-shadow: 0 0 12px rgb(255 78 73 / 36%); }
+}
+
+@keyframes kickoff-field-position-slow-inset {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgb(229 72 77 / 58%); }
+  50% { box-shadow: inset 0 0 0 2px rgb(255 91 86 / 100%), 0 0 7px rgb(229 72 77 / 22%); }
+}
+
+@keyframes kickoff-field-position-fast-inset {
+  0%, 100% { box-shadow: inset 0 0 0 3px rgb(255 78 73 / 68%); }
+  50% { box-shadow: inset 0 0 0 3px rgb(255 112 90 / 100%), 0 0 10px rgb(255 78 73 / 34%); }
+}
+
+app-day-game-card .score.score-changed,
+app-game-row .s.score-changed,
+app-live-dashboard .score.score-changed,
+app-important-games-ticker .rail-score.score-changed {
+  animation: kickoff-score-changed 3.4s ease-out 1;
+}
+
+@keyframes kickoff-score-changed {
+  0%, 55% {
+    color: #62f59a;
+    text-shadow: 0 0 8px rgb(98 245 154 / 58%);
+  }
+  100% {
+    color: var(--text, #e7ebf2);
+    text-shadow: 0 0 0 transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   app-day-game-card .game-card,
-  app-game-row .row {
+  app-game-row .row,
+  app-live-dashboard .tile,
+  app-important-games-ticker .rail-game {
     &.score-pulse-field-goal::after,
     &.score-pulse-touchdown::after,
     &.score-pulse-other::after {
@@ -528,20 +589,22 @@ app-important-games-ticker .rail-game.red-zone {
   }
 
   app-day-game-card .game-card.field-goal-range,
-  app-game-row .row.field-goal-range,
-  app-live-dashboard .tile.field-goal-range,
-  app-important-games-ticker .rail-game.field-goal-range {
-    animation: none;
-    outline-color: rgb(212 177 61 / 55%);
-  }
-
-
   app-day-game-card .game-card.red-zone,
+  app-game-row .row.field-goal-range,
   app-game-row .row.red-zone,
+  app-live-dashboard .tile.field-goal-range,
   app-live-dashboard .tile.red-zone,
+  app-important-games-ticker .rail-game.field-goal-range,
   app-important-games-ticker .rail-game.red-zone {
     animation: none;
-    outline-color: rgb(241 118 45 / 68%);
+  }
+
+  app-day-game-card .score.score-changed,
+  app-game-row .s.score-changed,
+  app-live-dashboard .score.score-changed,
+  app-important-games-ticker .rail-score.score-changed {
+    animation: none;
+    color: #62f59a;
   }
 }
 

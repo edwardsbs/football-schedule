@@ -34,8 +34,12 @@
             [class.completed]="isCompleted(game)"
             [class.close-alert]="alertLevel(game) === 'single'"
             [class.close-alert-double]="alertLevel(game) === 'double'"
+            [class.across-midfield]="acrossMidfield(game)"
             [class.field-goal-range]="inFieldGoalRange(game)"
             [class.red-zone]="inRedZone(game)"
+            [class.score-pulse-field-goal]="scorePulseKind(game.id) === 'field-goal'"
+            [class.score-pulse-touchdown]="scorePulseKind(game.id) === 'touchdown'"
+            [class.score-pulse-other]="scorePulseKind(game.id) === 'other'"
             (click)="open(game)"
           >
             <span class="game-meta">
@@ -55,7 +59,7 @@
                   {{ game.away.abbreviation }}
                 </strong>
               </span>
-              <span>{{ score(game, 'away') }}</span>
+              <span class="rail-score" [class.score-changed]="scoreChanged(game.id, 'away')">{{ score(game, 'away') }}</span>
             </span>
             <span class="team-line">
               <span class="team-name">
@@ -65,7 +69,7 @@
                   {{ game.home.abbreviation }}
                 </strong>
               </span>
-              <span>{{ score(game, 'home') }}</span>
+              <span class="rail-score" [class.score-changed]="scoreChanged(game.id, 'home')">{{ score(game, 'home') }}</span>
             </span>
             @if (game.status === 'Live' && summaryInsight(game); as insight) {
               <span class="rail-insight">{{ insight }}</span>

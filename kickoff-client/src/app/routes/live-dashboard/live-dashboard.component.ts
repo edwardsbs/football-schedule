@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap, timer } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
@@ -8,7 +8,8 @@ import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score } from '../../core/models/game.model';
-import { isInFieldGoalRange, isInRedZone } from '../../core/field-position';
+import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from '../../core/field-position';
+import { SCORE_HIGHLIGHT_MS, ScorePulseKind, ScoreSide, classifyScoreChange, scoreIncreaseSide } from '../../core/score-pulse';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { LiveUpcomingSummaryComponent } from './live-upcoming-summary.component';
 
@@ -21,6 +22,7 @@ import { LiveUpcomingSummaryComponent } from './live-upcoming-summary.component'
 })
 export class LiveDashboardComponent {
   private readonly api = inject(KickoffApi);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly overlay = inject(GameDetailOverlay);
   private readonly live = inject(LiveGameStore);
   protected readonly fan = inject(FanStore);
@@ -36,6 +38,11 @@ export class LiveDashboardComponent {
 
   /** The same app-wide feed used to keep every other game view current. */
   private readonly liveGames = this.live.liveGames;
+  private readonly previousScores = new Map<number, { home: number; away: number }>();
+  private readonly scorePulseTimers = new Map<number, ReturnType<typeof setTimeout>>();
+  private readonly scorePulses = signal<ReadonlyMap<number, ScorePulseKind>>(new Map());
+  private readonly scoreHighlightTimers = new Map<number, ReturnType<typeof setTimeout>>();
+  private readonly scoringSides = signal<ReadonlyMap<number, ScoreSide>>(new Map());
 
   /** Schedule context for the empty-live fallback. Refreshing once a minute is
    * enough for flexed kickoff times without tying the one-second countdown to
@@ -83,6 +90,25 @@ export class LiveDashboardComponent {
   trackById = (_: number, g: Game) => g.id;
 
   constructor() {
+    effect(() => {
+      for (const game of this.liveGames()) {
+        if (!game.score) continue;
+        const current = { home: game.score.homeScore, away: game.score.awayScore };
+        const previous = this.previousScores.get(game.id);
+        if (previous) {
+          const pulse = classifyScoreChange(previous, current);
+          const scoringSide = scoreIncreaseSide(previous, current);
+          if (pulse) this.showScorePulse(game.id, pulse, scoringSide);
+        }
+        this.previousScores.set(game.id, current);
+      }
+    });
+
+    this.destroyRef.onDestroy(() => {
+      for (const timerId of this.scorePulseTimers.values()) clearTimeout(timerId);
+      for (const timerId of this.scoreHighlightTimers.values()) clearTimeout(timerId);
+    });
+
     timer(0, 1_000)
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.now.set(new Date()));
@@ -123,6 +149,10 @@ export class LiveDashboardComponent {
     return isInFieldGoalRange(game);
   }
 
+  acrossMidfield(game: Game): boolean {
+    return isAcrossMidfield(game);
+  }
+
   inRedZone(game: Game): boolean {
     return isInRedZone(game);
   }
@@ -136,6 +166,14 @@ export class LiveDashboardComponent {
     if (possessionTeamId === game.away.id) return game.away.abbreviation;
     if (possessionTeamId === game.home.id) return game.home.abbreviation;
     return null;
+  }
+
+  scorePulseKind(gameId: number): ScorePulseKind {
+    return this.scorePulses().get(gameId) ?? null;
+  }
+
+  scoreChanged(gameId: number, side: ScoreSide): boolean {
+    return this.scoringSides().get(gameId) === side;
   }
 
   // --- actions ---
@@ -165,6 +203,40 @@ export class LiveDashboardComponent {
     const next = new Map(this.peeked());
     next.set(id, score);
     this.peeked.set(next);
+  }
+
+  private showScorePulse(
+    gameId: number,
+    pulse: Exclude<ScorePulseKind, null>,
+    scoringSide: ScoreSide | null,
+  ): void {
+    const next = new Map(this.scorePulses());
+    next.set(gameId, pulse);
+    this.scorePulses.set(next);
+
+    const existing = this.scorePulseTimers.get(gameId);
+    if (existing) clearTimeout(existing);
+    this.scorePulseTimers.set(gameId, setTimeout(() => {
+      const cleared = new Map(this.scorePulses());
+      cleared.delete(gameId);
+      this.scorePulses.set(cleared);
+      this.scorePulseTimers.delete(gameId);
+    }, 3_000));
+
+    if (scoringSide) {
+      const highlighted = new Map(this.scoringSides());
+      highlighted.set(gameId, scoringSide);
+      this.scoringSides.set(highlighted);
+
+      const highlightTimer = this.scoreHighlightTimers.get(gameId);
+      if (highlightTimer) clearTimeout(highlightTimer);
+      this.scoreHighlightTimers.set(gameId, setTimeout(() => {
+        const cleared = new Map(this.scoringSides());
+        cleared.delete(gameId);
+        this.scoringSides.set(cleared);
+        this.scoreHighlightTimers.delete(gameId);
+      }, SCORE_HIGHLIGHT_MS));
+    }
   }
 }
 
