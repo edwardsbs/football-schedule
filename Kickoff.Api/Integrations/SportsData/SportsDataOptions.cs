@@ -30,6 +30,15 @@ public class SportsDataOptions
     public string[] LiveLeagues { get; set; } = ["Nfl", "Ncaa"];
 
     /// <summary>
+    /// Minutes a live game's persisted scoreboard may remain unchanged before
+    /// the poller verifies it through the provider's per-game endpoint.
+    /// </summary>
+    public double StaleGameMinutes { get; set; } = 10;
+
+    /// <summary>Seconds between stale-game reconciliation passes.</summary>
+    public int StaleRecoverySeconds { get; set; } = 60;
+
+    /// <summary>
     /// Whether the background schedule-refresh sync runs. Catches flex
     /// scheduling -- kickoff time and broadcast changes ESPN publishes
     /// mid-season -- that the live-score poller doesn't touch.

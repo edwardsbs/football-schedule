@@ -73,6 +73,149 @@ public class EspnHttpClientTests
     }
 
     [Fact]
+    public async Task Rankings_map_current_and_previous_ap_poll_positions()
+    {
+        const string json = """
+            {
+              "rankings": [
+                {
+                  "type": "coaches",
+                  "ranks": [{ "current": 1, "previous": 2, "team": { "id": "ignored" } }]
+                },
+                {
+                  "type": "ap",
+                  "ranks": [
+                    { "current": 3, "previous": 7, "team": { "id": "99" } },
+                    { "current": 21, "previous": 0, "team": { "id": "101" } }
+                  ]
+                }
+              ]
+            }
+            """;
+        var handler = new RecordingHandler(json);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var rankings = await sut.GetCurrentRankingsAsync(League.Ncaa);
+
+        Assert.Collection(
+            rankings,
+            first =>
+            {
+                Assert.Equal("99", first.TeamExternalId);
+                Assert.Equal(3, first.Rank);
+                Assert.Equal(7, first.PreviousRank);
+            },
+            second =>
+            {
+                Assert.Equal("101", second.TeamExternalId);
+                Assert.Equal(21, second.Rank);
+                Assert.Null(second.PreviousRank);
+            });
+    }
+
+    [Fact]
+    public async Task Weekly_rankings_read_the_archived_ap_poll_for_the_selected_week()
+    {
+        const string json = """
+            {
+              "name": "AP Top 25",
+              "type": "ap",
+              "date": "2025-09-21T07:00:00Z",
+              "occurrence": { "number": 5, "displayValue": "Week 5" },
+              "season": { "year": 2025 },
+              "ranks": [
+                {
+                  "current": 1,
+                  "previous": 2,
+                  "team": {
+                    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/2025/teams/333?lang=en&region=us"
+                  }
+                }
+              ]
+            }
+            """;
+        var handler = new RecordingHandler(json);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var poll = await sut.GetWeeklyRankingsAsync(League.Ncaa, 2025, 5);
+
+        Assert.NotNull(poll);
+        Assert.Equal("AP Top 25", poll.Name);
+        Assert.Equal("Week 5", poll.Label);
+        Assert.Equal(2025, poll.SeasonYear);
+        Assert.Equal(5, poll.WeekNumber);
+        Assert.False(poll.IsPreseason);
+        Assert.Equal(2, Assert.Single(poll.Rankings).PreviousRank);
+        Assert.Equal(
+            "https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/2025/types/2/weeks/5/rankings/1?lang=en&region=us",
+            handler.RequestUri?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task Opening_week_rankings_use_the_preseason_archive()
+    {
+        const string json = """
+            {
+              "name": "AP Top 25",
+              "occurrence": { "number": 1, "displayValue": "Preseason" },
+              "season": { "year": 2026 },
+              "ranks": [{ "current": 1, "previous": 0, "team": { "id": "194" } }]
+            }
+            """;
+        var handler = new RecordingHandler(json);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var poll = await sut.GetWeeklyRankingsAsync(League.Ncaa, 2026, 1);
+
+        Assert.True(poll?.IsPreseason);
+        Assert.Contains("/types/1/weeks/1/rankings/1", handler.RequestUri?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task Per_game_score_reads_a_final_that_is_no_longer_on_the_current_scoreboard()
+    {
+        const string json = """
+            {
+              "header": {
+                "competitions": [{
+                  "status": {
+                    "type": { "name": "STATUS_FINAL", "state": "post", "completed": true }
+                  },
+                  "competitors": [
+                    { "homeAway": "home", "score": "24", "team": { "id": "52" } },
+                    { "homeAway": "away", "score": "27", "team": { "id": "2567" } }
+                  ]
+                }]
+              }
+            }
+            """;
+        var handler = new RecordingHandler(json);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var update = await sut.GetGameScoreAsync(League.Ncaa, "401858212");
+
+        Assert.NotNull(update);
+        Assert.Equal(GameStatus.Final, update.Status);
+        Assert.Equal(24, update.Score.HomeScore);
+        Assert.Equal(27, update.Score.AwayScore);
+        Assert.Equal(
+            "https://site.api.espn.com/apis/site/v2/sports/football/college-football/summary?event=401858212",
+            handler.RequestUri?.AbsoluteUri);
+    }
+
+    [Fact]
     public async Task Ncaa_schedule_maps_fcs_teams_from_the_current_group_tree()
     {
         const string calendarJson = """

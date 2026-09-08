@@ -1,4 +1,8 @@
-<div class="conference-page" [attr.data-palette]="palette()">
+<div
+  class="conference-page"
+  [class.has-rank-rail]="alignment()?.league === 'ncaa' && rankingRailOpen()"
+  [attr.data-palette]="palette()"
+>
 @if (alignment(); as a) {
   <header class="page-head">
     <div class="league-toggle">
@@ -15,6 +19,81 @@
       <button type="button" [class.active]="palette() === 'mono'" [attr.aria-pressed]="palette() === 'mono'" (click)="setPalette('mono')">B&amp;W</button>
     </div>
   </header>
+
+  @if (a.league === 'ncaa') {
+    @if (rankingRailOpen()) {
+      <aside class="ranking-rail" aria-label="NCAA AP Top 25 rankings">
+        <header class="ranking-rail-head">
+          <div>
+            <span class="ranking-kicker">Associated Press</span>
+            <strong>AP Top 25</strong>
+            <span class="ranking-current">Current weekly poll</span>
+          </div>
+          <button type="button" (click)="rankingRailOpen.set(false)">Hide</button>
+        </header>
+
+        @if (ncaaRankings().length) {
+          <ol class="ranking-list">
+            @for (team of ncaaRankings(); track team.id) {
+              @let movement = rankingMovement(team);
+              <li [class.favorite-team]="isRankingFavorite(team)">
+                <span class="ranking-number">{{ team.currentRank }}</span>
+                <app-team-badge
+                  [name]="team.displayName"
+                  [logoUrl]="team.logoUrl"
+                  [abbreviation]="team.abbreviation"
+                  [size]="28"
+                />
+                <span class="ranking-team">
+                  <strong>{{ team.abbreviation }}</strong>
+                  <span [attr.aria-label]="rankingRecordAriaLabel(team)">{{ rankingRecord(team) }}</span>
+                </span>
+                <span
+                  class="ranking-movement"
+                  [class]="'ranking-movement ' + movement.kind"
+                  [attr.aria-label]="rankingMovementAriaLabel(team)"
+                  [attr.title]="rankingMovementAriaLabel(team)"
+                >
+                  @switch (movement.kind) {
+                    @case ('up') { ↑{{ movement.places }} }
+                    @case ('down') { ↓{{ movement.places }} }
+                    @case ('same') { — }
+                    @case ('new') { NEW }
+                    @default { · }
+                  }
+                </span>
+                <button
+                  type="button"
+                  class="ranking-star"
+                  [class.on]="isRankingFavorite(team)"
+                  [attr.aria-label]="(isRankingFavorite(team) ? 'Unfollow ' : 'Follow ') + team.displayName"
+                  (click)="toggleRankingFavorite(team)"
+                >{{ isRankingFavorite(team) ? '★' : '☆' }}</button>
+              </li>
+            }
+          </ol>
+        } @else {
+          <p class="ranking-empty">The current AP poll will appear after the next rankings sync.</p>
+        }
+
+        <footer class="ranking-legend">
+          <span><b class="up">↑</b> Up</span>
+          <span><b class="down">↓</b> Down</span>
+          <span><b>NEW</b> Entered poll</span>
+        </footer>
+      </aside>
+    } @else {
+      <button
+        type="button"
+        class="show-ranking-rail"
+        [attr.aria-label]="'Show AP Top 25 ranking rail with ' + ncaaRankings().length + ' teams'"
+        (click)="rankingRailOpen.set(true)"
+      >
+        <span>AP</span>
+        <strong>Top 25</strong>
+      </button>
+    }
+  }
 
   @if (a.league === 'nfl') {
     <section class="nfl-ledger" aria-label="NFL conference alignment">

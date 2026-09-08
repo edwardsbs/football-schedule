@@ -181,6 +181,45 @@
   }
 }
 
+.possession-ball {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 9px;
+  border: 1px solid #e2ae75;
+  border-radius: 50%;
+  background: #a96f38;
+  box-shadow: 0 0 7px rgb(226 174 117 / 24%);
+  transform: rotate(-24deg);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 5px;
+    border-top: 1px solid rgb(255 255 255 / 78%);
+  }
+}
+
+.live-situation {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.48rem;
+  padding: 0.5rem 0.58rem;
+  border: 1px solid rgb(229 72 77 / 22%);
+  border-radius: 7px;
+  background: rgb(229 72 77 / 6%);
+  color: var(--text, #e7ebf2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  strong { color: #e3c45e; }
+}
+
 .tile-foot {
   display: flex;
   align-items: center;

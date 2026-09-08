@@ -34,6 +34,7 @@ builder.Services.Configure<SportsDataOptions>(
     builder.Configuration.GetSection(SportsDataOptions.SectionName));
 builder.Services.AddScoped<ScheduleImportService>();
 builder.Services.AddScoped<ScoreSyncService>();
+builder.Services.AddScoped<StaleGameRecoveryService>();
 builder.Services.AddScoped<RankingsSyncService>();
 
 var sportsDataOptions = builder.Configuration

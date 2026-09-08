@@ -23,13 +23,18 @@ public class RankingsSyncService(IKickoffContext db)
             .Where(team => team.ExternalId is not null)
             .ToDictionary(team => team.ExternalId!);
 
-        foreach (var team in teams) team.CurrentRank = null;
+        foreach (var team in teams)
+        {
+            team.CurrentRank = null;
+            team.PreviousRank = null;
+        }
 
         var applied = 0;
         foreach (var ranking in rankings)
         {
             if (!byExternalId.TryGetValue(ranking.TeamExternalId, out var team)) continue;
             team.CurrentRank = ranking.Rank;
+            team.PreviousRank = ranking.PreviousRank;
             applied++;
         }
 

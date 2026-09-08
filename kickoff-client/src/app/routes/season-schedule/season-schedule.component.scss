@@ -112,3 +112,52 @@
   }
   .cnt { color: var(--muted, #8b93a1); font-size: 0.85rem; }
 }
+
+/* The NCAA week rail occupies the left gutter while the existing watch rail
+   keeps the right. On wider desktops the normal centered 900px timeline has
+   enough clearance and retains its original measure. */
+@media (min-width: 1081px) and (max-width: 1450px) {
+  :host:has(.season-ranking-rail) {
+    max-width: none;
+    margin-left: 17.5rem;
+    margin-right: 13.5rem;
+  }
+}
+
+@media (max-width: 1080px) {
+  .season-ranking-rail,
+  .season-show-ranking-rail {
+    position: static;
+  }
+
+  .season-ranking-rail {
+    width: 100%;
+    max-height: none;
+    margin-bottom: 1rem;
+  }
+
+  .season-ranking-rail .ranking-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 430px;
+
+    li:nth-child(odd) {
+      border-right: 1px solid var(--border, #262c38);
+    }
+  }
+
+  .season-show-ranking-rail {
+    margin: 0 auto 1rem;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 560px) {
+  .season-ranking-rail .ranking-list {
+    grid-template-columns: 1fr;
+
+    li:nth-child(odd) {
+      border-right: 0;
+    }
+  }
+}

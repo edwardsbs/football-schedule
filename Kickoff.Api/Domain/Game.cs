@@ -41,6 +41,12 @@ public class Game
 
     /// <summary>Sports-data provider identifier; upsert key when syncing scores.</summary>
     public string? ExternalId { get; set; }
+
+    /// <summary>
+    /// When the persisted status, score, clock, or live situation last changed.
+    /// Identical provider polls do not advance this timestamp, allowing frozen
+    /// live games to be detected and reconciled.
+    /// </summary>
     public DateTimeOffset? LastUpdatedUtc { get; set; }
 
     public ICollection<Broadcast> Broadcasts { get; set; } = [];

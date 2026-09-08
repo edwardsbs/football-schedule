@@ -26,30 +26,69 @@
   </div>
 </div>
 
-<div class="day-layout-tabs" role="group" aria-label="Group Day schedule">
-  <span class="layout-label">View</span>
-  <button
-    type="button"
-    class="layout-tab"
-    [class.active]="layout() === 'status'"
-    [attr.aria-pressed]="layout() === 'status'"
-    (click)="setLayout('status')"
-  >Status lanes</button>
-  <button
-    type="button"
-    class="layout-tab"
-    [class.active]="layout() === 'kickoff'"
-    [attr.aria-pressed]="layout() === 'kickoff'"
-    (click)="setLayout('kickoff')"
-  >Kickoff windows</button>
-  <button
-    type="button"
-    class="layout-tab"
-    [class.active]="layout() === 'conference'"
-    [attr.aria-pressed]="layout() === 'conference'"
-    title="Groups each matchup by the home team's conference or NFL division"
-    (click)="setLayout('conference')"
-  >Conference bands</button>
+<div class="day-tools">
+  <div class="day-layout-tabs" role="group" aria-label="Group Day schedule">
+    <span class="layout-label">View</span>
+    <button
+      type="button"
+      class="layout-tab"
+      [class.active]="layout() === 'status'"
+      [attr.aria-pressed]="layout() === 'status'"
+      (click)="setLayout('status')"
+    >Status lanes</button>
+    <button
+      type="button"
+      class="layout-tab"
+      [class.active]="layout() === 'kickoff'"
+      [attr.aria-pressed]="layout() === 'kickoff'"
+      (click)="setLayout('kickoff')"
+    >Kickoff windows</button>
+    <button
+      type="button"
+      class="layout-tab"
+      [class.active]="layout() === 'conference'"
+      [attr.aria-pressed]="layout() === 'conference'"
+      title="Groups each matchup by the home team's conference or NFL division"
+      (click)="setLayout('conference')"
+    >Conference bands</button>
+  </div>
+
+  <div class="day-layout-tabs size-tabs" role="group" aria-label="Day game panel size">
+    <span class="layout-label">Size</span>
+    <button
+      type="button"
+      class="layout-tab"
+      [class.active]="panelSize() === 'auto'"
+      [attr.aria-pressed]="panelSize() === 'auto'"
+      [title]="'Automatically using ' + automaticPanelSize() + ' panels for ' + total() + ' games'"
+      (click)="setPanelSize('auto')"
+    >Auto</button>
+    <button
+      type="button"
+      class="layout-tab"
+      [class.active]="panelSize() === 'small'"
+      [attr.aria-pressed]="panelSize() === 'small'"
+      title="Smallest panels for a full slate"
+      (click)="setPanelSize('small')"
+    >Small</button>
+    <button
+      type="button"
+      class="layout-tab"
+      [class.active]="panelSize() === 'medium'"
+      [attr.aria-pressed]="panelSize() === 'medium'"
+      title="Double-width panels"
+      (click)="setPanelSize('medium')"
+    >2×</button>
+    <button
+      type="button"
+      class="layout-tab"
+      [class.active]="panelSize() === 'live'"
+      [attr.aria-pressed]="panelSize() === 'live'"
+      title="Panels sized like the Live dashboard"
+      (click)="setPanelSize('live')"
+    >Live</button>
+    <span class="resolved-size">{{ resolvedPanelSize() }}</span>
+  </div>
 </div>
 
 <app-important-games-ticker [games]="games()" />
@@ -74,15 +113,15 @@
         </header>
         <div
           class="day-dashboard"
-          [class.heavy]="total() > 51"
-          [class.compact-finals]="group.kind === 'completed' && layout() === 'status' && group.games.length > 6"
+          [class.panels-small]="resolvedPanelSize() === 'small'"
+          [class.panels-medium]="resolvedPanelSize() === 'medium'"
+          [class.panels-live]="resolvedPanelSize() === 'live'"
           [attr.aria-label]="group.label + ' games'"
         >
           @for (game of group.games; track game.id) {
             <app-day-game-card
               [game]="game"
-              [dense]="total() > 51"
-              [compactFinal]="group.kind === 'completed' && layout() === 'status' && group.games.length > 6"
+              [panelSize]="resolvedPanelSize()"
             />
           }
         </div>

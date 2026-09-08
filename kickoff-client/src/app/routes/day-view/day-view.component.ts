@@ -8,7 +8,14 @@ import { Game } from '../../core/models/game.model';
 import { addDays, filterFollowed, startOfLocalDay } from '../../core/timeline';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { DayGameCardComponent } from './day-game-card.component';
+import {
+  DayPanelSizePreference,
+  automaticDayPanelSize,
+  isDayPanelSizePreference,
+} from './day-panel-size';
 import { DayLayout, groupDayGames } from './day-view-groups';
+
+const PANEL_SIZE_STORAGE_KEY = 'kickoff.day.panel-size';
 
 @Component({
   selector: 'app-day-view',
@@ -45,6 +52,12 @@ export class DayViewComponent {
   readonly groups = computed(() => groupDayGames(this.visible(), this.layout()));
 
   readonly total = computed(() => this.visible().length);
+  readonly panelSize = signal<DayPanelSizePreference>(readPanelSizePreference());
+  readonly automaticPanelSize = computed(() => automaticDayPanelSize(this.total()));
+  readonly resolvedPanelSize = computed(() => {
+    const preference = this.panelSize();
+    return preference === 'auto' ? this.automaticPanelSize() : preference;
+  });
 
   prev(): void {
     this.day.update((d) => addDays(d, -1));
@@ -60,5 +73,22 @@ export class DayViewComponent {
   }
   setLayout(layout: DayLayout): void {
     this.layout.set(layout);
+  }
+  setPanelSize(size: DayPanelSizePreference): void {
+    this.panelSize.set(size);
+    try {
+      localStorage.setItem(PANEL_SIZE_STORAGE_KEY, size);
+    } catch {
+      // Storage can be unavailable in privacy-restricted browser contexts.
+    }
+  }
+}
+
+function readPanelSizePreference(): DayPanelSizePreference {
+  try {
+    const saved = localStorage.getItem(PANEL_SIZE_STORAGE_KEY);
+    return isDayPanelSizePreference(saved) ? saved : 'auto';
+  } catch {
+    return 'auto';
   }
 }

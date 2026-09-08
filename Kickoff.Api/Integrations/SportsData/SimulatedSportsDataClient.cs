@@ -59,12 +59,27 @@ public class SimulatedSportsDataClient : ISportsDataClient
         return Task.FromResult<IReadOnlyList<GameScoreUpdate>>(updates);
     }
 
+    public Task<GameScoreUpdate?> GetGameScoreAsync(
+        League league, string gameExternalId, CancellationToken ct = default)
+    {
+        if (!_games.TryGetValue(gameExternalId, out var game) || game.League != league)
+            return Task.FromResult<GameScoreUpdate?>(null);
+
+        game.Advance(_time.GetUtcNow());
+        return Task.FromResult<GameScoreUpdate?>(
+            new GameScoreUpdate(game.ExternalId, game.Status, game.Snapshot()));
+    }
+
     public Task<IReadOnlyList<FeedTeam>> GetAllTeamsAsync(League league, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<FeedTeam>>(league == League.Nfl ? NflTeams : NcaaTeams);
 
     public Task<IReadOnlyList<TeamRanking>> GetCurrentRankingsAsync(
         League league, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<TeamRanking>>([]);
+
+    public Task<RankingPoll?> GetWeeklyRankingsAsync(
+        League league, int seasonYear, int week, CancellationToken ct = default) =>
+        Task.FromResult<RankingPoll?>(null);
 
     public Task<FeedGameSummary?> GetGameSummaryAsync(
         League league, string gameExternalId, CancellationToken ct = default)

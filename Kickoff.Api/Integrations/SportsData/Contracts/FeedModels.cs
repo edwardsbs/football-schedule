@@ -20,7 +20,17 @@ public record FeedTeam(
     bool? IsFcs = null);
 
 /// <summary>A team's place in the provider's current primary Top 25 poll.</summary>
-public record TeamRanking(string TeamExternalId, int Rank);
+public record TeamRanking(string TeamExternalId, int Rank, int? PreviousRank = null);
+
+/// <summary>One archived weekly edition of a provider's primary NCAA poll.</summary>
+public record RankingPoll(
+    string Name,
+    string Label,
+    int SeasonYear,
+    int WeekNumber,
+    bool IsPreseason,
+    DateTimeOffset? PublishedAt,
+    IReadOnlyList<TeamRanking> Rankings);
 
 public record ScoreSnapshot(
     int HomeScore,

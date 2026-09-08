@@ -1,8 +1,9 @@
 <button
   type="button"
   class="game-card"
-  [class.dense]="dense()"
-  [class.compact-final]="compactFinal()"
+  [class.panel-small]="panelSize() === 'small'"
+  [class.panel-medium]="panelSize() === 'medium'"
+  [class.panel-live]="panelSize() === 'live'"
   [class.score-pulse-field-goal]="scorePulse() === 'field-goal'"
   [class.score-pulse-touchdown]="scorePulse() === 'touchdown'"
   [class.score-pulse-other]="scorePulse() === 'other'"
@@ -22,40 +23,17 @@
     </span>
   </span>
 
-  @if (compactFinal()) {
-    <span class="final-matchup">
-      <span class="final-team">
-        <app-team-badge
-          [name]="game().away.displayName"
-          [logoUrl]="game().away.logoUrl"
-          [abbreviation]="game().away.abbreviation"
-          [rank]="game().away.currentRank"
-          [size]="14"
-        />
-        <strong>{{ game().away.abbreviation }}</strong>
-        <span class="final-score" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
-      </span>
-      <span class="final-team">
-        <app-team-badge
-          [name]="game().home.displayName"
-          [logoUrl]="game().home.logoUrl"
-          [abbreviation]="game().home.abbreviation"
-          [rank]="game().home.currentRank"
-          [size]="14"
-        />
-        <strong>{{ game().home.abbreviation }}</strong>
-        <span class="final-score" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
-      </span>
-    </span>
-  } @else {
-    <span class="team-row">
+    <span
+      class="team-row"
+      [class.has-situation]="game().score?.possessionTeamId === game().away.id && !!game().score?.downDistance"
+    >
     <span class="team">
       <app-team-badge
         [name]="game().away.displayName"
         [logoUrl]="game().away.logoUrl"
         [abbreviation]="game().away.abbreviation"
         [rank]="game().away.currentRank"
-        [size]="dense() ? 17 : 19"
+        [size]="panelSize() === 'live' ? 30 : panelSize() === 'medium' ? 24 : 20"
       />
       <strong>{{ game().away.abbreviation }}</strong>
       @if (game().away.isFcs) { <span class="fcs">FCS</span> }
@@ -74,14 +52,17 @@
     <span class="score" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
     </span>
 
-    <span class="team-row">
+    <span
+      class="team-row"
+      [class.has-situation]="game().score?.possessionTeamId === game().home.id && !!game().score?.downDistance"
+    >
     <span class="team">
       <app-team-badge
         [name]="game().home.displayName"
         [logoUrl]="game().home.logoUrl"
         [abbreviation]="game().home.abbreviation"
         [rank]="game().home.currentRank"
-        [size]="dense() ? 17 : 19"
+        [size]="panelSize() === 'live' ? 30 : panelSize() === 'medium' ? 24 : 20"
       />
       <strong>{{ game().home.abbreviation }}</strong>
       @if (game().home.isFcs) { <span class="fcs">FCS</span> }
@@ -99,5 +80,4 @@
     }
     <span class="score" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
     </span>
-  }
 </button>

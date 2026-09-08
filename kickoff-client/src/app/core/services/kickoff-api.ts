@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { FavoriteTeam, Game, MuteType, TeamRecord, TeamSummary } from '../models/game.model';
 import { GameSummary } from '../models/game-summary.model';
+import { RankingPoll } from '../models/ranking.model';
 
 /**
  * All Kickoff API calls. Uses relative `/api/...` URLs — proxied to the API in
@@ -89,5 +90,12 @@ export class KickoffApi {
   /** Overall W/L/T records from completed games in the active football season. */
   getTeamRecords(league: 'Nfl' | 'Ncaa'): Observable<TeamRecord[]> {
     return this.http.get<TeamRecord[]>('/api/teams/records', { params: { league } });
+  }
+
+  /** AP poll snapshot that applied to an NCAA season week. */
+  getNcaaRankings(seasonYear: number, week: number): Observable<RankingPoll> {
+    return this.http.get<RankingPoll>('/api/rankings/ncaa', {
+      params: { seasonYear, week },
+    });
   }
 }

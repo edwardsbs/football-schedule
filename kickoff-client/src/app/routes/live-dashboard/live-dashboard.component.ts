@@ -101,6 +101,7 @@ export class LiveDashboardComponent {
     const s = this.shownScore(g);
     switch (g.status) {
       case 'Live':
+        if (s?.period === 2 && /^0{1,2}:00$/.test(s.clock?.trim() ?? '')) return 'HALFTIME';
         return s?.clock ? `Q${s.period} · ${s.clock}` : 'LIVE';
       case 'Final':
         return 'FINAL';
@@ -124,6 +125,17 @@ export class LiveDashboardComponent {
 
   inRedZone(game: Game): boolean {
     return isInRedZone(game);
+  }
+
+  hasPossession(game: Game, teamId: number): boolean {
+    return game.status === 'Live' && this.shownScore(game)?.possessionTeamId === teamId;
+  }
+
+  possessionTeamAbbreviation(game: Game): string | null {
+    const possessionTeamId = this.shownScore(game)?.possessionTeamId;
+    if (possessionTeamId === game.away.id) return game.away.abbreviation;
+    if (possessionTeamId === game.home.id) return game.home.abbreviation;
+    return null;
   }
 
   // --- actions ---

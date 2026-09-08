@@ -13,9 +13,11 @@ namespace Kickoff.Api.Services.Sync;
 public class LiveScoreSyncWorker(
     IServiceScopeFactory scopeFactory,
     IOptions<SportsDataOptions> options,
+    TimeProvider timeProvider,
     ILogger<LiveScoreSyncWorker> logger) : BackgroundService
 {
     private readonly SportsDataOptions _opt = options.Value;
+    private readonly Dictionary<League, DateTimeOffset> _lastRecoveryUtc = [];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -55,14 +57,31 @@ public class LiveScoreSyncWorker(
         using var scope = scopeFactory.CreateScope();
         var client = scope.ServiceProvider.GetRequiredService<ISportsDataClient>();
         var scores = scope.ServiceProvider.GetRequiredService<ScoreSyncService>();
+        var recovery = scope.ServiceProvider.GetRequiredService<StaleGameRecoveryService>();
 
         foreach (var league in leagues)
         {
             var updates = await client.GetLiveScoresAsync(league, ct);
-            if (updates.Count == 0) continue;
+            if (updates.Count > 0)
+            {
+                var applied = await scores.ApplyAsync(league, updates, ct);
+                logger.LogDebug("{League}: applied {Count} live update(s).", league, applied);
+            }
 
-            var applied = await scores.ApplyAsync(league, updates, ct);
-            logger.LogDebug("{League}: applied {Count} live update(s).", league, applied);
+            var now = timeProvider.GetUtcNow();
+            var recoveryInterval = TimeSpan.FromSeconds(Math.Max(30, _opt.StaleRecoverySeconds));
+            if (!_lastRecoveryUtc.TryGetValue(league, out var lastRecovery)
+                || now - lastRecovery >= recoveryInterval)
+            {
+                _lastRecoveryUtc[league] = now;
+                var result = await recovery.ReconcileAsync(league, ct);
+                if (result.Checked > 0)
+                {
+                    logger.LogInformation(
+                        "{League}: checked {Checked} stale live game(s), recovered {Recovered}.",
+                        league, result.Checked, result.Recovered);
+                }
+            }
         }
     }
 }

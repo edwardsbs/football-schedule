@@ -2,6 +2,9 @@
 
 ## Queued
 
+- [ ] Add **Smart Display / Wake Lock** behavior: keep the KTC display awake while games are live (optionally shortly before kickoff), then release the browser wake lock after the final game so Android's normal timeout can turn the screen off.
+- [ ] Add an **NFL Playoff Picture Rail** to the Conferences view, separating clinched/locked seeds, current provisional seeds, in-the-hunt teams, and eliminated teams as standings change.
+
 - [ ] Add a reusable **Find Games** filter panel to schedule views. Keep **My Games** as the fastest one-tap filter and support combining:
   - League and conference/division (NFL, NCAA, SEC, AFC, etc.).
   - Ranked vs. ranked and any Top 25 team.
@@ -16,6 +19,11 @@
 ## Later
 
 - [ ] Add a **Team of Interest** classification, separate from Favorites, for rivals or notable division/conference opponents worth monitoring. Decide its schedule highlighting and filtering behavior when this moves into active work.
+
+## Completed
+
+- [x] Add an **NCAA Top 25 Ranking Rail** to the Conferences and NCAA season views. The AP poll appears in a hideable left rail with live records, favorite controls, dark touch scrolling, and the archived poll snapshot for the selected week; unpublished future weeks are clearly labeled with the latest available poll.
+- [x] Add **Stale Game Detection / Recovery**. A live game's timestamp now advances only when its scoreboard actually changes; after 10 unchanged minutes, a throttled recovery pass checks ESPN's per-game summary and propagates any corrected terminal status through the shared database record.
 
 ## Saved Team Indicator Treatments
 

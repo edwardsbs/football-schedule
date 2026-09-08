@@ -10,8 +10,8 @@
   grid-template-rows: 0.9rem repeat(2, minmax(0, 1fr));
   gap: 0.12rem;
   width: 100%;
-  min-height: 64px;
-  padding: 0.35rem 0.48rem;
+  min-height: 86px;
+  padding: 0.45rem 0.52rem;
   overflow: hidden;
   border: 1px solid rgb(139 147 161 / 18%);
   border-radius: 8px;
@@ -29,19 +29,15 @@
   &.circled { border-color: rgb(76 141 255 / 48%); }
   &.favorite.circled { border-color: rgb(76 141 255 / 48%); }
 
-  &.dense {
-    grid-template-rows: 0.72rem repeat(2, minmax(0, 1fr));
-    height: 57px;
-    min-height: 57px;
-    padding: 0.18rem 0.4rem;
+  &.panel-medium {
+    min-height: 116px;
+    padding: 0.62rem 0.7rem;
   }
 
-  &.compact-final {
-    grid-template-rows: 0.65rem minmax(0, 1fr);
-    gap: 0.08rem;
-    height: 47px;
-    min-height: 47px;
-    padding: 0.2rem 0.35rem;
+  &.panel-live {
+    min-height: 176px;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
   }
 
 }
@@ -64,11 +60,15 @@
 
 .team-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 1.4rem;
+  grid-template-columns: minmax(0, 1fr) 1.4rem;
   align-items: center;
   gap: 0.25rem;
   min-width: 0;
   font-variant-numeric: tabular-nums;
+
+  &.has-situation {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 1.4rem;
+  }
 }
 
 .team {
@@ -95,7 +95,7 @@
 }
 
 .score {
-  grid-column: 3;
+  grid-column: 2;
   justify-self: stretch;
   width: 1.4rem;
   font-size: 0.78rem;
@@ -106,6 +106,8 @@
   &.winner { font-size: 0.86rem; }
   &.loser { color: #9ca5b4; font-size: 0.72rem; }
 }
+
+.team-row.has-situation .score { grid-column: 3; }
 
 .team-situation {
   grid-column: 2;
@@ -128,43 +130,41 @@
   .direction { color: var(--accent-gold, #c9a227); }
 }
 
-.final-matchup {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-  gap: 0.04rem;
-  min-width: 0;
-}
-
-.final-team {
-  display: grid;
-  grid-template-columns: 14px minmax(0, 1fr) 1.25rem;
-  align-items: center;
-  gap: 0.2rem;
-  min-width: 0;
-
-  strong {
-    overflow: hidden;
-    font-size: 0.62rem;
-    font-weight: 800;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-.final-score {
-  color: var(--text, #e7ebf2);
-  font-size: 0.66rem;
-  font-weight: 800;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-
-  &.winner { font-size: 0.72rem; }
-  &.loser { color: #8f98a8; font-size: 0.61rem; }
-}
-
 @container (min-width: 260px) {
   .team-situation { font-size: 0.78rem; }
+}
+
+.game-card.panel-medium,
+.game-card.panel-live {
+  .card-meta { font-size: 0.68rem; }
+  .team strong { font-size: 0.92rem; }
+  .record { font-size: 0.62rem; }
+  .score {
+    width: 1.8rem;
+    font-size: 1.05rem;
+    &.winner { font-size: 1.15rem; }
+    &.loser { font-size: 0.95rem; }
+  }
+  .team-row { grid-template-columns: minmax(0, 1fr) 1.8rem; }
+  .team-row.has-situation { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) 1.8rem; }
+  .team-situation { font-size: 0.8rem; }
+}
+
+.game-card.panel-live {
+  .card-meta { font-size: 0.72rem; }
+  .team { gap: 0.55rem; }
+  .team strong { font-size: 0.98rem; }
+  .record { font-size: 0.68rem; }
+  .score {
+    width: 2rem;
+    font-size: 1.35rem;
+    &.winner { font-size: 1.45rem; }
+    &.loser { font-size: 1.18rem; }
+  }
+  .team-row { grid-template-columns: minmax(0, 1fr) 2rem; }
+  .team-row.has-situation { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 2rem; }
+  .team-situation { font-size: 0.86rem; }
+  .possession { width: 13px; height: 9px; }
 }
 
 .possession {
@@ -185,19 +185,4 @@
   color: #d9bc5c;
   font-size: 0.42rem;
   font-weight: 800;
-}
-
-@media (max-height: 820px) {
-  .game-card.dense {
-    height: 47px;
-    min-height: 47px;
-    padding-block: 0.16rem;
-  }
-
-  .card-meta { font-size: 0.49rem; }
-  .team {
-    app-team-badge { zoom: 0.78; }
-    strong { font-size: 0.68rem; }
-  }
-  .record { font-size: 0.44rem; }
 }

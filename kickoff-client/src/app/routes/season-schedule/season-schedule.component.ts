@@ -3,11 +3,16 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { Game } from '../../core/models/game.model';
+import { RankedTeam, RankingPoll } from '../../core/models/ranking.model';
+import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
+import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { filterFollowed, groupByWeek, startOfLocalDay, WeekGroup } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
+import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
 
 type ViewMode = 'byWeek' | 'full';
@@ -34,7 +39,7 @@ function rangeLabel(first: Date, last: Date): string {
 
 @Component({
   selector: 'app-season-schedule',
-  imports: [DatePipe, GameRowComponent, ImportantGamesTickerComponent, WeekStripComponent],
+  imports: [DatePipe, GameRowComponent, ImportantGamesTickerComponent, TeamBadgeComponent, WeekStripComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './season-schedule.component.html',
   styleUrls: ['../shared/timeline.scss', './season-schedule.component.scss'],
@@ -42,6 +47,8 @@ function rangeLabel(first: Date, last: Date): string {
 export class SeasonScheduleComponent {
   private readonly api = inject(KickoffApi);
   private readonly live = inject(LiveGameStore);
+  private readonly records = inject(TeamRecordStore);
+  readonly fan = inject(FanStore);
   private readonly reload = signal(0);
 
   readonly league = input.required<string>();
@@ -110,6 +117,30 @@ export class SeasonScheduleComponent {
     return this.games().filter((game) => game.weekNumber === weekNumber);
   });
 
+  readonly rankingRailOpen = signal(true);
+  readonly seasonYear = new Date(seasonRange().from).getFullYear();
+
+  private readonly rankingSelection = computed(() => {
+    const week = this.weekNumber();
+    return this.league() === 'ncaa' && this.viewMode() === 'byWeek' && week !== null
+      ? { seasonYear: this.seasonYear, week }
+      : null;
+  });
+
+  readonly rankingPoll = toSignal(
+    toObservable(this.rankingSelection).pipe(
+      switchMap((selection) => selection
+        ? this.api.getNcaaRankings(selection.seasonYear, selection.week).pipe(catchError(() => of(null)))
+        : of(null)),
+    ),
+    { initialValue: null as RankingPoll | null },
+  );
+
+  readonly showRankingRail = computed(() => this.rankingSelection() !== null && this.rankingRailOpen());
+  private readonly rankingPollHasHistory = computed(() =>
+    this.rankingPoll()?.rankings.some((team) => team.previousRank !== null) ?? false,
+  );
+
   /** The badge describes only what the current schedule view can reveal: the
    * selected week in Week by Week mode, or the entire league season in Full Season. */
   readonly followedCount = computed(() => {
@@ -138,6 +169,43 @@ export class SeasonScheduleComponent {
 
   slotLabel(iso: string): string {
     return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  rankingMovement(team: RankedTeam): RankingMovement {
+    return rankingMovement(team.rank, team.previousRank, this.rankingPollHasHistory());
+  }
+
+  rankingMovementAriaLabel(team: RankedTeam): string {
+    const movement = this.rankingMovement(team);
+    switch (movement.kind) {
+      case 'up': return `Up ${movement.places} places from the previous poll`;
+      case 'down': return `Down ${movement.places} places from the previous poll`;
+      case 'same': return 'Unchanged from the previous poll';
+      case 'new': return 'New to the Top 25';
+      case 'unavailable': return 'Previous poll comparison unavailable';
+    }
+  }
+
+  rankingPollContext(poll: RankingPoll): string {
+    return poll.isExactWeek
+      ? `${poll.label} · ${poll.seasonYear}`
+      : `${poll.label} · latest available for Week ${poll.requestedWeek}`;
+  }
+
+  rankingRecord(team: RankedTeam): string {
+    return this.records.label(team.teamId);
+  }
+
+  rankingRecordAriaLabel(team: RankedTeam): string {
+    return this.records.ariaLabel(team.teamId);
+  }
+
+  isRankingFavorite(team: RankedTeam): boolean {
+    return this.fan.isFavorite(team.teamId);
+  }
+
+  toggleRankingFavorite(team: RankedTeam): void {
+    this.fan.toggleFavorite(team.teamId);
   }
 
   setViewMode(mode: ViewMode): void {

@@ -9,8 +9,33 @@ namespace Kickoff.Api.Services.Sync;
 /// scoreboard block and status are touched — this is what the background poller
 /// runs on every tick.
 /// </summary>
-public class ScoreSyncService(IKickoffContext db)
+public record StaleLiveGame(string ExternalId, DateTimeOffset KickoffUtc, DateTimeOffset? LastUpdatedUtc);
+
+internal sealed record ScoreboardState(
+    GameStatus Status,
+    int? HomeScore,
+    int? AwayScore,
+    int? Period,
+    string? Clock,
+    int? PossessionTeamId,
+    string? DownDistance,
+    double? HomeWinProbability)
 {
+    public static ScoreboardState Capture(Game game) => new(
+        game.Status,
+        game.HomeScore,
+        game.AwayScore,
+        game.Period,
+        game.Clock,
+        game.PossessionTeamId,
+        game.DownDistance,
+        game.HomeWinProbability);
+}
+
+public class ScoreSyncService(IKickoffContext db, TimeProvider? timeProvider = null)
+{
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
     public async Task<int> ApplyAsync(
         League league, IReadOnlyList<GameScoreUpdate> updates, CancellationToken ct = default)
     {
@@ -37,9 +62,10 @@ public class ScoreSyncService(IKickoffContext db)
                 && possessionExternalIds.Contains(t.ExternalId))
             .ToDictionaryAsync(t => t.ExternalId!, t => t.Id, ct);
 
-        var now = DateTimeOffset.UtcNow;
+        var now = _time.GetUtcNow();
         foreach (var game in games)
         {
+            var previous = ScoreboardState.Capture(game);
             var u = byExt[game.ExternalId!];
             var homeIncrease = game.HomeScore is { } oldHome ? u.Score.HomeScore - oldHome : 0;
             var awayIncrease = game.AwayScore is { } oldAway ? u.Score.AwayScore - oldAway : 0;
@@ -86,12 +112,28 @@ public class ScoreSyncService(IKickoffContext db)
                 game.DownDistance = null;
             }
             game.HomeWinProbability = u.Score.HomeWinProbability;
-            game.LastUpdatedUtc = now;
+            // This timestamp represents the last meaningful scoreboard change,
+            // not merely the last identical provider poll. That makes a frozen
+            // clock/score detectable even when the game remains in a live feed.
+            if (previous != ScoreboardState.Capture(game))
+                game.LastUpdatedUtc = now;
         }
 
         await db.SaveChangesAsync(ct);
         return games.Count;
     }
+
+    public Task<List<StaleLiveGame>> GetStaleLiveGamesAsync(
+        League league, DateTimeOffset staleBeforeUtc, CancellationToken ct = default) =>
+        db.Games
+            .Where(game => game.League == league
+                && (game.Status == GameStatus.InProgress || game.Status == GameStatus.Halftime)
+                && game.ExternalId != null
+                && (game.LastUpdatedUtc == null || game.LastUpdatedUtc < staleBeforeUtc))
+            .OrderBy(game => game.KickoffUtc)
+            .Select(game => new StaleLiveGame(
+                game.ExternalId!, game.KickoffUtc, game.LastUpdatedUtc))
+            .ToListAsync(ct);
 
     private static string? InferScoringSituation(int homeIncrease, int awayIncrease)
     {
@@ -101,4 +143,5 @@ public class ScoreSyncService(IKickoffContext db)
         if (increase >= 6) return "Touchdown";
         return null;
     }
+
 }

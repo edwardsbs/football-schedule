@@ -3,6 +3,8 @@ using Kickoff.Api.Integrations.SportsData;
 using Kickoff.Api.Integrations.SportsData.Contracts;
 using Kickoff.Api.Services.Sync;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Kickoff.Api.Tests;
 
@@ -143,6 +145,53 @@ public class SyncPipelineTests
     }
 
     [Fact]
+    public async Task Identical_live_polls_do_not_hide_a_frozen_scoreboard()
+    {
+        using var ctx = TestDb.NewContext();
+        var clock = new FakeTimeProvider(T0);
+        var (game, home, _) = await SeedStaleGameAsync(ctx, clock.GetUtcNow());
+        var scores = new ScoreSyncService(ctx, clock);
+        var unchanged = new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.InProgress,
+            new ScoreSnapshot(17, 24, 4, "11:40", home.ExternalId, "3rd & 4 at FSU 31", null));
+
+        clock.Advance(TimeSpan.FromMinutes(5));
+        await scores.ApplyAsync(League.Ncaa, [unchanged]);
+
+        Assert.Equal(T0, game.LastUpdatedUtc);
+    }
+
+    [Fact]
+    public async Task Stale_recovery_finalizes_a_game_missing_from_the_rolling_scoreboard()
+    {
+        using var ctx = TestDb.NewContext();
+        var clock = new FakeTimeProvider(T0);
+        var (game, _, _) = await SeedStaleGameAsync(ctx, clock.GetUtcNow().AddMinutes(-30));
+        var update = new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.Final,
+            new ScoreSnapshot(24, 27, null, null, null, null, null));
+        var scores = new ScoreSyncService(ctx, clock);
+        var recovery = new StaleGameRecoveryService(
+            new RecoverySportsDataClient(update),
+            scores,
+            Options.Create(new SportsDataOptions { StaleGameMinutes = 10 }),
+            clock,
+            NullLogger<StaleGameRecoveryService>.Instance);
+
+        var result = await recovery.ReconcileAsync(League.Ncaa);
+
+        Assert.Equal(new StaleGameRecoveryResult(1, 1), result);
+        Assert.Equal(GameStatus.Final, game.Status);
+        Assert.Equal(24, game.HomeScore);
+        Assert.Equal(27, game.AwayScore);
+        Assert.Null(game.PossessionTeamId);
+        Assert.Null(game.DownDistance);
+        Assert.Equal(T0, game.LastUpdatedUtc);
+    }
+
+    [Fact]
     public async Task Rankings_sync_replaces_the_previous_current_poll()
     {
         using var ctx = TestDb.NewContext();
@@ -152,13 +201,16 @@ public class SyncPipelineTests
         await ctx.SaveChangesAsync();
 
         var sync = new RankingsSyncService(ctx);
-        Assert.Equal(1, await sync.ApplyAsync(League.Ncaa, [new TeamRanking("first", 4)]));
+        Assert.Equal(1, await sync.ApplyAsync(League.Ncaa, [new TeamRanking("first", 4, 7)]));
         Assert.Equal(4, first.CurrentRank);
+        Assert.Equal(7, first.PreviousRank);
         Assert.Null(second.CurrentRank);
 
         Assert.Equal(1, await sync.ApplyAsync(League.Ncaa, [new TeamRanking("second", 7)]));
         Assert.Null(first.CurrentRank);
+        Assert.Null(first.PreviousRank);
         Assert.Equal(7, second.CurrentRank);
+        Assert.Null(second.PreviousRank);
     }
 
     [Fact]
@@ -178,5 +230,94 @@ public class SyncPipelineTests
 
         Assert.True((await ctx.Teams.SingleAsync(team => team.ExternalId == "fcs")).IsFcs);
         Assert.False((await ctx.Teams.SingleAsync(team => team.ExternalId == "fbs")).IsFcs);
+    }
+
+    private static async Task<(Game Game, Team Home, Team Away)> SeedStaleGameAsync(
+        KickoffContext ctx,
+        DateTimeOffset lastUpdatedUtc)
+    {
+        var season = new Season
+        {
+            League = League.Ncaa,
+            Year = 2026,
+            Name = "2026 NCAA Season",
+            StartDate = new DateOnly(2026, 8, 1),
+            EndDate = new DateOnly(2027, 2, 15),
+        };
+        var week = new Week
+        {
+            Season = season,
+            Number = 1,
+            Label = "Week 1",
+            StartDate = new DateOnly(2026, 9, 1),
+            EndDate = new DateOnly(2026, 9, 7),
+        };
+        var home = new Team
+        {
+            League = League.Ncaa,
+            ExternalId = "52",
+            DisplayName = "Florida State Seminoles",
+            Abbreviation = "FSU",
+        };
+        var away = new Team
+        {
+            League = League.Ncaa,
+            ExternalId = "2567",
+            DisplayName = "SMU Mustangs",
+            Abbreviation = "SMU",
+        };
+        var game = new Game
+        {
+            Week = week,
+            League = League.Ncaa,
+            HomeTeam = home,
+            AwayTeam = away,
+            ExternalId = "401858212",
+            KickoffUtc = T0.AddHours(-8),
+            Status = GameStatus.InProgress,
+            HomeScore = 17,
+            AwayScore = 24,
+            Period = 4,
+            Clock = "11:40",
+            DownDistance = "3rd & 4 at FSU 31",
+            LastUpdatedUtc = lastUpdatedUtc,
+        };
+        ctx.Games.Add(game);
+        await ctx.SaveChangesAsync();
+        game.PossessionTeamId = home.Id;
+        await ctx.SaveChangesAsync();
+        return (game, home, away);
+    }
+
+    private sealed class RecoverySportsDataClient(GameScoreUpdate update) : ISportsDataClient
+    {
+        public Task<GameScoreUpdate?> GetGameScoreAsync(
+            League league, string gameExternalId, CancellationToken ct = default) =>
+            Task.FromResult<GameScoreUpdate?>(
+                gameExternalId == update.GameExternalId ? update : null);
+
+        public Task<IReadOnlyList<GameScoreUpdate>> GetLiveScoresAsync(
+            League league, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<GameScoreUpdate>>([]);
+
+        public Task<ScheduleFeed> GetWeekScheduleAsync(
+            League league, int seasonYear, int week, CancellationToken ct = default) =>
+            Task.FromResult(new ScheduleFeed(league, seasonYear, week, []));
+
+        public Task<IReadOnlyList<FeedTeam>> GetAllTeamsAsync(
+            League league, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<FeedTeam>>([]);
+
+        public Task<IReadOnlyList<TeamRanking>> GetCurrentRankingsAsync(
+            League league, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<TeamRanking>>([]);
+
+        public Task<RankingPoll?> GetWeeklyRankingsAsync(
+            League league, int seasonYear, int week, CancellationToken ct = default) =>
+            Task.FromResult<RankingPoll?>(null);
+
+        public Task<FeedGameSummary?> GetGameSummaryAsync(
+            League league, string gameExternalId, CancellationToken ct = default) =>
+            Task.FromResult<FeedGameSummary?>(null);
     }
 }

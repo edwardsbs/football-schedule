@@ -19,7 +19,8 @@ public class TeamsController(IKickoffContext db, StandingsService standings) : C
             .Where(t => t.League == league)
             .OrderBy(t => t.DisplayName)
             .Select(t => new TeamSummaryDto(
-                t.Id, t.DisplayName, t.Abbreviation, t.LogoUrl, t.PrimaryColor, t.CurrentRank, t.IsFcs))
+                t.Id, t.DisplayName, t.Abbreviation, t.LogoUrl, t.PrimaryColor,
+                t.CurrentRank, t.PreviousRank, t.IsFcs))
             .ToListAsync(ct);
 
     /// <summary>Overall W/L/T records calculated from final games in a season.</summary>

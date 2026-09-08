@@ -13,8 +13,10 @@ public record TeamImportResult(int TeamsAdded, int TeamsUpdated);
 /// division linking is intentionally left for a later pass (teams import with
 /// null Conference/Division for now).
 /// </summary>
-public class ScheduleImportService(IKickoffContext db)
+public class ScheduleImportService(IKickoffContext db, TimeProvider? timeProvider = null)
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
     public async Task<ScheduleImportResult> ImportAsync(ScheduleFeed feed, CancellationToken ct = default)
     {
         var season = await GetOrCreateSeasonAsync(feed.League, feed.SeasonYear, ct);
@@ -66,8 +68,7 @@ public class ScheduleImportService(IKickoffContext db)
             game.HomeTeamId = home.Id;
             game.AwayTeamId = away.Id;
             game.KickoffUtc = fg.KickoffUtc;
-            game.Status = fg.Status;
-            ApplyScore(game, fg.Score, teamsByExt);
+            ApplyScore(game, fg.Status, fg.Score, teamsByExt);
             SyncBroadcasts(game, fg.Broadcasts);
         }
 
@@ -126,11 +127,15 @@ public class ScheduleImportService(IKickoffContext db)
         return new TeamImportResult(added, updated);
     }
 
-    private static void ApplyScore(
+    private void ApplyScore(
         Game game,
+        GameStatus status,
         ScoreSnapshot? score,
         IReadOnlyDictionary<string, Team> teamsByExternalId)
     {
+        var previous = ScoreboardState.Capture(game);
+        game.Status = status;
+
         if (score is null)
         {
             game.HomeScore = game.AwayScore = null;
@@ -142,6 +147,8 @@ public class ScheduleImportService(IKickoffContext db)
                 game.DownDistance = null;
             }
             game.HomeWinProbability = null;
+            if (previous != ScoreboardState.Capture(game))
+                game.LastUpdatedUtc = _time.GetUtcNow();
             return;
         }
 
@@ -183,7 +190,8 @@ public class ScheduleImportService(IKickoffContext db)
             game.DownDistance = null;
         }
         game.HomeWinProbability = score.HomeWinProbability;
-        game.LastUpdatedUtc = DateTimeOffset.UtcNow;
+        if (previous != ScoreboardState.Capture(game))
+            game.LastUpdatedUtc = _time.GetUtcNow();
     }
 
     private static string? InferScoringSituation(int homeIncrease, int awayIncrease)

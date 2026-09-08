@@ -39,10 +39,12 @@ public static class GameProjections
                    g.League,
                    new TeamSummaryDto(
                        g.HomeTeam.Id, g.HomeTeam.DisplayName, g.HomeTeam.Abbreviation,
-                       g.HomeTeam.LogoUrl, g.HomeTeam.PrimaryColor, g.HomeTeam.CurrentRank, g.HomeTeam.IsFcs),
+                       g.HomeTeam.LogoUrl, g.HomeTeam.PrimaryColor, g.HomeTeam.CurrentRank,
+                       g.HomeTeam.PreviousRank, g.HomeTeam.IsFcs),
                    new TeamSummaryDto(
                        g.AwayTeam.Id, g.AwayTeam.DisplayName, g.AwayTeam.Abbreviation,
-                       g.AwayTeam.LogoUrl, g.AwayTeam.PrimaryColor, g.AwayTeam.CurrentRank, g.AwayTeam.IsFcs),
+                       g.AwayTeam.LogoUrl, g.AwayTeam.PrimaryColor, g.AwayTeam.CurrentRank,
+                       g.AwayTeam.PreviousRank, g.AwayTeam.IsFcs),
                    g.KickoffUtc,
                    g.Venue != null ? g.Venue!.Name : null,
                    g.Broadcasts

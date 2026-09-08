@@ -5,6 +5,7 @@ import { of, switchMap } from 'rxjs';
 import { getAlignment } from '../../core/data/alignment-lookup';
 import { AlignmentConference, AlignmentTeam } from '../../core/models/alignment.model';
 import { TeamRecord, TeamSummary } from '../../core/models/game.model';
+import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamRecordStore } from '../../core/services/team-record-store';
@@ -28,6 +29,7 @@ export class ConferenceAlignmentComponent {
 
   readonly league = input.required<string>();
   readonly palette = signal<'original' | 'muted' | 'mono'>('mono');
+  readonly rankingRailOpen = signal(true);
 
   readonly alignment = computed(() => getAlignment(this.league()));
 
@@ -67,6 +69,18 @@ export class ConferenceAlignmentComponent {
     return map;
   });
 
+  readonly ncaaRankings = computed(() =>
+    this.backendTeams()
+      .filter((team) => team.currentRank !== null)
+      .sort((left, right) => left.currentRank! - right.currentRank!),
+  );
+
+  /** A preseason poll has no prior positions at all; suppress a misleading
+   * wall of NEW labels until at least one team has real week-over-week data. */
+  private readonly pollHasHistory = computed(() =>
+    this.ncaaRankings().some((team) => team.previousRank != null),
+  );
+
   /** The real backend team id for an alignment entry, or null if that team
    * hasn't been imported yet (not yet favorite-able). */
   teamId(team: AlignmentTeam): number | null {
@@ -86,6 +100,37 @@ export class ConferenceAlignmentComponent {
       ? ncaaEspnId(team.logoUrl ?? null)
       : (team.abbreviation?.toLowerCase() ?? null);
     return key ? (this.teamRankByKey().get(key) ?? null) : null;
+  }
+
+  rankingMovement(team: TeamSummary): RankingMovement {
+    return rankingMovement(team.currentRank!, team.previousRank, this.pollHasHistory());
+  }
+
+  rankingMovementAriaLabel(team: TeamSummary): string {
+    const movement = this.rankingMovement(team);
+    switch (movement.kind) {
+      case 'up': return `Up ${movement.places} places from the previous poll`;
+      case 'down': return `Down ${movement.places} places from the previous poll`;
+      case 'same': return 'Unchanged from the previous poll';
+      case 'new': return 'New to the Top 25';
+      case 'unavailable': return 'Previous poll comparison unavailable';
+    }
+  }
+
+  rankingRecord(team: TeamSummary): string {
+    return this.records.label(team.id);
+  }
+
+  rankingRecordAriaLabel(team: TeamSummary): string {
+    return this.records.ariaLabel(team.id);
+  }
+
+  isRankingFavorite(team: TeamSummary): boolean {
+    return this.fan.isFavorite(team.id);
+  }
+
+  toggleRankingFavorite(team: TeamSummary): void {
+    this.fan.toggleFavorite(team.id);
   }
 
   isFavorite(team: AlignmentTeam): boolean {

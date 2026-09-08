@@ -21,6 +21,14 @@ public interface ISportsDataClient
         League league, CancellationToken ct = default);
 
     /// <summary>
+    /// Current line for one known game. Used to recover games that have fallen
+    /// out of the provider's current scoreboard before their final update was
+    /// persisted locally.
+    /// </summary>
+    Task<GameScoreUpdate?> GetGameScoreAsync(
+        League league, string gameExternalId, CancellationToken ct = default);
+
+    /// <summary>
     /// The full team roster for a league, independent of any schedule/week --
     /// lets team data (and real ids for favoriting) exist ahead of a team
     /// actually appearing in an imported game.
@@ -30,6 +38,13 @@ public interface ISportsDataClient
     /// <summary>The current primary Top 25 poll for a league.</summary>
     Task<IReadOnlyList<TeamRanking>> GetCurrentRankingsAsync(
         League league, CancellationToken ct = default);
+
+    /// <summary>
+    /// The primary poll that applied to a selected season week. When that week
+    /// has not published a poll yet, returns the latest earlier poll available.
+    /// </summary>
+    Task<RankingPoll?> GetWeeklyRankingsAsync(
+        League league, int seasonYear, int week, CancellationToken ct = default);
 
     /// <summary>Rich on-demand context for one game.</summary>
     Task<FeedGameSummary?> GetGameSummaryAsync(

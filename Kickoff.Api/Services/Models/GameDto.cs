@@ -19,6 +19,7 @@ public record TeamSummaryDto(
     string? LogoUrl,
     string? PrimaryColor,
     int? CurrentRank,
+    int? PreviousRank,
     bool IsFcs);
 
 /// <summary>A team's overall result record for one league season.</summary>

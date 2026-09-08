@@ -6,6 +6,7 @@ import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
+import { DayPanelSize } from './day-panel-size';
 
 @Component({
   selector: 'app-day-game-card',
@@ -16,8 +17,7 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
 })
 export class DayGameCardComponent {
   readonly game = input.required<Game>();
-  readonly dense = input(false);
-  readonly compactFinal = input(false);
+  readonly panelSize = input<DayPanelSize>('small');
   protected readonly scorePulse = trackScorePulse(this.game);
   protected readonly inFieldGoalRange = () => isInFieldGoalRange(this.game());
   protected readonly inRedZone = () => isInRedZone(this.game());

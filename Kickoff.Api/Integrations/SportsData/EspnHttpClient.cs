@@ -141,6 +141,26 @@ public class EspnHttpClient(
         return updates;
     }
 
+    public async Task<GameScoreUpdate?> GetGameScoreAsync(
+        League league, string gameExternalId, CancellationToken ct = default)
+    {
+        var url = $"{BaseUrl}/{Sport(league)}/summary?event={Uri.EscapeDataString(gameExternalId)}";
+        using var doc = await GetJsonAsync(url, ct);
+        if (doc is null
+            || !doc.RootElement.TryGetProperty("header", out var header)
+            || !header.TryGetProperty("competitions", out var competitions)
+            || competitions.GetArrayLength() == 0)
+        {
+            return null;
+        }
+
+        var competition = competitions[0];
+        var status = ParseStatus(competition);
+        return ParseScore(competition, status) is { } score
+            ? new GameScoreUpdate(gameExternalId, status, score)
+            : null;
+    }
+
     public async Task<IReadOnlyList<FeedTeam>> GetAllTeamsAsync(League league, CancellationToken ct = default)
     {
         var url = $"{BaseUrl}/{Sport(league)}/teams?limit=500";
@@ -187,41 +207,56 @@ public class EspnHttpClient(
     {
         if (league != League.Ncaa) return [];
 
-        using var doc = await GetJsonAsync($"{BaseUrl}/{Sport(league)}/rankings", ct);
-        if (doc is null || !doc.RootElement.TryGetProperty("rankings", out var polls)) return [];
+        var poll = await GetCurrentRankingPollAsync(ct);
+        return poll?.Rankings ?? [];
+    }
 
-        // The AP poll is the familiar ranking used by scoreboards. Avoid mixing
-        // it with the Coaches or FCS polls also present in this response.
-        JsonElement? apPoll = null;
-        foreach (var poll in polls.EnumerateArray())
+    public async Task<RankingPoll?> GetWeeklyRankingsAsync(
+        League league, int seasonYear, int week, CancellationToken ct = default)
+    {
+        if (league != League.Ncaa) return null;
+
+        // ESPN stores the opening-week AP poll under preseason/type 1. Every
+        // subsequent weekly edition lives under regular-season/type 2.
+        if (week <= 1)
         {
-            var type = poll.TryGetProperty("type", out var typeEl) ? typeEl.GetString() : null;
-            if (string.Equals(type, "ap", StringComparison.OrdinalIgnoreCase))
-            {
-                apPoll = poll;
-                break;
-            }
+            var preseason = await GetArchivedRankingPollAsync(seasonYear, 1, 1, ct);
+            if (preseason is not null) return preseason;
+
+            // ESPN sometimes publishes the new preseason poll to the site feed
+            // before its core archive is populated. Use it only for the same
+            // season so an old poll can never leak into a new schedule.
+            var currentPreseason = await GetCurrentRankingPollAsync(ct);
+            return currentPreseason is { IsPreseason: true }
+                   && currentPreseason.SeasonYear == seasonYear
+                ? currentPreseason
+                : null;
         }
 
-        if (apPoll is null || !apPoll.Value.TryGetProperty("ranks", out var ranks)) return [];
+        var exact = await GetArchivedRankingPollAsync(seasonYear, 2, week, ct);
+        if (exact is not null) return exact;
 
-        var result = new List<TeamRanking>();
-        foreach (var entry in ranks.EnumerateArray())
+        // Future weeks have no archive yet. The latest site poll avoids a long
+        // chain of guaranteed 404s and is valid when it belongs to this season
+        // and does not post-date the requested schedule week.
+        var current = await GetCurrentRankingPollAsync(ct);
+        if (current is not null
+            && current.SeasonYear == seasonYear
+            && current.WeekNumber <= week)
         {
-            if (!entry.TryGetProperty("current", out var current)
-                || !current.TryGetInt32(out var rank)
-                || rank is < 1 or > 25
-                || !entry.TryGetProperty("team", out var team)
-                || !team.TryGetProperty("id", out var idEl)
-                || idEl.GetString() is not { Length: > 0 } id)
-            {
-                continue;
-            }
-
-            result.Add(new TeamRanking(id, rank));
+            return current;
         }
 
-        return result;
+        // Historical archives can occasionally skip an edition. Walk backward
+        // to the closest poll that actually existed, finally falling back to
+        // the preseason edition.
+        for (var priorWeek = week - 1; priorWeek >= 2; priorWeek--)
+        {
+            var prior = await GetArchivedRankingPollAsync(seasonYear, 2, priorWeek, ct);
+            if (prior is not null) return prior;
+        }
+
+        return await GetArchivedRankingPollAsync(seasonYear, 1, 1, ct);
     }
 
     public async Task<FeedGameSummary?> GetGameSummaryAsync(
@@ -233,6 +268,109 @@ public class EspnHttpClient(
     }
 
     private static string Sport(League league) => league == League.Nfl ? "nfl" : "college-football";
+
+    private async Task<RankingPoll?> GetCurrentRankingPollAsync(CancellationToken ct)
+    {
+        using var doc = await GetJsonAsync($"{BaseUrl}/college-football/rankings", ct);
+        if (doc is null || !doc.RootElement.TryGetProperty("rankings", out var polls)) return null;
+
+        foreach (var poll in polls.EnumerateArray())
+        {
+            var type = poll.TryGetProperty("type", out var typeEl) ? typeEl.GetString() : null;
+            if (string.Equals(type, "ap", StringComparison.OrdinalIgnoreCase))
+                return ParseRankingPoll(poll);
+        }
+
+        return null;
+    }
+
+    private async Task<RankingPoll?> GetArchivedRankingPollAsync(
+        int seasonYear, int seasonType, int week, CancellationToken ct)
+    {
+        var url = $"{CoreBaseUrl}/seasons/{seasonYear}/types/{seasonType}/weeks/{week}/rankings/1?lang=en&region=us";
+        using var doc = await GetJsonAsync(url, ct);
+        return doc is null ? null : ParseRankingPoll(doc.RootElement);
+    }
+
+    private static RankingPoll? ParseRankingPoll(JsonElement poll)
+    {
+        if (!poll.TryGetProperty("ranks", out var ranks)) return null;
+
+        var result = new List<TeamRanking>();
+        foreach (var entry in ranks.EnumerateArray())
+        {
+            if (!entry.TryGetProperty("current", out var current)
+                || !current.TryGetInt32(out var rank)
+                || rank is < 1 or > 25
+                || !entry.TryGetProperty("team", out var team)
+                || !TryGetRankingTeamId(team, out var id))
+            {
+                continue;
+            }
+
+            int? previousRank = null;
+            if (entry.TryGetProperty("previous", out var previous)
+                && previous.TryGetInt32(out var parsedPrevious)
+                && parsedPrevious is >= 1 and <= 25)
+            {
+                previousRank = parsedPrevious;
+            }
+
+            result.Add(new TeamRanking(id, rank, previousRank));
+        }
+
+        if (result.Count == 0) return null;
+
+        var name = poll.TryGetProperty("name", out var nameEl)
+            ? nameEl.GetString() ?? "AP Top 25"
+            : "AP Top 25";
+        var label = poll.TryGetProperty("occurrence", out var occurrence)
+            && occurrence.TryGetProperty("displayValue", out var labelEl)
+            ? labelEl.GetString() ?? "Current poll"
+            : "Current poll";
+        var weekNumber = poll.TryGetProperty("occurrence", out occurrence)
+            && occurrence.TryGetProperty("number", out var weekEl)
+            && weekEl.TryGetInt32(out var parsedWeek)
+            ? parsedWeek
+            : 1;
+        var seasonYear = poll.TryGetProperty("season", out var season)
+            && season.TryGetProperty("year", out var yearEl)
+            && yearEl.TryGetInt32(out var parsedYear)
+            ? parsedYear
+            : 0;
+        DateTimeOffset? publishedAt = poll.TryGetProperty("date", out var dateEl)
+            && dateEl.TryGetDateTimeOffset(out var parsedDate)
+            ? parsedDate
+            : null;
+        var isPreseason = label.Contains("preseason", StringComparison.OrdinalIgnoreCase);
+
+        return new RankingPoll(name, label, seasonYear, weekNumber, isPreseason, publishedAt, result);
+    }
+
+    private static bool TryGetRankingTeamId(JsonElement team, out string id)
+    {
+        if (team.TryGetProperty("id", out var idEl)
+            && idEl.GetString() is { Length: > 0 } embeddedId)
+        {
+            id = embeddedId;
+            return true;
+        }
+
+        if (team.TryGetProperty("$ref", out var referenceEl)
+            && Uri.TryCreate(referenceEl.GetString(), UriKind.Absolute, out var reference))
+        {
+            var path = reference.AbsolutePath.TrimEnd('/');
+            var separator = path.LastIndexOf('/');
+            if (separator >= 0 && separator < path.Length - 1)
+            {
+                id = path[(separator + 1)..];
+                return true;
+            }
+        }
+
+        id = string.Empty;
+        return false;
+    }
 
     private static int MapSeasonType(string seasonType) => seasonType.ToUpperInvariant() switch
     {
