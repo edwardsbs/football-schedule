@@ -41,6 +41,27 @@ public class FavoritesCircledTests
     }
 
     [Fact]
+    public async Task Team_of_interest_is_persistent_and_independent_of_favorites()
+    {
+        using var ctx = TestDb.NewContext();
+        var (gameId, homeTeamId, _) = Seed(ctx);
+        var interests = new TeamInterestsService(ctx);
+
+        Assert.True(await interests.AddAsync(UserId, homeTeamId));
+        var game = await Dto(ctx, gameId);
+        Assert.True(game.HasInterest);
+        Assert.False(game.HasFavorite);
+
+        var list = await interests.ListAsync(UserId);
+        Assert.Single(list);
+        Assert.Equal(homeTeamId, list[0].TeamId);
+
+        await interests.RemoveAsync(UserId, homeTeamId);
+        Assert.False((await Dto(ctx, gameId)).HasInterest);
+        Assert.Empty(await interests.ListAsync(UserId));
+    }
+
+    [Fact]
     public async Task Circling_a_game_flags_it_and_lists_it()
     {
         using var ctx = TestDb.NewContext();

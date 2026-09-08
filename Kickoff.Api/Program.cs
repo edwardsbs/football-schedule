@@ -23,6 +23,7 @@ builder.Services.AddScoped<ICurrentUser, HeaderCurrentUser>();
 builder.Services.AddScoped<GameQueryService>();
 builder.Services.AddScoped<MuteService>();
 builder.Services.AddScoped<FavoritesService>();
+builder.Services.AddScoped<TeamInterestsService>();
 builder.Services.AddScoped<CircledService>();
 builder.Services.AddScoped<StandingsService>();
 builder.Services.AddScoped<GameSummaryService>();

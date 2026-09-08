@@ -45,6 +45,7 @@ function game(id: number, kickoff: Date): Game {
     muteType: null,
     score: null,
     hasFavorite: false,
+    hasInterest: false,
     isCircled: false,
     weekNumber: 1,
     weekLabel: 'Week 1',

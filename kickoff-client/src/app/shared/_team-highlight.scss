@@ -17,6 +17,13 @@
     0 1px 1px rgb(115 174 255 / 7%);
 }
 
+.team-highlight.interest-team {
+  background: rgb(73 184 184 / 2.5%);
+  box-shadow:
+    0 4px 9px rgb(33 142 142 / 13%),
+    0 1px 1px rgb(105 218 218 / 8%);
+}
+
 .team-highlight.favorite-team {
   background: rgb(255 255 255 / 1.1%);
   box-shadow:
@@ -47,12 +54,20 @@ app-conference-alignment tr.ranked-team > * {
   background: rgb(76 141 255 / 1.6%);
 }
 
+app-conference-alignment tr.interest-team > * {
+  background: rgb(73 184 184 / 3%);
+}
+
 app-conference-alignment tr.favorite-team > * {
   background: rgb(255 255 255 / 1.1%);
 }
 
 app-conference-alignment tr.ranked-team {
   filter: drop-shadow(0 4px 5px rgb(38 104 194 / 9%));
+}
+
+app-conference-alignment tr.interest-team {
+  filter: drop-shadow(0 4px 5px rgb(33 142 142 / 12%));
 }
 
 app-conference-alignment tr.favorite-team {

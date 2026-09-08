@@ -18,6 +18,7 @@ public class KickoffContext(DbContextOptions<KickoffContext> options)
     public DbSet<Broadcast> Broadcasts => Set<Broadcast>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserFavoriteTeam> UserFavoriteTeams => Set<UserFavoriteTeam>();
+    public DbSet<UserTeamInterest> UserTeamInterests => Set<UserTeamInterest>();
     public DbSet<CircledGame> CircledGames => Set<CircledGame>();
     public DbSet<GameMute> GameMutes => Set<GameMute>();
 

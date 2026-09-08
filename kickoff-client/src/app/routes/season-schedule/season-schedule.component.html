@@ -1,38 +1,64 @@
 @if (showRankingRail()) {
-  <aside class="ranking-rail season-ranking-rail" aria-label="NCAA AP Top 25 rankings for selected week">
+  <aside class="ranking-rail season-ranking-rail" aria-label="NCAA AP and CFP rankings for selected week">
     <header class="ranking-rail-head">
       <div>
-        <span class="ranking-kicker">Associated Press</span>
-        <strong>AP Top 25</strong>
-        @if (rankingPoll(); as poll) {
-          <span class="ranking-current">{{ rankingPollContext(poll) }}</span>
+        @if (cfpRankingPoll(); as cfpPoll) {
+          <span class="ranking-kicker">Committee + Associated Press</span>
+          <strong>CFP / AP Top 25</strong>
+          <span class="ranking-current">CFP {{ rankingPollContext(cfpPoll) }}</span>
+          @if (apRankingPoll(); as apPoll) {
+            <span class="ranking-secondary">AP {{ rankingPollContext(apPoll) }}</span>
+          }
         } @else {
-          <span class="ranking-current">Loading selected week…</span>
+          <span class="ranking-kicker">Associated Press</span>
+          <strong>AP Top 25</strong>
+          @if (apRankingPoll(); as apPoll) {
+            <span class="ranking-current">{{ rankingPollContext(apPoll) }}</span>
+          } @else {
+            <span class="ranking-current">Loading selected week…</span>
+          }
         }
       </div>
       <button type="button" (click)="rankingRailOpen.set(false)">Hide</button>
     </header>
 
-    @if (rankingPoll(); as poll) {
-      <ol class="ranking-list">
-        @for (team of poll.rankings; track team.teamId) {
-          @let movement = rankingMovement(team);
-          <li [class.favorite-team]="isRankingFavorite(team)">
-            <span class="ranking-number">{{ team.rank }}</span>
+    @if (rankingRows().length) {
+      @if (cfpRankingPoll()) {
+        <div class="ranking-column-head" aria-hidden="true">
+          <span>CFP</span>
+          <span>AP</span>
+          <span>Team</span>
+        </div>
+      }
+      <ol class="ranking-list" [class.dual-poll]="cfpRankingPoll() !== null">
+        @for (row of rankingRows(); track row.teamId) {
+          @let movement = rankingMovement(row);
+          <li [class.favorite-team]="isRankingFavorite(row)">
+            <span
+              class="ranking-number"
+              [attr.aria-label]="cfpRankingPoll() ? 'CFP rank ' + (row.cfp?.rank ?? 'unranked') : 'AP rank ' + (row.ap?.rank ?? 'unranked')"
+            >
+              {{ cfpRankingPoll() ? (row.cfp?.rank ?? '—') : (row.ap?.rank ?? '—') }}
+            </span>
+            @if (cfpRankingPoll()) {
+              <span class="ranking-number ap-rank" [attr.aria-label]="'AP rank ' + (row.ap?.rank ?? 'unranked')">
+                {{ row.ap?.rank ?? '—' }}
+              </span>
+            }
             <app-team-badge
-              [name]="team.displayName"
-              [logoUrl]="team.logoUrl"
-              [abbreviation]="team.abbreviation"
+              [name]="row.displayName"
+              [logoUrl]="row.logoUrl"
+              [abbreviation]="row.abbreviation"
               [size]="28"
             />
             <span class="ranking-team">
-              <strong>{{ team.abbreviation }}</strong>
-              <span [attr.aria-label]="rankingRecordAriaLabel(team)">{{ rankingRecord(team) }}</span>
+              <strong>{{ row.abbreviation }}</strong>
+              <span [attr.aria-label]="rankingRecordAriaLabel(row)">{{ rankingRecord(row) }}</span>
             </span>
             <span
               [class]="'ranking-movement ' + movement.kind"
-              [attr.aria-label]="rankingMovementAriaLabel(team)"
-              [attr.title]="rankingMovementAriaLabel(team)"
+              [attr.aria-label]="rankingMovementAriaLabel(row)"
+              [attr.title]="rankingMovementAriaLabel(row)"
             >
               @switch (movement.kind) {
                 @case ('up') { ↑{{ movement.places }} }
@@ -45,10 +71,10 @@
             <button
               type="button"
               class="ranking-star"
-              [class.on]="isRankingFavorite(team)"
-              [attr.aria-label]="(isRankingFavorite(team) ? 'Unfollow ' : 'Follow ') + team.displayName"
-              (click)="toggleRankingFavorite(team)"
-            >{{ isRankingFavorite(team) ? '★' : '☆' }}</button>
+              [class.on]="isRankingFavorite(row)"
+              [attr.aria-label]="(isRankingFavorite(row) ? 'Unfollow ' : 'Follow ') + row.displayName"
+              (click)="toggleRankingFavorite(row)"
+            >{{ isRankingFavorite(row) ? '★' : '☆' }}</button>
           </li>
         }
       </ol>
@@ -66,10 +92,10 @@
   <button
     type="button"
     class="show-ranking-rail season-show-ranking-rail"
-    [attr.aria-label]="'Show AP Top 25 ranking rail for Week ' + weekNumber()"
+    [attr.aria-label]="'Show NCAA rankings rail for Week ' + weekNumber()"
     (click)="rankingRailOpen.set(true)"
   >
-    <span>AP</span>
+    <span>{{ cfpRankingPoll() ? 'CFP + AP' : 'AP' }}</span>
     <strong>Top 25</strong>
   </button>
 }

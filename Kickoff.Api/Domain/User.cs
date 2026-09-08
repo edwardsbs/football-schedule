@@ -6,6 +6,7 @@ public class User
     public string Name { get; set; } = "";
 
     public ICollection<UserFavoriteTeam> FavoriteTeams { get; set; } = [];
+    public ICollection<UserTeamInterest> TeamsOfInterest { get; set; } = [];
     public ICollection<CircledGame> CircledGames { get; set; } = [];
     public ICollection<GameMute> Mutes { get; set; } = [];
 }

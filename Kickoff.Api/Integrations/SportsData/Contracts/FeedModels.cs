@@ -22,8 +22,15 @@ public record FeedTeam(
 /// <summary>A team's place in the provider's current primary Top 25 poll.</summary>
 public record TeamRanking(string TeamExternalId, int Rank, int? PreviousRank = null);
 
-/// <summary>One archived weekly edition of a provider's primary NCAA poll.</summary>
+public enum RankingPollType
+{
+    Ap,
+    Cfp,
+}
+
+/// <summary>One current or archived weekly edition of an NCAA ranking poll.</summary>
 public record RankingPoll(
+    RankingPollType Type,
     string Name,
     string Label,
     int SeasonYear,

@@ -1,4 +1,4 @@
-<div class="shell">
+<div class="shell" [attr.inert]="wipeSeconds() > 0 ? '' : null">
   <header class="topbar">
     <a class="brand" routerLink="/live">
       <span class="mark">🏈</span> Kickoff
@@ -12,6 +12,18 @@
         >{{ link.label }}</a>
       }
     </nav>
+    <button
+      type="button"
+      class="wipe-btn"
+      [class.active]="wipeSeconds() > 0"
+      [attr.aria-label]="wipeSeconds() > 0
+        ? 'Screen controls locked for cleaning, ' + wipeSeconds() + ' seconds remaining'
+        : 'Lock screen controls for 10 seconds to clean the touchscreen'"
+      (click)="startWipe()"
+    >
+      <span aria-hidden="true">▣</span>
+      Wipe@if (wipeSeconds() > 0) {&nbsp;{{ wipeSeconds() }}}
+    </button>
     <button type="button" class="my-games-btn" (click)="myGamesOpen.set(true)">
       <span class="ico">★◉</span> My Games
     </button>
@@ -44,5 +56,25 @@
   </div>
 </div>
 
-<app-my-games-modal [open]="myGamesOpen()" (closed)="myGamesOpen.set(false)" />
-<app-game-detail-modal />
+<app-my-games-modal
+  [attr.inert]="wipeSeconds() > 0 ? '' : null"
+  [open]="myGamesOpen()"
+  (closed)="myGamesOpen.set(false)"
+/>
+<app-game-detail-modal [attr.inert]="wipeSeconds() > 0 ? '' : null" />
+
+@if (wipeSeconds() > 0) {
+  <div
+    class="wipe-shield"
+    role="status"
+    aria-live="assertive"
+    aria-atomic="true"
+    (contextmenu)="$event.preventDefault()"
+  >
+    <div class="wipe-status">
+      <span class="wipe-status__label">Screen locked for cleaning</span>
+      <strong class="wipe-status__count">{{ wipeSeconds() }}</strong>
+      <span class="wipe-status__hint">Controls resume automatically</span>
+    </div>
+  </div>
+}

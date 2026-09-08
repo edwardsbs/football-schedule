@@ -16,13 +16,13 @@
   - Both teams undefeated after Week 6.
   - Hide NCAA matchups containing an FCS opponent.
 
-## Later
-
-- [ ] Add a **Team of Interest** classification, separate from Favorites, for rivals or notable division/conference opponents worth monitoring. Decide its schedule highlighting and filtering behavior when this moves into active work.
-
 ## Completed
 
-- [x] Add an **NCAA Top 25 Ranking Rail** to the Conferences and NCAA season views. The AP poll appears in a hideable left rail with live records, favorite controls, dark touch scrolling, and the archived poll snapshot for the selected week; unpublished future weeks are clearly labeled with the latest available poll.
+- [x] Compact the NCAA/NFL **Conference header** into a KTC-friendly control band while retaining the league switch, title/context, marker legend, and touch-sized color controls.
+- [x] Add persistent **Teams of Interest**, separate from Favorites, for rivals and other opponents worth monitoring. Interest teams use a teal diamond and restrained team-level highlighting, appear on My Teams and the Watch rail, and intentionally do not enter the My Games favorites filter.
+- [x] Add a global **Wipe** control for the touchscreen. It locks every app interaction for 10 seconds, shows the remaining time in the header button and a clear on-screen countdown, then restores controls automatically.
+- [x] Add an **NCAA Top 25 Ranking Rail** to the Conferences and NCAA season views. The hideable left rail has live records, favorite controls, dark touch scrolling, and archived AP snapshots for the selected week. Once committee rankings begin it becomes a CFP-first comparison list with both CFP and AP positions; unpublished future weeks are clearly labeled with the latest available poll.
+- [x] Improve **touchscreen segmented controls** without changing their pill-style visual language. League, schedule-view, and conference-color switches now use larger coarse-pointer targets, immediate manipulation taps, press feedback, and keyboard-visible focus.
 - [x] Add **Stale Game Detection / Recovery**. A live game's timestamp now advances only when its scoreboard actually changes; after 10 unchanged minutes, a throttled recovery pass checks ESPN's per-game summary and propagates any corrected terminal status through the shared database record.
 
 ## Saved Team Indicator Treatments

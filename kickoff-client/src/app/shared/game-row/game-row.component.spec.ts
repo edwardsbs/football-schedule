@@ -26,6 +26,7 @@ describe('GameRowComponent', () => {
           provide: FanStore,
           useValue: {
             isFavorite: () => false,
+            isInterest: () => false,
             isCircled: () => false,
             toggleFavorite: () => undefined,
             toggleCircle: () => undefined,
@@ -33,6 +34,18 @@ describe('GameRowComponent', () => {
         },
       ],
     }).compileComponents();
+  });
+
+  it('marks only the matching team of interest', () => {
+    const fan = TestBed.inject(FanStore) as unknown as { isInterest: (teamId: number) => boolean };
+    fan.isInterest = (teamId) => teamId === 2;
+    const fixture = TestBed.createComponent(GameRowComponent);
+    fixture.componentRef.setInput('game', halftimeGame());
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.away .team-highlight').classList).toContain('interest-team');
+    expect(fixture.nativeElement.querySelector('.home .team-highlight').classList).not.toContain('interest-team');
   });
 
   it('shows Halftime and hides stale situation data at the end of the second quarter', () => {
@@ -142,6 +155,7 @@ function halftimeGame(): Game {
       homeWinProbability: null,
     },
     hasFavorite: false,
+    hasInterest: false,
     isCircled: false,
     weekNumber: 1,
     weekLabel: 'Week 1',

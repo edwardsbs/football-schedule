@@ -43,6 +43,7 @@ function game(downDistance: string, possessionTeamId: number | null): Game {
     muteType: null,
     score: { homeScore: 10, awayScore: 7, period: 4, clock: '5:00', possessionTeamId, downDistance, homeWinProbability: null },
     hasFavorite: false,
+    hasInterest: false,
     isCircled: false,
     weekNumber: 1,
     weekLabel: 'Week 1',

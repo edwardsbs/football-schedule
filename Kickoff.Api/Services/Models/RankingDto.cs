@@ -1,6 +1,12 @@
 namespace Kickoff.Api.Services.Models;
 
+public record NcaaRankingsDto(
+    int SeasonYear,
+    int? RequestedWeek,
+    IReadOnlyList<RankingPollDto> Polls);
+
 public record RankingPollDto(
+    string Type,
     string Source,
     string Name,
     string Label,

@@ -30,6 +30,7 @@
       class="team-identity team-highlight"
       [class.ranked-team]="game().away.currentRank !== null"
       [class.favorite-team]="fan.isFavorite(game().away.id)"
+      [class.interest-team]="fan.isInterest(game().away.id)"
     >
       <div class="team-main">
         <app-team-badge
@@ -79,6 +80,7 @@
       class="team-identity team-highlight home-identity"
       [class.ranked-team]="game().home.currentRank !== null"
       [class.favorite-team]="fan.isFavorite(game().home.id)"
+      [class.interest-team]="fan.isInterest(game().home.id)"
     >
       <div class="team-main">
         <app-team-badge

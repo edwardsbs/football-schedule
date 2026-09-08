@@ -18,6 +18,7 @@ public interface IKickoffContext
     DbSet<Broadcast> Broadcasts { get; }
     DbSet<User> Users { get; }
     DbSet<UserFavoriteTeam> UserFavoriteTeams { get; }
+    DbSet<UserTeamInterest> UserTeamInterests { get; }
     DbSet<CircledGame> CircledGames { get; }
     DbSet<GameMute> GameMutes { get; }
 

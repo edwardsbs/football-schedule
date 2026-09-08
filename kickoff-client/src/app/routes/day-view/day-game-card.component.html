@@ -25,6 +25,7 @@
 
     <span
       class="team-row"
+      [class.interest-team]="fan.isInterest(game().away.id)"
       [class.has-situation]="game().score?.possessionTeamId === game().away.id && !!game().score?.downDistance"
     >
     <span class="team">
@@ -54,6 +55,7 @@
 
     <span
       class="team-row"
+      [class.interest-team]="fan.isInterest(game().home.id)"
       [class.has-situation]="game().score?.possessionTeamId === game().home.id && !!game().score?.downDistance"
     >
     <span class="team">

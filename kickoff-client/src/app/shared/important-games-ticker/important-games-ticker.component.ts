@@ -66,6 +66,7 @@ export class ImportantGamesTickerComponent {
   protected interestLabel(game: Game): string {
     const labels: string[] = [];
     if (game.hasFavorite) labels.push('Favorite');
+    if (game.hasInterest) labels.push('Interest');
     if (game.home.currentRank != null || game.away.currentRank != null) labels.push('Ranked');
     if (game.isCircled) labels.push('Circled');
     return labels.join(' · ');
@@ -123,6 +124,7 @@ export type WatchAlertLevel = 'none' | 'single' | 'double';
 
 export function isImportantGame(game: Game): boolean {
   return game.hasFavorite
+    || game.hasInterest
     || game.isCircled
     || game.home.currentRank != null
     || game.away.currentRank != null;
@@ -171,7 +173,8 @@ function richUrgency(game: Game, summary?: GameSummary): number {
 function completedInterestOrder(game: Game): number {
   if (game.hasFavorite) return 0;
   if (game.isCircled) return 1;
-  return 2;
+  if (game.hasInterest) return 2;
+  return 3;
 }
 
 export function watchAlertLevel(game: Game, summary?: GameSummary): WatchAlertLevel {

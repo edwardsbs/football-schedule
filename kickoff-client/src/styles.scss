@@ -40,6 +40,92 @@ a {
   color: var(--accent-gold);
 }
 
+/* The wipe shield is global because it sits above every interactive app
+   surface, including dialogs rendered beside the shell. */
+app-shell .wipe-shield {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 8, 13, 0.18);
+  cursor: wait;
+  pointer-events: auto;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+app-shell .wipe-status {
+  display: grid;
+  justify-items: center;
+  min-width: min(320px, calc(100vw - 40px));
+  padding: 1.2rem 1.6rem;
+  border: 1px solid color-mix(in srgb, var(--accent-gold) 65%, #4a515d);
+  border-radius: 18px;
+  background: rgba(12, 16, 23, 0.94);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.62);
+  color: var(--text);
+  pointer-events: none;
+}
+
+app-shell .wipe-status__label {
+  color: var(--accent-gold);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+app-shell .wipe-status__count {
+  margin: 0.15rem 0;
+  font-size: 3.6rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+app-shell .wipe-status__hint {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+@media (pointer: coarse) {
+  app-shell .wipe-btn,
+  app-shell .my-games-btn {
+    min-height: 48px;
+    padding-inline: 1rem;
+  }
+}
+
+/* Teams of Interest stay visually quieter than favorites: a slim teal rail
+   identifies the exact team without promoting the game into "My Games". */
+app-day-game-card .team-row.interest-team,
+app-live-dashboard .team-identity.interest-team {
+  position: relative;
+  background: rgb(73 184 184 / 2.5%);
+}
+
+app-day-game-card .team-row.interest-team::before,
+app-live-dashboard .team-identity.interest-team::before {
+  content: '';
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  left: -0.3rem;
+  width: 2px;
+  border-radius: 2px;
+  background: #49b8b8;
+  box-shadow: 0 0 7px rgb(73 184 184 / 30%);
+}
+
+app-live-dashboard .tile.has-interest:not(.has-favorite) {
+  border-color: rgb(73 184 184 / 28%);
+}
+
+app-important-games-ticker .rail-game.interest::before {
+  background: #49b8b8;
+}
+
 /* A score update is announced on both schedule rows and Day cards without
    changing their layout. Field goals stay restrained; touchdown sequences use
    a thicker, brighter border. */

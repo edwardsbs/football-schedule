@@ -10,7 +10,7 @@
       Watch {{ importantGames().length }}
     </button>
   } @else {
-    <aside class="watch-rail" aria-label="Favorite, ranked, and circled games">
+    <aside class="watch-rail" aria-label="Favorite, interest, ranked, and circled games">
       <header class="rail-head">
         <div>
           <strong>Watch rail</strong>
@@ -28,6 +28,7 @@
             type="button"
             class="rail-game"
             [class.favorite]="game.hasFavorite"
+            [class.interest]="game.hasInterest"
             [class.ranked]="game.home.currentRank != null || game.away.currentRank != null"
             [class.circled]="game.isCircled"
             [class.completed]="isCompleted(game)"

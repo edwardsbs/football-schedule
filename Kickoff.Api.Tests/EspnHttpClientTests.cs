@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using Kickoff.Api.Domain;
 using Kickoff.Api.Integrations.SportsData;
+using Kickoff.Api.Integrations.SportsData.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -147,6 +148,7 @@ public class EspnHttpClientTests
 
         Assert.NotNull(poll);
         Assert.Equal("AP Top 25", poll.Name);
+        Assert.Equal(RankingPollType.Ap, poll.Type);
         Assert.Equal("Week 5", poll.Label);
         Assert.Equal(2025, poll.SeasonYear);
         Assert.Equal(5, poll.WeekNumber);
@@ -155,6 +157,42 @@ public class EspnHttpClientTests
         Assert.Equal(
             "https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/2025/types/2/weeks/5/rankings/1?lang=en&region=us",
             handler.RequestUri?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task Weekly_cfp_rankings_use_the_committee_archive()
+    {
+        const string json = """
+            {
+              "name": "Playoff Committee Rankings",
+              "type": "cfp",
+              "date": "2025-11-09T08:00:00Z",
+              "occurrence": { "number": 11, "displayValue": "Week 11" },
+              "season": { "year": 2025 },
+              "ranks": [
+                {
+                  "current": 1,
+                  "previous": 2,
+                  "team": {
+                    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/2025/teams/194?lang=en&region=us"
+                  }
+                }
+              ]
+            }
+            """;
+        var handler = new RecordingHandler(json);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var poll = await sut.GetWeeklyRankingsAsync(
+            League.Ncaa, 2025, 11, RankingPollType.Cfp);
+
+        Assert.NotNull(poll);
+        Assert.Equal(RankingPollType.Cfp, poll.Type);
+        Assert.Equal("Playoff Committee Rankings", poll.Name);
+        Assert.Contains("/types/2/weeks/11/rankings/21", handler.RequestUri?.AbsoluteUri);
     }
 
     [Fact]

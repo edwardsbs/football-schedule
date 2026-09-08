@@ -40,6 +40,7 @@
         [class.peeking]="isPeeking(game)"
         [class.has-ranked]="game.home.currentRank !== null || game.away.currentRank !== null"
         [class.has-favorite]="fan.isFavorite(game.home.id) || fan.isFavorite(game.away.id)"
+        [class.has-interest]="game.hasInterest"
         [class.circled]="fan.isCircled(game.id)"
         [class.field-goal-range]="inFieldGoalRange(game)"
         [class.red-zone]="inRedZone(game)"
@@ -85,6 +86,7 @@
             <div
               class="team-identity"
               [class.ranked-team]="side.currentRank !== null"
+              [class.interest-team]="fan.isInterest(side.id)"
             >
               <div class="team-main">
                 <app-team-badge

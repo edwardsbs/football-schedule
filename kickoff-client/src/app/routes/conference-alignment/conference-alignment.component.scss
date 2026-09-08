@@ -1,36 +1,8 @@
 :host {
   display: block;
-  max-width: 1440px;
+  max-width: 1800px;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
-}
-
-.page-head {
-  text-align: center;
-  margin-bottom: 2rem;
-
-  h1 {
-    margin: 0.25rem 0 0;
-    font-size: clamp(1.6rem, 4vw, 2.6rem);
-    font-weight: 800;
-    letter-spacing: 0.01em;
-    text-transform: uppercase;
-  }
-
-  .subtitle {
-    margin: 0.15rem 0 0;
-    font-weight: 700;
-    color: var(--accent-gold, #c9a227);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.95rem;
-  }
-
-  .meta {
-    margin: 0.5rem 0 0;
-    color: var(--muted, #8b93a1);
-    font-size: 0.85rem;
-  }
+  padding: 0.75rem 1.25rem 3rem;
 }
 
 .league-toggle {
@@ -41,17 +13,45 @@
   border-radius: 999px;
 
   a {
-    padding: 0.35rem 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 76px;
+    min-height: 44px;
+    padding: 0.5rem 1.1rem;
+    box-sizing: border-box;
     border-radius: 999px;
     text-decoration: none;
     font-weight: 700;
     font-size: 0.85rem;
     color: var(--muted, #8b93a1);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 100ms ease, color 100ms ease, transform 80ms ease;
+
+    &:active {
+      transform: scale(0.97);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-gold, #c9a227);
+      outline-offset: 2px;
+    }
 
     &.active {
       background: var(--accent-gold, #c9a227);
       color: #12151b;
     }
+  }
+}
+
+@media (pointer: coarse) {
+  .league-toggle a {
+    min-width: 82px;
+    min-height: 50px;
+    padding-inline: 1.25rem;
   }
 }
 
@@ -124,7 +124,10 @@
 
 .nfl-ledger {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Keep two conferences side by side only when each one is wide enough for
+     two readable division tables. This also adapts automatically when the
+     planned playoff rail eventually reduces the available page width. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 820px), 1fr));
   gap: clamp(1rem, 2.2vw, 2rem);
   align-items: start;
 }
@@ -186,7 +189,8 @@
   font-style: italic;
 }
 
-.star {
+.star,
+.interest-marker {
   flex: none;
   display: inline-flex;
   align-items: center;
@@ -200,13 +204,19 @@
   font-size: 1.05rem;
   color: var(--muted, #8b93a1);
 
+  &:disabled { visibility: hidden; }
+}
+
+.star {
+
   // Hardcoded, not var(--accent-gold): that variable is remapped to grey/tan
   // under the muted/B&W palettes, but the star is a functional favorite
   // indicator, not a decorative theme element -- it should stay recognizably
   // gold no matter what color treatment the conference badges are using.
   &.on { color: #c9a227; }
-  &:disabled { visibility: hidden; }
 }
+
+.interest-marker.on { color: #49b8b8; }
 
 .not-found {
   text-align: center;

@@ -39,12 +39,20 @@ public interface ISportsDataClient
     Task<IReadOnlyList<TeamRanking>> GetCurrentRankingsAsync(
         League league, CancellationToken ct = default);
 
+    /// <summary>The current AP and, once published, CFP ranking polls.</summary>
+    Task<IReadOnlyList<RankingPoll>> GetCurrentRankingPollsAsync(
+        League league, CancellationToken ct = default);
+
     /// <summary>
     /// The primary poll that applied to a selected season week. When that week
     /// has not published a poll yet, returns the latest earlier poll available.
     /// </summary>
     Task<RankingPoll?> GetWeeklyRankingsAsync(
-        League league, int seasonYear, int week, CancellationToken ct = default);
+        League league,
+        int seasonYear,
+        int week,
+        RankingPollType pollType = RankingPollType.Ap,
+        CancellationToken ct = default);
 
     /// <summary>Rich on-demand context for one game.</summary>
     Task<FeedGameSummary?> GetGameSummaryAsync(

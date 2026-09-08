@@ -3,7 +3,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { Game } from '../../core/models/game.model';
-import { RankedTeam, RankingPoll } from '../../core/models/ranking.model';
+import { NcaaRankings, RankingPoll, RankingRow } from '../../core/models/ranking.model';
+import { mergeRankingPolls, rankingPoll } from '../../core/ranking-comparison';
 import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
@@ -127,18 +128,22 @@ export class SeasonScheduleComponent {
       : null;
   });
 
-  readonly rankingPoll = toSignal(
+  readonly rankingSet = toSignal(
     toObservable(this.rankingSelection).pipe(
       switchMap((selection) => selection
         ? this.api.getNcaaRankings(selection.seasonYear, selection.week).pipe(catchError(() => of(null)))
         : of(null)),
     ),
-    { initialValue: null as RankingPoll | null },
+    { initialValue: null as NcaaRankings | null },
   );
 
   readonly showRankingRail = computed(() => this.rankingSelection() !== null && this.rankingRailOpen());
+  readonly apRankingPoll = computed(() => rankingPoll(this.rankingSet(), 'ap'));
+  readonly cfpRankingPoll = computed(() => rankingPoll(this.rankingSet(), 'cfp'));
+  readonly rankingRows = computed(() => mergeRankingPolls(this.rankingSet()));
+  private readonly primaryRankingPoll = computed(() => this.cfpRankingPoll() ?? this.apRankingPoll());
   private readonly rankingPollHasHistory = computed(() =>
-    this.rankingPoll()?.rankings.some((team) => team.previousRank !== null) ?? false,
+    this.primaryRankingPoll()?.rankings.some((team) => team.previousRank !== null) ?? false,
   );
 
   /** The badge describes only what the current schedule view can reveal: the
@@ -171,12 +176,13 @@ export class SeasonScheduleComponent {
     return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   }
 
-  rankingMovement(team: RankedTeam): RankingMovement {
+  rankingMovement(row: RankingRow): RankingMovement {
+    const team = row.cfp ?? row.ap!;
     return rankingMovement(team.rank, team.previousRank, this.rankingPollHasHistory());
   }
 
-  rankingMovementAriaLabel(team: RankedTeam): string {
-    const movement = this.rankingMovement(team);
+  rankingMovementAriaLabel(row: RankingRow): string {
+    const movement = this.rankingMovement(row);
     switch (movement.kind) {
       case 'up': return `Up ${movement.places} places from the previous poll`;
       case 'down': return `Down ${movement.places} places from the previous poll`;
@@ -192,20 +198,20 @@ export class SeasonScheduleComponent {
       : `${poll.label} · latest available for Week ${poll.requestedWeek}`;
   }
 
-  rankingRecord(team: RankedTeam): string {
-    return this.records.label(team.teamId);
+  rankingRecord(row: RankingRow): string {
+    return this.records.label(row.teamId);
   }
 
-  rankingRecordAriaLabel(team: RankedTeam): string {
-    return this.records.ariaLabel(team.teamId);
+  rankingRecordAriaLabel(row: RankingRow): string {
+    return this.records.ariaLabel(row.teamId);
   }
 
-  isRankingFavorite(team: RankedTeam): boolean {
-    return this.fan.isFavorite(team.teamId);
+  isRankingFavorite(row: RankingRow): boolean {
+    return this.fan.isFavorite(row.teamId);
   }
 
-  toggleRankingFavorite(team: RankedTeam): void {
-    this.fan.toggleFavorite(team.teamId);
+  toggleRankingFavorite(row: RankingRow): void {
+    this.fan.toggleFavorite(row.teamId);
   }
 
   setViewMode(mode: ViewMode): void {

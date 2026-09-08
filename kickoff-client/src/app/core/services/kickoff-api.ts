@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { FavoriteTeam, Game, MuteType, TeamRecord, TeamSummary } from '../models/game.model';
+import { FavoriteTeam, Game, MuteType, TeamInterest, TeamRecord, TeamSummary } from '../models/game.model';
 import { GameSummary } from '../models/game-summary.model';
-import { RankingPoll } from '../models/ranking.model';
+import { NcaaRankings } from '../models/ranking.model';
 
 /**
  * All Kickoff API calls. Uses relative `/api/...` URLs — proxied to the API in
@@ -65,6 +65,20 @@ export class KickoffApi {
     return this.http.delete<void>(`/api/favorites/teams/${teamId}`);
   }
 
+  // --- teams of interest ---
+
+  getTeamInterests(): Observable<TeamInterest[]> {
+    return this.http.get<TeamInterest[]>('/api/team-interests');
+  }
+
+  addTeamInterest(teamId: number): Observable<void> {
+    return this.http.put<void>(`/api/team-interests/${teamId}`, {});
+  }
+
+  removeTeamInterest(teamId: number): Observable<void> {
+    return this.http.delete<void>(`/api/team-interests/${teamId}`);
+  }
+
   // --- circled games ---
 
   getCircled(): Observable<Game[]> {
@@ -92,10 +106,15 @@ export class KickoffApi {
     return this.http.get<TeamRecord[]>('/api/teams/records', { params: { league } });
   }
 
-  /** AP poll snapshot that applied to an NCAA season week. */
-  getNcaaRankings(seasonYear: number, week: number): Observable<RankingPoll> {
-    return this.http.get<RankingPoll>('/api/rankings/ncaa', {
+  /** AP and, once available, CFP poll snapshots for an NCAA season week. */
+  getNcaaRankings(seasonYear: number, week: number): Observable<NcaaRankings> {
+    return this.http.get<NcaaRankings>('/api/rankings/ncaa', {
       params: { seasonYear, week },
     });
+  }
+
+  /** Current AP and CFP polls for the conference ranking rail. */
+  getCurrentNcaaRankings(): Observable<NcaaRankings> {
+    return this.http.get<NcaaRankings>('/api/rankings/ncaa/current');
   }
 }

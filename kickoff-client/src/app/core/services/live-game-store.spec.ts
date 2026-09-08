@@ -119,6 +119,7 @@ function game(overrides: Partial<Game> = {}): Game {
     muteType: null,
     score: null,
     hasFavorite: false,
+    hasInterest: false,
     isCircled: false,
     weekNumber: 1,
     weekLabel: 'Week 1',

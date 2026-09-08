@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 import { getAlignment } from '../../core/data/alignment-lookup';
 import { AlignmentConference, AlignmentTeam } from '../../core/models/alignment.model';
 import { TeamRecord, TeamSummary } from '../../core/models/game.model';
+import { NcaaRankings, RankingRow } from '../../core/models/ranking.model';
+import { mergeRankingPolls, rankingPoll } from '../../core/ranking-comparison';
 import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
@@ -49,6 +51,15 @@ export class ConferenceAlignmentComponent {
     { initialValue: [] as TeamSummary[] },
   );
 
+  private readonly currentRankingSet = toSignal(
+    toObservable(this.league).pipe(
+      switchMap((league) => league === 'ncaa'
+        ? this.api.getCurrentNcaaRankings().pipe(catchError(() => of(null)))
+        : of(null)),
+    ),
+    { initialValue: null as NcaaRankings | null },
+  );
+
   private readonly teamIdByKey = computed(() => {
     const isNcaa = this.league() === 'ncaa';
     const map = new Map<string, number>();
@@ -69,16 +80,36 @@ export class ConferenceAlignmentComponent {
     return map;
   });
 
-  readonly ncaaRankings = computed(() =>
-    this.backendTeams()
+  readonly apRankingPoll = computed(() => rankingPoll(this.currentRankingSet(), 'ap'));
+  readonly cfpRankingPoll = computed(() => rankingPoll(this.currentRankingSet(), 'cfp'));
+  readonly ncaaRankingRows = computed<RankingRow[]>(() => {
+    const current = mergeRankingPolls(this.currentRankingSet());
+    if (current.length) return current;
+
+    return this.backendTeams()
       .filter((team) => team.currentRank !== null)
-      .sort((left, right) => left.currentRank! - right.currentRank!),
-  );
+      .sort((left, right) => left.currentRank! - right.currentRank!)
+      .map((team) => ({
+        teamId: team.id,
+        displayName: team.displayName,
+        abbreviation: team.abbreviation,
+        logoUrl: team.logoUrl,
+        ap: {
+          teamId: team.id,
+          displayName: team.displayName,
+          abbreviation: team.abbreviation,
+          logoUrl: team.logoUrl,
+          rank: team.currentRank!,
+          previousRank: team.previousRank ?? null,
+        },
+        cfp: null,
+      }));
+  });
 
   /** A preseason poll has no prior positions at all; suppress a misleading
    * wall of NEW labels until at least one team has real week-over-week data. */
   private readonly pollHasHistory = computed(() =>
-    this.ncaaRankings().some((team) => team.previousRank != null),
+    this.ncaaRankingRows().some((row) => (row.cfp ?? row.ap)?.previousRank != null),
   );
 
   /** The real backend team id for an alignment entry, or null if that team
@@ -102,12 +133,13 @@ export class ConferenceAlignmentComponent {
     return key ? (this.teamRankByKey().get(key) ?? null) : null;
   }
 
-  rankingMovement(team: TeamSummary): RankingMovement {
-    return rankingMovement(team.currentRank!, team.previousRank, this.pollHasHistory());
+  rankingMovement(row: RankingRow): RankingMovement {
+    const team = row.cfp ?? row.ap!;
+    return rankingMovement(team.rank, team.previousRank, this.pollHasHistory());
   }
 
-  rankingMovementAriaLabel(team: TeamSummary): string {
-    const movement = this.rankingMovement(team);
+  rankingMovementAriaLabel(row: RankingRow): string {
+    const movement = this.rankingMovement(row);
     switch (movement.kind) {
       case 'up': return `Up ${movement.places} places from the previous poll`;
       case 'down': return `Down ${movement.places} places from the previous poll`;
@@ -117,20 +149,20 @@ export class ConferenceAlignmentComponent {
     }
   }
 
-  rankingRecord(team: TeamSummary): string {
-    return this.records.label(team.id);
+  rankingRecord(row: RankingRow): string {
+    return this.records.label(row.teamId);
   }
 
-  rankingRecordAriaLabel(team: TeamSummary): string {
-    return this.records.ariaLabel(team.id);
+  rankingRecordAriaLabel(row: RankingRow): string {
+    return this.records.ariaLabel(row.teamId);
   }
 
-  isRankingFavorite(team: TeamSummary): boolean {
-    return this.fan.isFavorite(team.id);
+  isRankingFavorite(row: RankingRow): boolean {
+    return this.fan.isFavorite(row.teamId);
   }
 
-  toggleRankingFavorite(team: TeamSummary): void {
-    this.fan.toggleFavorite(team.id);
+  toggleRankingFavorite(row: RankingRow): void {
+    this.fan.toggleFavorite(row.teamId);
   }
 
   isFavorite(team: AlignmentTeam): boolean {
@@ -138,10 +170,21 @@ export class ConferenceAlignmentComponent {
     return id !== null && this.fan.isFavorite(id);
   }
 
+  isInterest(team: AlignmentTeam): boolean {
+    const id = this.teamId(team);
+    return id !== null && this.fan.isInterest(id);
+  }
+
   toggleFavorite(team: AlignmentTeam, event: Event): void {
     event.stopPropagation();
     const id = this.teamId(team);
     if (id !== null) this.fan.toggleFavorite(id);
+  }
+
+  toggleInterest(team: AlignmentTeam, event: Event): void {
+    event.stopPropagation();
+    const id = this.teamId(team);
+    if (id !== null) this.fan.toggleInterest(id);
   }
 
   /** The NFL presentation is intentionally NFC-first to match the familiar two-conference layout. */

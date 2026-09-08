@@ -8,6 +8,7 @@ export interface RankedTeam {
 }
 
 export interface RankingPoll {
+  type: 'ap' | 'cfp';
   source: string;
   name: string;
   label: string;
@@ -17,4 +18,19 @@ export interface RankingPoll {
   isExactWeek: boolean;
   publishedAt: string | null;
   rankings: RankedTeam[];
+}
+
+export interface NcaaRankings {
+  seasonYear: number;
+  requestedWeek: number | null;
+  polls: RankingPoll[];
+}
+
+export interface RankingRow {
+  teamId: number;
+  displayName: string;
+  abbreviation: string;
+  logoUrl: string | null;
+  ap: RankedTeam | null;
+  cfp: RankedTeam | null;
 }

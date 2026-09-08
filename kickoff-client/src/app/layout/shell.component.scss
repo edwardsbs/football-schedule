@@ -74,13 +74,13 @@
   }
 }
 
+.wipe-btn,
 .my-games-btn {
   flex: none;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   min-height: 40px;
-  margin-left: 0.5rem;
   padding: 0.4rem 0.9rem;
   border: 1px solid var(--accent-gold, #c9a227);
   border-radius: 999px;
@@ -93,9 +93,31 @@
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 
-  .ico { font-size: 0.8rem; letter-spacing: -0.1em; }
+  &:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent-gold, #c9a227) 55%, white);
+    outline-offset: 2px;
+  }
+
   &:active { background: color-mix(in srgb, var(--accent-gold, #c9a227) 16%, transparent); }
 }
+
+.wipe-btn {
+  margin-left: auto;
+  border-color: #677181;
+  color: var(--text, #e7ebf2);
+  border-radius: 9px;
+  font-variant-numeric: tabular-nums;
+
+  &.active {
+    min-width: 84px;
+    justify-content: center;
+    border-color: var(--accent-gold, #c9a227);
+    background: color-mix(in srgb, var(--accent-gold, #c9a227) 16%, #10141b);
+    color: var(--accent-gold, #c9a227);
+  }
+}
+
+.my-games-btn .ico { font-size: 0.8rem; letter-spacing: -0.1em; }
 
 /* Wraps the scroll container + the custom overlay scrollbar together. */
 .content-wrap {

@@ -49,12 +49,22 @@ export interface Game {
   muteType: MuteType | null;
   score: Score | null;
   hasFavorite: boolean;
+  hasInterest: boolean;
   isCircled: boolean;
   weekNumber: number;
   weekLabel: string;
 }
 
 export interface FavoriteTeam {
+  teamId: number;
+  league: LeagueName;
+  displayName: string;
+  abbreviation: string;
+  logoUrl: string | null;
+  currentRank: number | null;
+}
+
+export interface TeamInterest {
   teamId: number;
   league: LeagueName;
   displayName: string;

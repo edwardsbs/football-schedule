@@ -46,6 +46,7 @@ function clamp(v: number, lo: number, hi: number): number {
 })
 export class ShellComponent implements AfterViewInit, OnDestroy {
   readonly myGamesOpen = signal(false);
+  readonly wipeSeconds = signal(0);
 
   private readonly contentEl = viewChild.required<ElementRef<HTMLDivElement>>('contentEl');
   private readonly trackEl = viewChild.required<ElementRef<HTMLDivElement>>('trackEl');
@@ -66,6 +67,7 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
   private dragging = false;
   private dragStartY = 0;
   private dragStartScrollTop = 0;
+  private wipeTimerId: number | null = null;
 
   constructor() {
     inject(FanStore).load();
@@ -97,6 +99,25 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.resizeObserver?.disconnect();
     this.mutationObserver?.disconnect();
+    this.stopWipeTimer();
+  }
+
+  startWipe(): void {
+    if (this.wipeSeconds() > 0) return;
+
+    const unlockAt = Date.now() + 10_000;
+    this.wipeSeconds.set(10);
+    this.wipeTimerId = window.setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((unlockAt - Date.now()) / 1_000));
+      this.wipeSeconds.set(remaining);
+      if (remaining === 0) this.stopWipeTimer();
+    }, 200);
+  }
+
+  private stopWipeTimer(): void {
+    if (this.wipeTimerId === null) return;
+    window.clearInterval(this.wipeTimerId);
+    this.wipeTimerId = null;
   }
 
   private queueMeasure(): void {

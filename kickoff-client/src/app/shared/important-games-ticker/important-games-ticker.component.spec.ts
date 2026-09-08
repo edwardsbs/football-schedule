@@ -15,8 +15,9 @@ describe('ImportantGamesTickerComponent', () => {
     fixture = TestBed.createComponent(ImportantGamesTickerComponent);
   });
 
-  it('includes favorite, circled, and ranked games', () => {
+  it('includes favorite, interest, circled, and ranked games', () => {
     expect(isImportantGame(game({ hasFavorite: true }))).toBeTrue();
+    expect(isImportantGame(game({ hasInterest: true }))).toBeTrue();
     expect(isImportantGame(game({ isCircled: true }))).toBeTrue();
     expect(isImportantGame(game({ homeRank: 8 }))).toBeTrue();
   });
@@ -95,6 +96,7 @@ describe('ImportantGamesTickerComponent', () => {
 function game(overrides: {
   id?: number;
   hasFavorite?: boolean;
+  hasInterest?: boolean;
   isCircled?: boolean;
   homeRank?: number;
   awayRank?: number;
@@ -116,6 +118,7 @@ function game(overrides: {
     muteType: null,
     score: overrides.score ?? null,
     hasFavorite: overrides.hasFavorite ?? false,
+    hasInterest: overrides.hasInterest ?? false,
     isCircled: overrides.isCircled ?? false,
     weekNumber: 2,
     weekLabel: 'Week 2',

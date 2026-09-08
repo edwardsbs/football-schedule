@@ -75,6 +75,8 @@ public static class GameProjections
                    // Highlighting flags — a favorited team on either side, or a circled game.
                    db.UserFavoriteTeams.Any(f =>
                        f.UserId == userId && (f.TeamId == g.HomeTeamId || f.TeamId == g.AwayTeamId)),
+                   db.UserTeamInterests.Any(i =>
+                       i.UserId == userId && (i.TeamId == g.HomeTeamId || i.TeamId == g.AwayTeamId)),
                    db.CircledGames.Any(c => c.UserId == userId && c.GameId == g.Id),
                    g.Week.Number,
                    g.Week.Label);

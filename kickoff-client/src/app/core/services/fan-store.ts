@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { KickoffApi } from './kickoff-api';
-import { FavoriteTeam, Game } from '../models/game.model';
+import { FavoriteTeam, Game, TeamInterest } from '../models/game.model';
 
 /**
  * App-wide favorites + circled state. Loaded once at startup and updated
@@ -12,13 +12,16 @@ export class FanStore {
   private readonly api = inject(KickoffApi);
 
   readonly favorites = signal<FavoriteTeam[]>([]);
+  readonly interests = signal<TeamInterest[]>([]);
   readonly circled = signal<Game[]>([]);
 
   readonly favoriteIds = computed(() => new Set(this.favorites().map((f) => f.teamId)));
+  readonly interestIds = computed(() => new Set(this.interests().map((i) => i.teamId)));
   readonly circledIds = computed(() => new Set(this.circled().map((g) => g.id)));
 
   load(): void {
     this.reloadFavorites();
+    this.reloadInterests();
     this.reloadCircled();
   }
 
@@ -30,12 +33,20 @@ export class FanStore {
     this.api.getCircled().subscribe((g) => this.circled.set(g));
   }
 
+  reloadInterests(): void {
+    this.api.getTeamInterests().subscribe((teams) => this.interests.set(teams));
+  }
+
   isFavorite(teamId: number): boolean {
     return this.favoriteIds().has(teamId);
   }
 
   isCircled(gameId: number): boolean {
     return this.circledIds().has(gameId);
+  }
+
+  isInterest(teamId: number): boolean {
+    return this.interestIds().has(teamId);
   }
 
   toggleFavorite(teamId: number): void {
@@ -48,5 +59,12 @@ export class FanStore {
   toggleCircle(gameId: number): void {
     const op = this.isCircled(gameId) ? this.api.uncircle(gameId) : this.api.circle(gameId);
     op.subscribe(() => this.reloadCircled());
+  }
+
+  toggleInterest(teamId: number): void {
+    const op = this.isInterest(teamId)
+      ? this.api.removeTeamInterest(teamId)
+      : this.api.addTeamInterest(teamId);
+    op.subscribe(() => this.reloadInterests());
   }
 }

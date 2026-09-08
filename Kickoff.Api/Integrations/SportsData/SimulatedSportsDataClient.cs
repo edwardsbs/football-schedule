@@ -77,8 +77,16 @@ public class SimulatedSportsDataClient : ISportsDataClient
         League league, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<TeamRanking>>([]);
 
+    public Task<IReadOnlyList<RankingPoll>> GetCurrentRankingPollsAsync(
+        League league, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<RankingPoll>>([]);
+
     public Task<RankingPoll?> GetWeeklyRankingsAsync(
-        League league, int seasonYear, int week, CancellationToken ct = default) =>
+        League league,
+        int seasonYear,
+        int week,
+        RankingPollType pollType = RankingPollType.Ap,
+        CancellationToken ct = default) =>
         Task.FromResult<RankingPoll?>(null);
 
     public Task<FeedGameSummary?> GetGameSummaryAsync(
