@@ -1,5 +1,9 @@
 // Overrides the shared timeline.scss .page-head layout so the game/week
 // counts sit inline next to the title instead of on their own line below.
+:host {
+  max-width: 1800px;
+}
+
 .page-head .nav {
   align-items: baseline;
   flex-wrap: wrap;
@@ -9,6 +13,25 @@
   color: var(--muted, #8b93a1);
   font-size: 0.85rem;
   white-space: nowrap;
+}
+
+.league-title-logo {
+  flex: none;
+  display: block;
+  align-self: center;
+  object-fit: contain;
+
+  &.nfl {
+    width: 29px;
+    height: 34px;
+    transform: translateY(4px);
+  }
+
+  &.ncaa {
+    width: 62px;
+    height: 23px;
+    transform: translateY(3px);
+  }
 }
 
 /* Season pages add the view-mode toggle to the shared compact schedule header. */
@@ -34,6 +57,10 @@
     .meta-inline {
       font-size: 0.72rem;
     }
+  }
+
+  app-league-section-toggle {
+    flex: none;
   }
 
   .filter-row {
@@ -62,6 +89,12 @@
     .filter-row {
       flex-basis: 100%;
     }
+  }
+}
+
+@media (max-width: 560px) {
+  .schedule-header.compact app-league-section-toggle {
+    flex-basis: 100%;
   }
 }
 
@@ -132,14 +165,18 @@
   .cnt { color: var(--muted, #8b93a1); font-size: 0.85rem; }
 }
 
-/* The NCAA week rail occupies the left gutter while the existing watch rail
-   keeps the right. On wider desktops the normal centered 900px timeline has
-   enough clearance and retains its original measure. */
-@media (min-width: 1081px) and (max-width: 1450px) {
-  :host:has(.season-ranking-rail) {
-    max-width: none;
-    margin-left: 17.5rem;
-    margin-right: 13.5rem;
+/* Use the same workspace edges as Conference Breakdown at every desktop/KTC
+   width. The fixed rails keep permanent gutters so hiding one never makes the
+   league selector jump sideways. */
+@media (min-width: 1081px) {
+  :host:has(app-important-games-ticker) {
+    max-width: 1800px;
+    margin-inline: auto;
+    padding-right: 15rem;
+  }
+
+  :host:has(.schedule-header.ncaa-league) {
+    padding-left: 18.25rem;
   }
 }
 

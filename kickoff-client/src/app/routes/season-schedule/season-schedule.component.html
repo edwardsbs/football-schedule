@@ -68,13 +68,23 @@
                 @default { · }
               }
             </span>
-            <button
-              type="button"
-              class="ranking-star"
-              [class.on]="isRankingFavorite(row)"
-              [attr.aria-label]="(isRankingFavorite(row) ? 'Unfollow ' : 'Follow ') + row.displayName"
-              (click)="toggleRankingFavorite(row)"
-            >{{ isRankingFavorite(row) ? '★' : '☆' }}</button>
+            <span class="ranking-actions">
+              <button
+                type="button"
+                class="ranking-star"
+                [class.on]="isRankingFavorite(row)"
+                [attr.aria-label]="(isRankingFavorite(row) ? 'Unfollow ' : 'Follow ') + row.displayName"
+                (click)="toggleRankingFavorite(row)"
+              >{{ isRankingFavorite(row) ? '★' : '☆' }}</button>
+              <button
+                type="button"
+                class="ranking-interest"
+                [class.on]="isRankingInterest(row)"
+                [attr.aria-label]="(isRankingInterest(row) ? 'Remove ' : 'Mark ') + row.displayName + (isRankingInterest(row) ? ' from teams of interest' : ' as a team of interest')"
+                [attr.title]="isRankingInterest(row) ? 'Remove team of interest' : 'Mark as team of interest'"
+                (click)="toggleRankingInterest(row)"
+              >{{ isRankingInterest(row) ? '◆' : '◇' }}</button>
+            </span>
           </li>
         }
       </ol>
@@ -100,10 +110,19 @@
   </button>
 }
 
-<div class="schedule-header compact">
+<div class="schedule-header compact" [class.ncaa-league]="league() === 'ncaa'">
+  <app-league-section-toggle [league]="league()" activeSection="schedule" />
   <header class="page-head">
     <div class="nav">
-      <h1>{{ leagueLabel() }} Full Season</h1>
+      <img
+        class="league-title-logo"
+        [class.ncaa]="league() === 'ncaa'"
+        [class.nfl]="league() === 'nfl'"
+        [src]="league() === 'nfl' ? '/nfl-logo.png' : '/ncaa-wordmark.png'"
+        [attr.alt]="league() === 'ncaa' ? 'NCAA' : ''"
+        [attr.aria-hidden]="league() === 'nfl' ? 'true' : null"
+      />
+      <h1>{{ league() === 'nfl' ? 'NFL Full Season' : 'Full Season' }}</h1>
       <span class="meta-inline">{{ weeks().length }} weeks</span>
     </div>
   </header>

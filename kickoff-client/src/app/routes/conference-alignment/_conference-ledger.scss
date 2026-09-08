@@ -13,6 +13,35 @@ app-conference-alignment {
 
     .head-title { min-width: 0; text-align: center; }
 
+    .league-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      min-width: 0;
+    }
+
+    .ncaa-league-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      min-width: 0;
+    }
+
+    .league-title-logo {
+      flex: none;
+      display: block;
+      object-fit: contain;
+
+      &.nfl { width: 34px; height: 38px; }
+      &.ncaa {
+        width: 70px;
+        height: 26px;
+        transform: translateY(3px);
+      }
+    }
+
     h1 {
       margin: 0;
       font-size: clamp(1.25rem, 2.5vw, 1.85rem);
@@ -148,7 +177,7 @@ app-conference-alignment {
 
   .ranking-column-head {
     display: grid;
-    grid-template-columns: 1.25rem 1.25rem 28px minmax(0, 1fr) 2.25rem 1.75rem;
+    grid-template-columns: 1.25rem 1.25rem 28px minmax(0, 1fr) 2.25rem 3.25rem;
     gap: 0.25rem;
     padding: 0.35rem 0.45rem 0.18rem;
     color: var(--muted, #8b93a1);
@@ -199,7 +228,7 @@ app-conference-alignment {
 
     li {
       display: grid;
-      grid-template-columns: 1.4rem 28px minmax(0, 1fr) 2.25rem 1.75rem;
+      grid-template-columns: 1.4rem 28px minmax(0, 1fr) 2.25rem 3.25rem;
       align-items: center;
       gap: 0.35rem;
       min-height: 42px;
@@ -218,7 +247,7 @@ app-conference-alignment {
     }
 
     &.dual-poll li {
-      grid-template-columns: 1.25rem 1.25rem 28px minmax(0, 1fr) 2.25rem 1.75rem;
+      grid-template-columns: 1.25rem 1.25rem 28px minmax(0, 1fr) 2.25rem 3.25rem;
       gap: 0.25rem;
     }
   }
@@ -268,20 +297,31 @@ app-conference-alignment {
     &.new { color: #c9a227; font-size: 0.52rem; }
   }
 
-  .ranking-star {
+  .ranking-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 3.25rem;
+  }
+
+  .ranking-star,
+  .ranking-interest {
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 32px;
+    width: 26px;
+    height: 36px;
     padding: 0;
     border: 0;
     background: transparent;
     color: var(--muted, #8b93a1);
     font-size: 0.92rem;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 
     &.on { color: #c9a227; }
   }
+
+  .ranking-interest.on { color: #49b8b8; }
 
   .ranking-empty {
     margin: 0;

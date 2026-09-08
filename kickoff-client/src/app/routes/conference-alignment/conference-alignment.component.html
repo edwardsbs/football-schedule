@@ -1,16 +1,25 @@
 <div
   class="conference-page"
-  [class.has-rank-rail]="alignment()?.league === 'ncaa' && rankingRailOpen()"
+  [class.has-rank-rail]="alignment()?.league === 'ncaa'"
   [attr.data-palette]="palette()"
 >
 @if (alignment(); as a) {
   <header class="page-head">
-    <div class="league-toggle" role="group" aria-label="Conference league">
-      <a routerLink="/conferences/ncaa" [class.active]="league() === 'ncaa'">NCAA</a>
-      <a routerLink="/conferences/nfl" [class.active]="league() === 'nfl'">NFL</a>
-    </div>
+    <app-league-section-toggle [league]="league()" activeSection="conference" />
     <div class="head-title">
-      <h1>{{ a.title }}</h1>
+      <div class="league-title">
+        @if (a.league === 'ncaa') {
+          @let titleParts = ncaaTitleParts();
+          <h1 class="ncaa-league-title">
+            <span>{{ titleParts.before }}</span>
+            <img class="league-title-logo ncaa" src="/ncaa-wordmark.png" alt="NCAA" />
+            <span>{{ titleParts.after }}</span>
+          </h1>
+        } @else {
+          <img class="league-title-logo nfl" src="/nfl-logo.png" alt="" aria-hidden="true" />
+          <h1>{{ a.title }}</h1>
+        }
+      </div>
       <p><span class="subtitle">{{ a.subtitle }}</span><span class="meta">{{ teamCount() }} teams</span></p>
     </div>
     <div class="head-tools">
@@ -81,13 +90,23 @@
                     @default { · }
                   }
                 </span>
-                <button
-                  type="button"
-                  class="ranking-star"
-                  [class.on]="isRankingFavorite(row)"
-                  [attr.aria-label]="(isRankingFavorite(row) ? 'Unfollow ' : 'Follow ') + row.displayName"
-                  (click)="toggleRankingFavorite(row)"
-                >{{ isRankingFavorite(row) ? '★' : '☆' }}</button>
+                <span class="ranking-actions">
+                  <button
+                    type="button"
+                    class="ranking-star"
+                    [class.on]="isRankingFavorite(row)"
+                    [attr.aria-label]="(isRankingFavorite(row) ? 'Unfollow ' : 'Follow ') + row.displayName"
+                    (click)="toggleRankingFavorite(row)"
+                  >{{ isRankingFavorite(row) ? '★' : '☆' }}</button>
+                  <button
+                    type="button"
+                    class="ranking-interest"
+                    [class.on]="isRankingInterest(row)"
+                    [attr.aria-label]="(isRankingInterest(row) ? 'Remove ' : 'Mark ') + row.displayName + (isRankingInterest(row) ? ' from teams of interest' : ' as a team of interest')"
+                    [attr.title]="isRankingInterest(row) ? 'Remove team of interest' : 'Mark as team of interest'"
+                    (click)="toggleRankingInterest(row)"
+                  >{{ isRankingInterest(row) ? '◆' : '◇' }}</button>
+                </span>
               </li>
             }
           </ol>

@@ -11,6 +11,7 @@ import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamRecordStore } from '../../core/services/team-record-store';
+import { LeagueSectionToggleComponent } from '../../shared/league-section-toggle/league-section-toggle.component';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 
 /**
@@ -19,7 +20,7 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
  */
 @Component({
   selector: 'app-conference-alignment',
-  imports: [RouterLink, TeamBadgeComponent],
+  imports: [RouterLink, LeagueSectionToggleComponent, TeamBadgeComponent],
   templateUrl: './conference-alignment.component.html',
   styleUrl: './conference-alignment.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +35,18 @@ export class ConferenceAlignmentComponent {
   readonly rankingRailOpen = signal(true);
 
   readonly alignment = computed(() => getAlignment(this.league()));
+
+  readonly ncaaTitleParts = computed(() => {
+    const title = this.alignment()?.title ?? '';
+    const marker = ' NCAA ';
+    const markerIndex = title.indexOf(marker);
+    return markerIndex < 0
+      ? { before: '', after: title }
+      : {
+          before: title.slice(0, markerIndex),
+          after: title.slice(markerIndex + marker.length),
+        };
+  });
 
   /**
    * Real backend teams for the current league, so alignment-page entries (still
@@ -161,8 +174,16 @@ export class ConferenceAlignmentComponent {
     return this.fan.isFavorite(row.teamId);
   }
 
+  isRankingInterest(row: RankingRow): boolean {
+    return this.fan.isInterest(row.teamId);
+  }
+
   toggleRankingFavorite(row: RankingRow): void {
     this.fan.toggleFavorite(row.teamId);
+  }
+
+  toggleRankingInterest(row: RankingRow): void {
+    this.fan.toggleInterest(row.teamId);
   }
 
   isFavorite(team: AlignmentTeam): boolean {

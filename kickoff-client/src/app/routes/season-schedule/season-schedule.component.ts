@@ -13,6 +13,7 @@ import { TeamRecordStore } from '../../core/services/team-record-store';
 import { filterFollowed, groupByWeek, startOfLocalDay, WeekGroup } from '../../core/timeline';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
+import { LeagueSectionToggleComponent } from '../../shared/league-section-toggle/league-section-toggle.component';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
 
@@ -40,7 +41,14 @@ function rangeLabel(first: Date, last: Date): string {
 
 @Component({
   selector: 'app-season-schedule',
-  imports: [DatePipe, GameRowComponent, ImportantGamesTickerComponent, TeamBadgeComponent, WeekStripComponent],
+  imports: [
+    DatePipe,
+    GameRowComponent,
+    ImportantGamesTickerComponent,
+    LeagueSectionToggleComponent,
+    TeamBadgeComponent,
+    WeekStripComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './season-schedule.component.html',
   styleUrls: ['../shared/timeline.scss', './season-schedule.component.scss'],
@@ -210,8 +218,16 @@ export class SeasonScheduleComponent {
     return this.fan.isFavorite(row.teamId);
   }
 
+  isRankingInterest(row: RankingRow): boolean {
+    return this.fan.isInterest(row.teamId);
+  }
+
   toggleRankingFavorite(row: RankingRow): void {
     this.fan.toggleFavorite(row.teamId);
+  }
+
+  toggleRankingInterest(row: RankingRow): void {
+    this.fan.toggleInterest(row.teamId);
   }
 
   setViewMode(mode: ViewMode): void {

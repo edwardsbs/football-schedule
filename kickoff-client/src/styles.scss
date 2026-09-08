@@ -40,6 +40,19 @@ a {
   color: var(--accent-gold);
 }
 
+app-shell .league-nav-logo {
+  flex: none;
+  display: block;
+  object-fit: contain;
+
+  &.nfl { width: 19px; height: 24px; }
+  &.ncaa { width: 48px; height: 24px; }
+}
+
+app-shell .nav a.starts-group {
+  margin-left: 0.65rem;
+}
+
 /* The wipe shield is global because it sits above every interactive app
    surface, including dialogs rendered beside the shell. */
 app-shell .wipe-shield {

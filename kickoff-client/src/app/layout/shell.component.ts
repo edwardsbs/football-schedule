@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationStart, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, NavigationStart, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { FanStore } from '../core/services/fan-store';
 import { LiveGameStore } from '../core/services/live-game-store';
@@ -21,6 +21,11 @@ interface NavLink {
   label: string;
   /** Exact match only (e.g. the merged views), otherwise prefix match. */
   exact?: boolean;
+  /** Keeps the league tab active for both its schedule and conference view. */
+  leagueSection?: 'ncaa' | 'nfl';
+  leagueLogo?: string;
+  logoOnly?: boolean;
+  startsGroup?: boolean;
 }
 
 const MIN_THUMB_PX = 40;
@@ -39,7 +44,7 @@ function clamp(v: number, lo: number, hi: number): number {
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MyGamesModalComponent, GameDetailModalComponent],
+  imports: [RouterOutlet, RouterLink, MyGamesModalComponent, GameDetailModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
@@ -47,6 +52,7 @@ function clamp(v: number, lo: number, hi: number): number {
 export class ShellComponent implements AfterViewInit, OnDestroy {
   readonly myGamesOpen = signal(false);
   readonly wipeSeconds = signal(0);
+  readonly currentUrl = signal('/');
 
   private readonly contentEl = viewChild.required<ElementRef<HTMLDivElement>>('contentEl');
   private readonly trackEl = viewChild.required<ElementRef<HTMLDivElement>>('trackEl');
@@ -75,12 +81,20 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
     inject(LiveGameStore);
 
     /** Tapping into a game (e.g. from the My Games modal) should close it, not leave it stranded on top. */
-    inject(Router)
+    const router = inject(Router);
+    this.currentUrl.set(router.url);
+
+    router
       .events.pipe(
         filter((e) => e instanceof NavigationStart),
         takeUntilDestroyed(),
       )
       .subscribe(() => this.myGamesOpen.set(false));
+
+    router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      takeUntilDestroyed(),
+    ).subscribe((e) => this.currentUrl.set(e.urlAfterRedirects));
   }
 
   ngAfterViewInit(): void {
@@ -190,17 +204,30 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
   }
 
   readonly links: NavLink[] = [
-    { path: '/live', label: 'Live' },
-    { path: '/week', label: 'Week' },
+    { path: '/season/nfl', label: 'NFL', leagueSection: 'nfl', leagueLogo: '/nfl-logo.png' },
+    {
+      path: '/season/ncaa',
+      label: 'NCAA',
+      leagueSection: 'ncaa',
+      leagueLogo: '/ncaa-wordmark.png',
+      logoOnly: true,
+    },
+    { path: '/live', label: 'Live', startsGroup: true },
     { path: '/day', label: 'Day' },
-    { path: '/season/ncaa', label: 'NCAA' },
-    { path: '/season/nfl', label: 'NFL' },
-    { path: '/conferences/ncaa', label: 'Conferences' },
+    { path: '/week', label: 'Week' },
     { path: '/upcoming', label: 'Upcoming' },
     { path: '/my-teams', label: 'My Teams' },
+    { path: '/playoffs/nfl', label: 'Super Bowl' },
+    { path: '/playoffs/ncaa', label: 'CFP Bracket' },
     { path: '/formations/offense', label: 'Formations' },
     { path: '/routes', label: 'Route Tree' },
-    { path: '/playoffs/ncaa', label: 'CFP Bracket' },
-    { path: '/playoffs/nfl', label: 'Super Bowl' },
   ];
+
+  isLinkActive(link: NavLink): boolean {
+    const path = this.currentUrl().split(/[?#]/, 1)[0];
+    if (link.leagueSection) {
+      return path === `/season/${link.leagueSection}` || path === `/conferences/${link.leagueSection}`;
+    }
+    return link.exact ? path === link.path : path === link.path || path.startsWith(`${link.path}/`);
+  }
 }
