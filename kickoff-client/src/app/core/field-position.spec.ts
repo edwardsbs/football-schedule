@@ -2,14 +2,14 @@ import { Game } from './models/game.model';
 import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from './field-position';
 
 describe('isInFieldGoalRange', () => {
-  it('recognizes possession at or inside the opponent 35', () => {
-    expect(isInFieldGoalRange(game('2nd & 8 at AWY 35', 1))).toBeTrue();
+  it('recognizes possession at or inside the opponent 38', () => {
+    expect(isInFieldGoalRange(game('2nd & 8 at AWY 38', 1))).toBeTrue();
     expect(isInFieldGoalRange(game('1st & 10 at AWY 22', 1))).toBeTrue();
   });
 
-  it('does not mark the offense own territory or a spot beyond the opponent 35', () => {
+  it('does not mark the offense own territory or a spot beyond the opponent 38', () => {
     expect(isInFieldGoalRange(game('3rd & 4 at HOM 31', 1))).toBeFalse();
-    expect(isInFieldGoalRange(game('2nd & 7 at AWY 41', 1))).toBeFalse();
+    expect(isInFieldGoalRange(game('2nd & 7 at AWY 39', 1))).toBeFalse();
   });
 
   it('supports the provider OPP field-side label', () => {

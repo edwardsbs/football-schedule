@@ -19,8 +19,8 @@ interface ScoreSnapshot {
 }
 
 const PULSE_CLEAR_MS = 3_000;
-export const SCORE_CELEBRATION_HOLD_MS = 20_000;
-export const SCORE_FADE_MS = 2_500;
+export const SCORE_CELEBRATION_HOLD_MS = 8_000;
+export const SCORE_FADE_MS = 2_000;
 export const SCORE_HIGHLIGHT_MS = SCORE_CELEBRATION_HOLD_MS + SCORE_FADE_MS;
 
 /**
@@ -87,11 +87,32 @@ export function trackScorePulse(game: Signal<Game>): ScorePulseTracker {
   };
 }
 
-export function scoreEventLabel(kind: ScorePulseKind): string | null {
+export function scoreEventLabel(kind: ScorePulseKind, situation?: string | null): string | null {
+  const normalizedSituation = situation?.trim().toLowerCase() ?? '';
+  if (isTwoPointConversion(normalizedSituation)) {
+    if (/failed|no good|unsuccessful/.test(normalizedSituation)) return '2-PT Conv. Failed';
+    if (/good|successful|succeeds|converted/.test(normalizedSituation)) return '2-PT Conv. Good';
+    return '2-PT Conv.';
+  }
+  if (isPointAfterTry(normalizedSituation)) {
+    if (/no good|failed|missed/.test(normalizedSituation)) return 'PAT No Good';
+    if (/good|successful|succeeds/.test(normalizedSituation)) return 'PAT Good';
+    return 'PAT';
+  }
   if (kind === 'touchdown') return 'TOUCHDOWN';
   if (kind === 'field-goal') return 'FIELD GOAL';
   if (kind === 'other') return 'SCORING PLAY';
   return null;
+}
+
+function isPointAfterTry(situation: string): boolean {
+  return situation === 'pat'
+    || situation.startsWith('pat ')
+    || situation.includes('extra point');
+}
+
+function isTwoPointConversion(situation: string): boolean {
+  return /(?:two|2)[ -](?:point|pt)(?: conversion| conv\.)?/.test(situation);
 }
 
 export function classifyScoringPlay(play: SummaryPlay | null): Exclude<ScorePulseKind, null> | null {

@@ -9,7 +9,7 @@
   [class.across-midfield]="acrossMidfield()"
   [class.field-goal-range]="inFieldGoalRange()"
   [class.red-zone]="inRedZone()"
-  [class.has-live-situation]="game().status === 'Live' && !!situationLabel()"
+  [class.has-live-situation]="game().status === 'Live' && !!fieldSituationLabel()"
   [class.live]="game().status === 'Live'"
   [class.favorite]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
   [class.circled]="fan.isCircled(game().id)"
@@ -39,6 +39,13 @@
   }
   <span class="card-meta">
     <span class="status" [class.live-text]="game().status === 'Live'">{{ statusLabel() }}</span>
+    @if (game().status === 'Live' && panelSize() !== 'small' && fieldSituationLabel(); as situation) {
+      <span class="meta-situation" [title]="situation">
+        @if (possessionDirection() === 'left') { <span class="direction">←</span> }
+        <span>{{ situation }}</span>
+        @if (possessionDirection() === 'right') { <span class="direction">→</span> }
+      </span>
+    }
     <span class="network">
       @if (game().broadcasts.length) { 📺 {{ game().broadcasts[0].network }} }
       @else { {{ game().league === 'Ncaa' ? 'NCAA' : 'NFL' }} }
@@ -56,19 +63,15 @@
       />
       <strong>{{ game().away.abbreviation }}</strong>
       @if (game().away.isFcs) { <span class="fcs">FCS</span> }
-      <span class="record">{{ records.label(game().away.id) }}</span>
+      @if (teamEventLabel('away'); as event) {
+        <span class="team-event" [class.scoring-celebration]="scoreCelebration()">{{ event }}</span>
+      } @else {
+        <span class="record">{{ records.label(game().away.id) }}</span>
+      }
       @if (game().score?.possessionTeamId === game().away.id) { <span class="possession" title="Possession"></span> }
     </span>
     <span class="score" [class.score-changed]="scoringSide() === 'away'" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
   </span>
-
-  @if (game().status === 'Live' && situationLabel(); as situation) {
-    <span class="game-situation" [class.scoring-celebration]="scoreCelebration()" [title]="situation">
-      @if (!scoreCelebration() && possessionDirection() === 'left') { <span class="direction">←</span> }
-      <span class="situation-text">{{ situation }}</span>
-      @if (!scoreCelebration() && possessionDirection() === 'right') { <span class="direction">→</span> }
-    </span>
-  }
 
   <span class="team-row" [class.interest-team]="fan.isInterest(game().home.id)">
     <span class="team">
@@ -81,9 +84,21 @@
       />
       <strong>{{ game().home.abbreviation }}</strong>
       @if (game().home.isFcs) { <span class="fcs">FCS</span> }
-      <span class="record">{{ records.label(game().home.id) }}</span>
+      @if (teamEventLabel('home'); as event) {
+        <span class="team-event" [class.scoring-celebration]="scoreCelebration()">{{ event }}</span>
+      } @else {
+        <span class="record">{{ records.label(game().home.id) }}</span>
+      }
       @if (game().score?.possessionTeamId === game().home.id) { <span class="possession" title="Possession"></span> }
     </span>
     <span class="score" [class.score-changed]="scoringSide() === 'home'" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
   </span>
+
+  @if (game().status === 'Live' && panelSize() === 'small' && fieldSituationLabel(); as situation) {
+    <span class="game-situation" [title]="situation">
+      @if (possessionDirection() === 'left') { <span class="direction">←</span> }
+      <span class="situation-text">{{ situation }}</span>
+      @if (possessionDirection() === 'right') { <span class="direction">→</span> }
+    </span>
+  }
 </article>

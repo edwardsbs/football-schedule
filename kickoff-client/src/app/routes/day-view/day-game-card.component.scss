@@ -28,8 +28,10 @@
   &.circled { border-color: rgb(76 141 255 / 48%); }
   &.favorite.circled { border-color: rgb(76 141 255 / 48%); }
 
-  &.has-live-situation {
-    grid-template-rows: 0.9rem minmax(0, 1fr) auto minmax(0, 1fr);
+  &.panel-small.live {
+    // Reserve the bottom situation line for the entire live game. This keeps
+    // both team rows evenly spaced when down-and-distance appears or clears.
+    grid-template-rows: 0.9rem minmax(0, 1fr) minmax(0, 1fr) 1.15rem;
   }
 
   &.panel-medium {
@@ -62,6 +64,7 @@
   text-transform: uppercase;
 
   .live-text { color: #ff5e63; }
+  .status { white-space: nowrap; }
   .network { grid-column: 3; opacity: 0.72; white-space: nowrap; }
 }
 
@@ -81,6 +84,7 @@
   min-width: 0;
 
   strong {
+    flex: none;
     overflow: hidden;
     font-size: 0.75rem;
     font-weight: 800;

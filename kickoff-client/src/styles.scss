@@ -561,11 +561,51 @@ app-day-game-card .score.score-changed,
 app-game-row .s.score-changed,
 app-live-dashboard .score.score-changed,
 app-important-games-ticker .rail-score.score-changed {
-  animation: kickoff-score-changed 22.5s ease-out 1;
+  animation: kickoff-score-changed 10s ease-out 1;
+}
+
+app-day-game-card .team-event {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--accent-gold, #c9a227);
+  font-size: 0.55rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+app-day-game-card .team-event.scoring-celebration { color: var(--text, #e7ebf2); }
+app-day-game-card .panel-medium .team-event { font-size: 0.68rem; }
+app-day-game-card .panel-live .team-event { font-size: 0.74rem; }
+
+app-day-game-card .meta-situation {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.16rem;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text, #e7ebf2);
+  font-size: 0.9em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+app-day-game-card .meta-situation > span:not(.direction) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+app-day-game-card .meta-situation .direction {
+  flex: none;
+  color: var(--accent-gold, #c9a227);
 }
 
 @keyframes kickoff-score-changed {
-  0%, 88.888% {
+  0%, 80% {
     color: #62f59a;
     text-shadow: 0 0 8px rgb(98 245 154 / 58%);
   }

@@ -159,7 +159,30 @@ export class DayGameCardComponent {
   }
 
   protected situationLabel(): string | null {
-    return scoreEventLabel(this.scoreCelebration()) ?? this.game().score?.downDistance ?? null;
+    return scoreEventLabel(this.scoreCelebration(), this.game().score?.downDistance)
+      ?? this.game().score?.downDistance
+      ?? null;
+  }
+
+  protected teamEventLabel(side: 'home' | 'away'): string | null {
+    const label = this.situationLabel();
+    if (!label || !this.isTeamLineSituation(label)) return null;
+
+    const scoringSide = this.scoringSide();
+    if (scoringSide) return scoringSide === side ? label : null;
+
+    const game = this.game();
+    const teamId = side === 'home' ? game.home.id : game.away.id;
+    return game.score?.possessionTeamId === teamId ? label : null;
+  }
+
+  protected fieldSituationLabel(): string | null {
+    const label = this.situationLabel();
+    return label && !this.isTeamLineSituation(label) ? label : null;
+  }
+
+  private isTeamLineSituation(label: string): boolean {
+    return /^(?:TOUCHDOWN|FIELD GOAL|PAT(?: Good| No Good)?|2-PT Conv\.(?: Good| Failed)?)$/i.test(label);
   }
 
   protected isWinner(side: 'home' | 'away'): boolean {

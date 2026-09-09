@@ -182,7 +182,9 @@ export class LiveDashboardComponent {
   }
 
   situationLabel(game: Game): string | null {
-    return scoreEventLabel(this.scoreCelebration(game.id)) ?? this.shownScore(game)?.downDistance ?? null;
+    return scoreEventLabel(this.scoreCelebration(game.id), this.shownScore(game)?.downDistance)
+      ?? this.shownScore(game)?.downDistance
+      ?? null;
   }
 
   // --- actions ---

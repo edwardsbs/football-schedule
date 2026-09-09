@@ -38,6 +38,11 @@ describe('score pulse classification', () => {
     expect(scoreEventLabel('touchdown')).toBe('TOUCHDOWN');
     expect(scoreEventLabel('field-goal')).toBe('FIELD GOAL');
     expect(scoreEventLabel('other')).toBe('SCORING PLAY');
+    expect(scoreEventLabel(null, 'Extra Point Attempt')).toBe('PAT');
+    expect(scoreEventLabel('other', 'Extra Point Good')).toBe('PAT Good');
+    expect(scoreEventLabel(null, 'Extra Point No Good')).toBe('PAT No Good');
+    expect(scoreEventLabel('other', 'Two-Point Conversion Successful')).toBe('2-PT Conv. Good');
+    expect(scoreEventLabel(null, '2-PT Conversion Failed')).toBe('2-PT Conv. Failed');
     expect(scoreEventLabel(null)).toBeNull();
   });
 });

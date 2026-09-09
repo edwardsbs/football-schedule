@@ -93,7 +93,9 @@ export class GameRowComponent {
   }
 
   protected situationLabel(): string | null {
-    return scoreEventLabel(this.scoreCelebration()) ?? this.shownScore()?.downDistance ?? null;
+    return scoreEventLabel(this.scoreCelebration(), this.shownScore()?.downDistance)
+      ?? this.shownScore()?.downDistance
+      ?? null;
   }
 
   mute(): void {

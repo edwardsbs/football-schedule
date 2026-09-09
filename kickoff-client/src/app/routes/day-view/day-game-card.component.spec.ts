@@ -117,15 +117,15 @@ describe('DayGameCardComponent Game Day gesture', () => {
 
     fixture.componentRef.setInput('game', scored);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.situation-text').textContent.trim()).toBe('TOUCHDOWN');
+    expect(fixture.nativeElement.querySelector('.team-event').textContent.trim()).toBe('TOUCHDOWN');
     expect(fixture.nativeElement.querySelectorAll('.score')[1].classList).toContain('score-changed');
 
-    tick(20_000);
+    tick(8_000);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.situation-text').textContent.trim()).toBe('TOUCHDOWN');
+    expect(fixture.nativeElement.querySelector('.team-event').textContent.trim()).toBe('TOUCHDOWN');
     expect(fixture.nativeElement.querySelectorAll('.score')[1].classList).toContain('score-changed');
 
-    tick(2_500);
+    tick(2_000);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.situation-text').textContent.trim()).toBe('Kickoff');
     expect(fixture.nativeElement.querySelectorAll('.score')[1].classList).not.toContain('score-changed');

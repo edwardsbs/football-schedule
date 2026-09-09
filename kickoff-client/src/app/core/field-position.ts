@@ -1,7 +1,7 @@
 import { Game } from './models/game.model';
 
-/** A snap from the opponent's 35 produces roughly a 52-yard field-goal try. */
-export const DEFAULT_FIELD_GOAL_RANGE_YARD_LINE = 35;
+/** A snap from the opponent's 38 produces roughly a 55-yard field-goal try. */
+export const DEFAULT_FIELD_GOAL_RANGE_YARD_LINE = 38;
 export const RED_ZONE_YARD_LINE = 20;
 export const OPPONENT_TERRITORY_YARD_LINE = 49;
 

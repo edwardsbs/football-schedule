@@ -151,7 +151,10 @@ export class ImportantGamesTickerComponent {
   }
 
   protected summaryInsight(game: Game): string | null {
-    const celebration = scoreEventLabel(this.scoreCelebrations().get(game.id) ?? null);
+    const celebration = scoreEventLabel(
+      this.scoreCelebrations().get(game.id) ?? null,
+      game.score?.downDistance,
+    );
     if (celebration) return celebration;
     const summary = this.summaries().get(game.id);
     if (!summary) return null;
