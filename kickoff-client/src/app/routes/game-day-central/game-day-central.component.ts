@@ -14,7 +14,7 @@ import { ImportantGamesTickerComponent } from '../../shared/important-games-tick
 import { DayGameCardComponent } from '../day-view/day-game-card.component';
 import { automaticDayPanelSize } from '../day-view/day-panel-size';
 import { buildCalendarMonth, moveCalendarMonth, startOfCalendarMonth } from '../day-view/day-calendar';
-import { isGettingInteresting } from './game-day-interest';
+import { GameInterestRating, gameInterest, isGettingInteresting } from './game-day-interest';
 
 @Component({
   selector: 'app-game-day-central',
@@ -88,6 +88,23 @@ export class GameDayCentralComponent {
 
   interesting(game: Game): boolean {
     return isGettingInteresting(game);
+  }
+
+  interestRating(game: Game): GameInterestRating | null {
+    return gameInterest(game)?.rating ?? null;
+  }
+
+  interestLabel(game: Game): string {
+    return gameInterest(game)?.ratingLabel ?? '';
+  }
+
+  interestDescription(game: Game): string {
+    const match = gameInterest(game);
+    if (!match) return '';
+    const rating = match.rating === 'stop-what-youre-doing'
+      ? 'Stop what you are doing and check out this game'
+      : match.ratingLabel;
+    return `${rating}: ${match.scenarioLabel}`;
   }
 
   addToGameDay(game: Game): void {

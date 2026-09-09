@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { Game } from '../../core/models/game.model';
 import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from '../../core/field-position';
-import { trackScorePulse } from '../../core/score-pulse';
+import { scoreEventLabel, trackScorePulse } from '../../core/score-pulse';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { TeamRecordStore } from '../../core/services/team-record-store';
@@ -27,6 +27,7 @@ export class DayGameCardComponent {
   private readonly scoreFeedback = trackScorePulse(this.game);
   protected readonly scorePulse = this.scoreFeedback.kind;
   protected readonly scoringSide = this.scoreFeedback.scoringSide;
+  protected readonly scoreCelebration = this.scoreFeedback.celebration;
   protected readonly acrossMidfield = () => isAcrossMidfield(this.game());
   protected readonly inFieldGoalRange = () => isInFieldGoalRange(this.game());
   protected readonly inRedZone = () => isInRedZone(this.game());
@@ -155,6 +156,10 @@ export class DayGameCardComponent {
     if (possessionTeamId === game.away.id) return 'left';
     if (possessionTeamId === game.home.id) return 'right';
     return null;
+  }
+
+  protected situationLabel(): string | null {
+    return scoreEventLabel(this.scoreCelebration()) ?? this.game().score?.downDistance ?? null;
   }
 
   protected isWinner(side: 'home' | 'away'): boolean {

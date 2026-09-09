@@ -1,4 +1,4 @@
-import { classifyScoreChange, classifyScoringPlay, scoreIncreaseSide } from './score-pulse';
+import { classifyScoreChange, classifyScoringPlay, scoreEventLabel, scoreIncreaseSide } from './score-pulse';
 import { SummaryPlay } from './models/game-summary.model';
 
 describe('score pulse classification', () => {
@@ -32,6 +32,13 @@ describe('score pulse classification', () => {
     expect(scoreIncreaseSide(score(10, 7), score(13, 7))).toBe('home');
     expect(scoreIncreaseSide(score(10, 7), score(10, 14))).toBe('away');
     expect(scoreIncreaseSide(score(10, 7), score(10, 7))).toBeNull();
+  });
+
+  it('provides a stable game-panel label for the scoring celebration', () => {
+    expect(scoreEventLabel('touchdown')).toBe('TOUCHDOWN');
+    expect(scoreEventLabel('field-goal')).toBe('FIELD GOAL');
+    expect(scoreEventLabel('other')).toBe('SCORING PLAY');
+    expect(scoreEventLabel(null)).toBeNull();
   });
 });
 

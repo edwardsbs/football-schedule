@@ -94,11 +94,47 @@ describe('DayGameCardComponent Game Day gesture', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.game-day-marker')).toBeNull();
   });
+
+  it('holds the scoring label and green-score state before returning to kickoff', fakeAsync(() => {
+    const initial: Game = {
+      ...game(),
+      status: 'Live',
+      score: {
+        homeScore: 0,
+        awayScore: 0,
+        period: 1,
+        clock: '12:00',
+        possessionTeamId: 2,
+        downDistance: '1st & 10 at HOM 25',
+        homeWinProbability: null,
+      },
+    };
+    const fixture = createFixture('available', initial);
+    const scored: Game = {
+      ...initial,
+      score: { ...initial.score!, homeScore: 7, clock: '11:42', downDistance: 'Kickoff' },
+    };
+
+    fixture.componentRef.setInput('game', scored);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.situation-text').textContent.trim()).toBe('TOUCHDOWN');
+    expect(fixture.nativeElement.querySelectorAll('.score')[1].classList).toContain('score-changed');
+
+    tick(20_000);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.situation-text').textContent.trim()).toBe('TOUCHDOWN');
+    expect(fixture.nativeElement.querySelectorAll('.score')[1].classList).toContain('score-changed');
+
+    tick(2_500);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.situation-text').textContent.trim()).toBe('Kickoff');
+    expect(fixture.nativeElement.querySelectorAll('.score')[1].classList).not.toContain('score-changed');
+  }));
 });
 
-function createFixture(state: 'available' | 'selected') {
+function createFixture(state: 'available' | 'selected', selectedGame: Game = game()) {
   const fixture = TestBed.createComponent(DayGameCardComponent);
-  fixture.componentRef.setInput('game', game());
+  fixture.componentRef.setInput('game', selectedGame);
   fixture.componentRef.setInput('gameDayState', state);
   fixture.detectChanges();
   return fixture;

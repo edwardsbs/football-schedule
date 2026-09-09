@@ -9,7 +9,7 @@ import { LiveGameStore } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score } from '../../core/models/game.model';
 import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from '../../core/field-position';
-import { SCORE_HIGHLIGHT_MS, ScorePulseKind, ScoreSide, classifyScoreChange, scoreIncreaseSide } from '../../core/score-pulse';
+import { SCORE_HIGHLIGHT_MS, ScorePulseKind, ScoreSide, classifyScoreChange, scoreEventLabel, scoreIncreaseSide } from '../../core/score-pulse';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { LiveUpcomingSummaryComponent } from './live-upcoming-summary.component';
 
@@ -43,6 +43,7 @@ export class LiveDashboardComponent {
   private readonly scorePulses = signal<ReadonlyMap<number, ScorePulseKind>>(new Map());
   private readonly scoreHighlightTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private readonly scoringSides = signal<ReadonlyMap<number, ScoreSide>>(new Map());
+  private readonly scoreCelebrations = signal<ReadonlyMap<number, ScorePulseKind>>(new Map());
 
   /** Schedule context for the empty-live fallback. Refreshing once a minute is
    * enough for flexed kickoff times without tying the one-second countdown to
@@ -176,6 +177,14 @@ export class LiveDashboardComponent {
     return this.scoringSides().get(gameId) === side;
   }
 
+  scoreCelebration(gameId: number): ScorePulseKind {
+    return this.scoreCelebrations().get(gameId) ?? null;
+  }
+
+  situationLabel(game: Game): string | null {
+    return scoreEventLabel(this.scoreCelebration(game.id)) ?? this.shownScore(game)?.downDistance ?? null;
+  }
+
   // --- actions ---
 
   mute(g: Game): void {
@@ -227,6 +236,9 @@ export class LiveDashboardComponent {
       const highlighted = new Map(this.scoringSides());
       highlighted.set(gameId, scoringSide);
       this.scoringSides.set(highlighted);
+      const celebrations = new Map(this.scoreCelebrations());
+      celebrations.set(gameId, pulse);
+      this.scoreCelebrations.set(celebrations);
 
       const highlightTimer = this.scoreHighlightTimers.get(gameId);
       if (highlightTimer) clearTimeout(highlightTimer);
@@ -234,6 +246,9 @@ export class LiveDashboardComponent {
         const cleared = new Map(this.scoringSides());
         cleared.delete(gameId);
         this.scoringSides.set(cleared);
+        const clearedCelebrations = new Map(this.scoreCelebrations());
+        clearedCelebrations.delete(gameId);
+        this.scoreCelebrations.set(clearedCelebrations);
         this.scoreHighlightTimers.delete(gameId);
       }, SCORE_HIGHLIGHT_MS));
     }

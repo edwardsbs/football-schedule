@@ -117,13 +117,13 @@
         {{ statusLine() }}
       }
     </span>
-    @if (game().status === 'Live' && !isHalftime() && shownScore()?.downDistance; as downDistance) {
-      <span class="down-distance">
-        @if (possessionDirection() === 'left') {
+    @if (game().status === 'Live' && !isHalftime() && situationLabel(); as situation) {
+      <span class="down-distance" [class.scoring-celebration]="scoreCelebration()">
+        @if (!scoreCelebration() && possessionDirection() === 'left') {
           <span class="field-direction" aria-label="Driving left" title="Driving left">←</span>
         }
-        {{ downDistance }}
-        @if (possessionDirection() === 'right') {
+        {{ situation }}
+        @if (!scoreCelebration() && possessionDirection() === 'right') {
           <span class="field-direction" aria-label="Driving right" title="Driving right">→</span>
         }
       </span>

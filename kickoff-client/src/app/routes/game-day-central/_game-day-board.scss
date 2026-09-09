@@ -77,6 +77,18 @@ app-game-day-central {
     position: absolute; z-index: 4; top: 0.28rem; left: 50%; transform: translateX(-50%);
     padding: 0.18rem 0.45rem; border: 1px solid rgb(242 207 88 / 38%); border-radius: 999px;
     background: #292617; white-space: nowrap; pointer-events: none;
+
+    &[data-interest='very-interesting'] {
+      border-color: rgb(242 164 74 / 58%); background: #332417; color: #f2ad5c;
+    }
+    &[data-interest='stop-what-youre-doing'] {
+      border-color: rgb(255 75 121 / 72%); background: #421623; color: #ff7fa0;
+      box-shadow: 0 0 10px rgb(255 75 121 / 18%);
+    }
+  }
+
+  .game-board-card[data-interest='stop-what-youre-doing'] {
+    box-shadow: 0 0 0 1px rgb(255 86 86 / 28%);
   }
 
   .board-empty {
@@ -188,5 +200,64 @@ app-day-game-card {
     .date-actions { width: 100%; }
     .date-action { flex: 1 1 0; min-width: 0; }
     .control-board-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  }
+}
+
+/* High-DPI touch displays often expose a much smaller CSS viewport than their
+   physical resolution. Keep the control board dense in landscape without
+   shrinking any actual buttons below a comfortable touch target. */
+@media (any-pointer: coarse) and (orientation: landscape) and (min-width: 700px) and (max-height: 900px) {
+  app-game-day-central {
+    padding-top: 0.4rem;
+
+    .control-board-head {
+      align-items: center;
+      flex-direction: row;
+      gap: 0.65rem;
+      margin-bottom: 0.45rem;
+      padding: 0.5rem 0.65rem;
+    }
+
+    .control-board-title {
+      h1 { font-size: 1.35rem; }
+      p { display: none; }
+    }
+
+    .control-board-date { justify-content: flex-end; }
+    .date-action { min-width: 7.75rem; padding-inline: 0.6rem; }
+
+    .control-board-section { margin-top: 0.5rem; padding: 0.5rem; }
+    .control-board-section-head { margin-bottom: 0.38rem; }
+
+    .control-board-grid,
+    .control-board-grid.panels-medium,
+    .control-board-grid.panels-live {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 0.42rem;
+    }
+
+    app-day-game-card .game-card.panel-live {
+      min-height: 128px;
+      padding: 0.58rem 0.65rem;
+      border-radius: 9px;
+    }
+  }
+}
+
+@media (any-pointer: coarse) and (orientation: landscape) and (min-width: 700px) and (max-width: 1080px) and (max-height: 900px) {
+  app-game-day-central app-important-games-ticker {
+    .watch-rail {
+      display: grid;
+      grid-template-columns: 8rem minmax(0, 1fr);
+      margin: 0.25rem 0 0.45rem;
+    }
+
+    .rail-head {
+      align-content: center;
+      border-right: 1px solid var(--border, #262c38);
+      border-bottom: 0;
+    }
+
+    .rail-games { min-width: 0; }
   }
 }

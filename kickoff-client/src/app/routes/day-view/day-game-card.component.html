@@ -9,7 +9,7 @@
   [class.across-midfield]="acrossMidfield()"
   [class.field-goal-range]="inFieldGoalRange()"
   [class.red-zone]="inRedZone()"
-  [class.has-live-situation]="game().status === 'Live' && !!game().score?.downDistance"
+  [class.has-live-situation]="game().status === 'Live' && !!situationLabel()"
   [class.live]="game().status === 'Live'"
   [class.favorite]="fan.isFavorite(game().home.id) || fan.isFavorite(game().away.id)"
   [class.circled]="fan.isCircled(game().id)"
@@ -62,11 +62,11 @@
     <span class="score" [class.score-changed]="scoringSide() === 'away'" [class.winner]="isWinner('away')" [class.loser]="isLoser('away')">{{ score('away') }}</span>
   </span>
 
-  @if (game().status === 'Live' && game().score?.downDistance; as downDistance) {
-    <span class="game-situation" [title]="downDistance">
-      @if (possessionDirection() === 'left') { <span class="direction">←</span> }
-      <span class="situation-text">{{ downDistance }}</span>
-      @if (possessionDirection() === 'right') { <span class="direction">→</span> }
+  @if (game().status === 'Live' && situationLabel(); as situation) {
+    <span class="game-situation" [class.scoring-celebration]="scoreCelebration()" [title]="situation">
+      @if (!scoreCelebration() && possessionDirection() === 'left') { <span class="direction">←</span> }
+      <span class="situation-text">{{ situation }}</span>
+      @if (!scoreCelebration() && possessionDirection() === 'right') { <span class="direction">→</span> }
     </span>
   }
 

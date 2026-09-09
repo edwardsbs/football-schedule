@@ -125,13 +125,15 @@
           </div>
         }
 
-        @if (game.status === 'Live' && shownScore(game)?.downDistance; as downDistance) {
-          <div class="live-situation">
-            <span class="possession-ball" aria-hidden="true"></span>
-            @if (possessionTeamAbbreviation(game); as abbreviation) {
-              <strong>{{ abbreviation }}</strong>
+        @if (game.status === 'Live' && situationLabel(game); as situation) {
+          <div class="live-situation" [class.scoring-celebration]="scoreCelebration(game.id)">
+            @if (!scoreCelebration(game.id)) {
+              <span class="possession-ball" aria-hidden="true"></span>
+              @if (possessionTeamAbbreviation(game); as abbreviation) {
+                <strong>{{ abbreviation }}</strong>
+              }
             }
-            <span>{{ downDistance }}</span>
+            <span>{{ situation }}</span>
           </div>
         }
 

@@ -4,7 +4,7 @@ import { catchError, forkJoin, of, switchMap, timer } from 'rxjs';
 import { Game } from '../../core/models/game.model';
 import { GameSummary } from '../../core/models/game-summary.model';
 import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from '../../core/field-position';
-import { SCORE_HIGHLIGHT_MS, ScorePulseKind, ScoreSide, classifyScoreChange, scoreIncreaseSide } from '../../core/score-pulse';
+import { SCORE_HIGHLIGHT_MS, ScorePulseKind, ScoreSide, classifyScoreChange, scoreEventLabel, scoreIncreaseSide } from '../../core/score-pulse';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamBadgeComponent } from '../team-badge/team-badge.component';
@@ -35,6 +35,7 @@ export class ImportantGamesTickerComponent {
   private readonly highlightTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private readonly scorePulses = signal<ReadonlyMap<number, ScorePulseKind>>(new Map());
   private readonly scoringSides = signal<ReadonlyMap<number, ScoreSide>>(new Map());
+  private readonly scoreCelebrations = signal<ReadonlyMap<number, ScorePulseKind>>(new Map());
 
   private readonly liveImportantIds = computed(() =>
     this.games()
@@ -150,6 +151,8 @@ export class ImportantGamesTickerComponent {
   }
 
   protected summaryInsight(game: Game): string | null {
+    const celebration = scoreEventLabel(this.scoreCelebrations().get(game.id) ?? null);
+    if (celebration) return celebration;
     const summary = this.summaries().get(game.id);
     if (!summary) return null;
     if (summary.lastPlay?.isTurnover) return `Turnover · ${summary.lastPlay.type ?? 'change of possession'}`;
@@ -183,6 +186,9 @@ export class ImportantGamesTickerComponent {
     const sides = new Map(this.scoringSides());
     sides.set(gameId, scoringSide);
     this.scoringSides.set(sides);
+    const celebrations = new Map(this.scoreCelebrations());
+    celebrations.set(gameId, pulse);
+    this.scoreCelebrations.set(celebrations);
 
     const highlightTimer = this.highlightTimers.get(gameId);
     if (highlightTimer) clearTimeout(highlightTimer);
@@ -190,6 +196,9 @@ export class ImportantGamesTickerComponent {
       const cleared = new Map(this.scoringSides());
       cleared.delete(gameId);
       this.scoringSides.set(cleared);
+      const clearedCelebrations = new Map(this.scoreCelebrations());
+      clearedCelebrations.delete(gameId);
+      this.scoreCelebrations.set(clearedCelebrations);
       this.highlightTimers.delete(gameId);
     }, SCORE_HIGHLIGHT_MS));
   }

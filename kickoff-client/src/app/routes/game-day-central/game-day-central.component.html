@@ -112,8 +112,19 @@
   } @else {
     <div class="control-board-grid other-grid" [class.panels-medium]="otherSize() === 'medium'" [class.panels-live]="otherSize() === 'live'">
       @for (game of otherGames(); track game.id) {
-        <div class="game-board-card" [class.getting-interesting]="interesting(game)">
-          @if (interesting(game)) { <span class="interesting-flag">Getting Interesting</span> }
+        <div
+          class="game-board-card"
+          [class.getting-interesting]="interesting(game)"
+          [attr.data-interest]="interestRating(game)"
+        >
+          @if (interesting(game)) {
+            <span
+              class="interesting-flag"
+              [attr.data-interest]="interestRating(game)"
+              [attr.title]="interestDescription(game)"
+              [attr.aria-label]="interestDescription(game)"
+            >{{ interestLabel(game) }}</span>
+          }
           <app-day-game-card
             [game]="game"
             [panelSize]="otherSize()"

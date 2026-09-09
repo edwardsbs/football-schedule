@@ -561,11 +561,11 @@ app-day-game-card .score.score-changed,
 app-game-row .s.score-changed,
 app-live-dashboard .score.score-changed,
 app-important-games-ticker .rail-score.score-changed {
-  animation: kickoff-score-changed 3.4s ease-out 1;
+  animation: kickoff-score-changed 22.5s ease-out 1;
 }
 
 @keyframes kickoff-score-changed {
-  0%, 55% {
+  0%, 88.888% {
     color: #62f59a;
     text-shadow: 0 0 8px rgb(98 245 154 / 58%);
   }
@@ -573,6 +573,15 @@ app-important-games-ticker .rail-score.score-changed {
     color: var(--text, #e7ebf2);
     text-shadow: 0 0 0 transparent;
   }
+}
+
+app-day-game-card .game-situation.scoring-celebration,
+app-game-row .down-distance.scoring-celebration,
+app-live-dashboard .live-situation.scoring-celebration {
+  color: #62f59a;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 8px rgb(98 245 154 / 32%);
 }
 
 @media (prefers-reduced-motion: reduce) {

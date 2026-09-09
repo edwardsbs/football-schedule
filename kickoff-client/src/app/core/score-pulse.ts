@@ -10,6 +10,7 @@ export type ScoreSide = 'home' | 'away';
 export interface ScorePulseTracker {
   kind: Signal<ScorePulseKind>;
   scoringSide: Signal<ScoreSide | null>;
+  celebration: Signal<ScorePulseKind>;
 }
 
 interface ScoreSnapshot {
@@ -18,7 +19,9 @@ interface ScoreSnapshot {
 }
 
 const PULSE_CLEAR_MS = 3_000;
-export const SCORE_HIGHLIGHT_MS = 3_400;
+export const SCORE_CELEBRATION_HOLD_MS = 20_000;
+export const SCORE_FADE_MS = 2_500;
+export const SCORE_HIGHLIGHT_MS = SCORE_CELEBRATION_HOLD_MS + SCORE_FADE_MS;
 
 /**
  * Watches a rendered game's score without flashing on its initial value.
@@ -31,6 +34,7 @@ export function trackScorePulse(game: Signal<Game>): ScorePulseTracker {
   const api = inject(KickoffApi);
   const pulse = signal<ScorePulseKind>(null);
   const scoringSide = signal<ScoreSide | null>(null);
+  const celebration = signal<ScorePulseKind>(null);
   let previous: ScoreSnapshot | null = null;
   let clearTimer: ReturnType<typeof setTimeout> | null = null;
   let scoreHighlightTimer: ReturnType<typeof setTimeout> | null = null;
@@ -42,6 +46,7 @@ export function trackScorePulse(game: Signal<Game>): ScorePulseTracker {
       if (kind) {
         pulse.set(kind);
         scoringSide.set(scoreIncreaseSide(previous, current));
+        celebration.set(kind);
         if (clearTimer) clearTimeout(clearTimer);
         if (scoreHighlightTimer) clearTimeout(scoreHighlightTimer);
         clearTimer = setTimeout(() => {
@@ -50,6 +55,7 @@ export function trackScorePulse(game: Signal<Game>): ScorePulseTracker {
         }, PULSE_CLEAR_MS);
         scoreHighlightTimer = setTimeout(() => {
           scoringSide.set(null);
+          celebration.set(null);
           scoreHighlightTimer = null;
         }, SCORE_HIGHLIGHT_MS);
 
@@ -59,7 +65,10 @@ export function trackScorePulse(game: Signal<Game>): ScorePulseTracker {
           .pipe(catchError(() => of(null)), take(1))
           .subscribe((summary) => {
             const exact = classifyScoringPlay(summary?.scoringPlays.at(-1) ?? null);
-            if (exact) pulse.set(exact);
+            if (exact && scoringSide()) {
+              if (pulse()) pulse.set(exact);
+              celebration.set(exact);
+            }
           });
       }
     }
@@ -74,7 +83,15 @@ export function trackScorePulse(game: Signal<Game>): ScorePulseTracker {
   return {
     kind: pulse.asReadonly(),
     scoringSide: scoringSide.asReadonly(),
+    celebration: celebration.asReadonly(),
   };
+}
+
+export function scoreEventLabel(kind: ScorePulseKind): string | null {
+  if (kind === 'touchdown') return 'TOUCHDOWN';
+  if (kind === 'field-goal') return 'FIELD GOAL';
+  if (kind === 'other') return 'SCORING PLAY';
+  return null;
 }
 
 export function classifyScoringPlay(play: SummaryPlay | null): Exclude<ScorePulseKind, null> | null {
