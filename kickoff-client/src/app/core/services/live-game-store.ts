@@ -158,11 +158,31 @@ function retainLiveSituation(
     };
   }
 
+  if (isKickoffSituation(current.downDistance)) {
+    const previousTeamKicking = isScoreOrKickoffSituation(previous.downDistance)
+      ? previous.possessionTeamId
+      : null;
+    return {
+      ...current,
+      possessionTeamId: previousTeamKicking ?? current.possessionTeamId,
+      downDistance: current.downDistance,
+    };
+  }
+
   return {
     ...current,
     possessionTeamId: current.possessionTeamId ?? previous.possessionTeamId,
     downDistance: current.downDistance?.trim() ? current.downDistance : previous.downDistance,
   };
+}
+
+function isKickoffSituation(situation: string | null): boolean {
+  return /^kickoff$/i.test(situation?.trim() ?? '');
+}
+
+function isScoreOrKickoffSituation(situation: string | null): boolean {
+  return /^(?:touchdown|field goal|(?:pat|extra point)(?: attempt| good| no good)?|(?:2-pt conv\.|two-point conversion)(?: good| failed| successful| unsuccessful)?|kickoff)$/i
+    .test(situation?.trim() ?? '');
 }
 
 function inferScoringSituation(homeIncrease: number, awayIncrease: number): 'Touchdown' | 'Field Goal' | null {

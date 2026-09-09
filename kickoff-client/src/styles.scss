@@ -579,30 +579,13 @@ app-day-game-card .team-event.scoring-celebration { color: var(--text, #e7ebf2);
 app-day-game-card .panel-medium .team-event { font-size: 0.68rem; }
 app-day-game-card .panel-live .team-event { font-size: 0.74rem; }
 
-app-day-game-card .meta-situation {
-  grid-column: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.16rem;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--text, #e7ebf2);
-  font-size: 0.9em;
-  text-align: center;
-  white-space: nowrap;
+app-day-game-card .game-card.panel-medium,
+app-day-game-card .game-card.panel-live {
+  grid-template-rows: 0.9rem minmax(0, 1fr) minmax(0, 1fr) 1.35rem;
 }
 
-app-day-game-card .meta-situation > span:not(.direction) {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-app-day-game-card .meta-situation .direction {
-  flex: none;
-  color: var(--accent-gold, #c9a227);
-}
+app-day-game-card .game-card.panel-medium { min-height: 136px; }
+app-day-game-card .game-card.panel-live { min-height: 196px; }
 
 @keyframes kickoff-score-changed {
   0%, 80% {

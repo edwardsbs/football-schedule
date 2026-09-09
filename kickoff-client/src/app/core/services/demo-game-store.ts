@@ -208,13 +208,13 @@ function buildScore(config: DemoGameConfig, elapsedSeconds: number): Score {
       downDistance: conversion.result,
     };
   } else if (phase < SECOND_DRIVE_SECOND) {
-    drive = { possessionTeamId: null, downDistance: 'Kickoff' };
+    drive = { possessionTeamId: config[first].id, downDistance: 'Kickoff' };
   } else if (phase < FIELD_GOAL_SECOND) {
     drive = driveSituation(config, second, phase - SECOND_DRIVE_SECOND);
   } else if (phase < SECOND_KICKOFF_SECOND) {
     drive = { possessionTeamId: config[second].id, downDistance: 'Field Goal' };
   } else {
-    drive = { possessionTeamId: null, downDistance: 'Kickoff' };
+    drive = { possessionTeamId: config[second].id, downDistance: 'Kickoff' };
   }
   const quarterPhase = elapsedSeconds % 48;
   const remainingSeconds = Math.max(0, 15 * 60 - quarterPhase * 18);

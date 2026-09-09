@@ -36,7 +36,7 @@ describe('mock game simulator', () => {
     expect(patGood.awayScore).toBe(7);
     expect(patGood.downDistance).toBe('PAT Good');
     expect(kickoff.downDistance).toBe('Kickoff');
-    expect(kickoff.possessionTeamId).toBeNull();
+    expect(kickoff.possessionTeamId).toBe(9_910_001);
     expect(classifyScoreChange(
       { home: beforeFieldGoal.homeScore, away: beforeFieldGoal.awayScore },
       { home: fieldGoal.homeScore, away: fieldGoal.awayScore },
@@ -44,6 +44,7 @@ describe('mock game simulator', () => {
     expect(fieldGoal.homeScore + fieldGoal.awayScore).toBe(10);
     expect(fieldGoal.downDistance).toBe('Field Goal');
     expect(secondKickoff.downDistance).toBe('Kickoff');
+    expect(secondKickoff.possessionTeamId).toBe(9_910_002);
   });
 
   it('occasionally misses an extra point without changing the score', () => {

@@ -39,13 +39,6 @@
   }
   <span class="card-meta">
     <span class="status" [class.live-text]="game().status === 'Live'">{{ statusLabel() }}</span>
-    @if (game().status === 'Live' && panelSize() !== 'small' && fieldSituationLabel(); as situation) {
-      <span class="meta-situation" [title]="situation">
-        @if (possessionDirection() === 'left') { <span class="direction">←</span> }
-        <span>{{ situation }}</span>
-        @if (possessionDirection() === 'right') { <span class="direction">→</span> }
-      </span>
-    }
     <span class="network">
       @if (game().broadcasts.length) { 📺 {{ game().broadcasts[0].network }} }
       @else { {{ game().league === 'Ncaa' ? 'NCAA' : 'NFL' }} }
@@ -94,7 +87,7 @@
     <span class="score" [class.score-changed]="scoringSide() === 'home'" [class.winner]="isWinner('home')" [class.loser]="isLoser('home')">{{ score('home') }}</span>
   </span>
 
-  @if (game().status === 'Live' && panelSize() === 'small' && fieldSituationLabel(); as situation) {
+  @if (game().status === 'Live' && fieldSituationLabel(); as situation) {
     <span class="game-situation" [title]="situation">
       @if (possessionDirection() === 'left') { <span class="direction">←</span> }
       <span class="situation-text">{{ situation }}</span>

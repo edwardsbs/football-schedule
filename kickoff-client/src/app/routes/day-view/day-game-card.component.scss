@@ -28,7 +28,7 @@
   &.circled { border-color: rgb(76 141 255 / 48%); }
   &.favorite.circled { border-color: rgb(76 141 255 / 48%); }
 
-  &.panel-small.live {
+  &.live {
     // Reserve the bottom situation line for the entire live game. This keeps
     // both team rows evenly spaced when down-and-distance appears or clears.
     grid-template-rows: 0.9rem minmax(0, 1fr) minmax(0, 1fr) 1.15rem;
