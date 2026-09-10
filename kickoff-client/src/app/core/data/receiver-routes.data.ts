@@ -7,6 +7,9 @@ export interface ReceiverRoute {
   summary: string;
   coachingPoint: string;
   pathData: string;
+  startX?: number;
+  startY?: number;
+  positionLabel?: 'X' | 'S' | 'Y' | 'RB';
   diagramPaths?: ReceiverRoutePath[];
 }
 
@@ -27,7 +30,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '1–5 yards',
     summary: 'Release quickly toward the sideline and give the quarterback an immediate outlet.',
     coachingPoint: 'Stay flat after the break so you do not drift into deeper coverage.',
-    pathData: 'M220 310 L220 282 Q220 260 195 252 L72 252',
+    pathData: 'M84 310 L84 282 Q84 260 64 252 L20 252',
   },
   {
     number: 2,
@@ -36,7 +39,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '3–6 yards',
     summary: 'Attack inside leverage with a sharp diagonal break into the middle of the field.',
     coachingPoint: 'Sell the vertical release, plant outside, and cross the defender’s face.',
-    pathData: 'M220 310 L220 270 Q220 252 238 242 L350 178',
+    pathData: 'M84 310 L84 270 Q84 252 102 242 L278 150',
   },
   {
     number: 3,
@@ -45,7 +48,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '12–15 yards',
     summary: 'Threaten deep, then break down and return toward the sideline and quarterback.',
     coachingPoint: 'Drive vertically first; the route only works when the defender fears the go ball.',
-    pathData: 'M220 310 L220 132 Q220 116 204 128 L126 190',
+    pathData: 'M84 310 L84 132 Q84 116 68 128 L26 190',
   },
   {
     number: 4,
@@ -55,7 +58,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '8–12 yards',
     summary: 'Stem vertically, stop in open space, and turn back toward the quarterback.',
     coachingPoint: 'Come back downhill to the ball instead of waiting flat-footed.',
-    pathData: 'M220 310 L220 152 Q220 134 204 146 L180 180',
+    pathData: 'M84 310 L84 152 Q84 134 68 146 L52 180',
   },
   {
     number: 5,
@@ -64,7 +67,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '8–12 yards',
     summary: 'Push vertically, then make a hard 90-degree break toward the sideline.',
     coachingPoint: 'Drop your hips at the top and keep the break square and flat.',
-    pathData: 'M220 310 L220 158 Q220 142 204 142 L70 142',
+    pathData: 'M84 310 L84 158 Q84 142 68 142 L20 142',
   },
   {
     number: 6,
@@ -74,7 +77,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '10–15 yards',
     summary: 'Push vertically, then cross the field on a firm 90-degree inside break.',
     coachingPoint: 'Do not round the cut; flatten across the field after the break.',
-    pathData: 'M220 310 L220 142 Q220 126 238 126 L370 126',
+    pathData: 'M84 310 L84 142 Q84 126 102 126 L372 126',
   },
   {
     number: 7,
@@ -84,7 +87,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '12–18 yards',
     summary: 'Stem vertically and break diagonally toward the back corner of the field.',
     coachingPoint: 'Aim high enough to clear underneath coverage without drifting out of bounds.',
-    pathData: 'M220 310 L220 160 Q220 142 204 126 L96 42',
+    pathData: 'M84 310 L84 160 Q84 142 68 126 L18 42',
   },
   {
     number: 8,
@@ -93,7 +96,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '12–18 yards',
     summary: 'Stem vertically and break diagonally toward the goalpost and middle of the field.',
     coachingPoint: 'Lean outside before the break to create room across the defender’s face.',
-    pathData: 'M220 310 L220 158 Q220 140 238 124 L336 42',
+    pathData: 'M84 310 L84 158 Q84 140 102 124 L282 42',
   },
   {
     number: 9,
@@ -103,7 +106,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: 'Deep',
     summary: 'Release vertically and stretch the defense all the way downfield.',
     coachingPoint: 'Stack the defender, stay on your line, and leave room for the throw outside.',
-    pathData: 'M220 310 C208 250 216 150 220 36',
+    pathData: 'M84 310 C72 250 80 150 84 36',
   },
   {
     number: 10,
@@ -112,7 +115,10 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: 'Deep',
     summary: 'Release toward the flat, turn up the sideline, and accelerate into vertical space.',
     coachingPoint: 'Sell the flat route first, then hug the sideline as you transition upfield.',
-    pathData: 'M220 310 L220 284 Q220 260 194 252 L134 252 Q92 252 84 210 L68 42',
+    pathData: 'M220 338 L220 320 Q220 292 190 278 L112 260 Q68 252 56 210 L38 42',
+    startX: 220,
+    startY: 338,
+    positionLabel: 'RB',
   },
   {
     number: 11,
@@ -122,7 +128,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: 'Deep',
     summary: 'Sell the slant inside, plant, and redirect vertically past a defender who jumps the break.',
     coachingPoint: 'Make the first three steps look exactly like your slant before snapping back upfield.',
-    pathData: 'M220 310 L220 274 Q220 256 238 246 L278 224 Q294 215 296 192 L300 42',
+    pathData: 'M84 310 L84 274 Q84 256 102 246 L142 224 Q158 215 160 192 L164 42',
   },
   {
     number: 12,
@@ -132,7 +138,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '5–7 yards',
     summary: 'Push vertically, throttle down, and turn back to present a clean target to the quarterback.',
     coachingPoint: 'Sell vertical speed, sink your hips, and show your numbers as soon as you stop.',
-    pathData: 'M220 310 L220 226 Q220 212 206 222 L192 238',
+    pathData: 'M84 310 L84 226 Q84 212 70 222 L56 238',
   },
   {
     number: 13,
@@ -141,7 +147,9 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: 'Deep',
     summary: 'Release vertically through the channel between underneath defenders and the deep safety.',
     coachingPoint: 'Stay skinny through the seam and adjust your leverage to the nearest safety.',
-    pathData: 'M220 310 C226 252 230 158 228 42',
+    pathData: 'M158 310 C164 252 168 158 166 42',
+    startX: 158,
+    positionLabel: 'Y',
   },
   {
     number: 14,
@@ -151,7 +159,9 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '2–5 yards',
     summary: 'Cross the formation at a shallow depth to create traffic against man or find space underneath zone.',
     coachingPoint: 'Stay flat, avoid gaining unnecessary depth, and keep running through the catch.',
-    pathData: 'M220 310 Q222 278 252 270 C294 258 338 252 388 252',
+    pathData: 'M142 310 Q144 278 174 270 C246 250 320 252 410 252',
+    startX: 142,
+    positionLabel: 'S',
   },
   {
     number: 15,
@@ -161,7 +171,9 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '12–18 yards',
     summary: 'Cross the field behind the linebackers with enough depth to work underneath the safeties.',
     coachingPoint: 'Gain depth through the stem, then run away from coverage without drifting too far upfield.',
-    pathData: 'M220 310 L220 214 Q220 182 252 164 C296 140 340 120 392 104',
+    pathData: 'M158 310 L158 214 Q158 182 190 164 C258 136 326 118 410 104',
+    startX: 158,
+    positionLabel: 'Y',
   },
   {
     number: 16,
@@ -171,7 +183,9 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '4–7 yards',
     summary: 'Break inside like a shallow route, plant, and snap back outside away from trailing coverage.',
     coachingPoint: 'Sell the inside break with your shoulders, then pivot tightly without drifting backward.',
-    pathData: 'M220 310 L220 270 Q220 254 238 248 L278 234 Q292 228 282 218 Q272 210 258 220 L174 258',
+    pathData: 'M142 310 L142 270 Q142 254 160 248 L200 234 Q214 228 204 218 Q194 210 180 220 L72 258',
+    startX: 142,
+    positionLabel: 'S',
   },
   {
     number: 17,
@@ -181,7 +195,10 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: '3–8 yards',
     summary: 'Release toward the flat, widen the underneath defender, then plant and break sharply back inside.',
     coachingPoint: 'Make the flat release believable and cross the defender’s face with a decisive inside cut.',
-    pathData: 'M220 310 Q190 302 164 278 Q150 266 160 254 Q170 242 184 234 L286 176',
+    pathData: 'M220 338 Q186 326 158 296 Q144 282 154 270 Q164 256 180 246 L302 176',
+    startX: 220,
+    startY: 338,
+    positionLabel: 'RB',
   },
   {
     number: 18,
@@ -191,7 +208,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: 'Deep',
     summary: 'Sell the out route, turn up the sideline, and accelerate past a defender who drives on the first break.',
     coachingPoint: 'Run a convincing out before turning vertically; leave enough boundary space for the throw.',
-    pathData: 'M220 310 L220 202 Q220 186 204 186 L132 186 Q112 186 108 164 L92 42',
+    pathData: 'M84 310 L84 202 Q84 186 68 186 L42 186 Q28 186 28 164 L28 42',
   },
   {
     number: 19,
@@ -200,7 +217,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: 'Deep',
     summary: 'Break toward the post, force the defender inside, then redirect toward the back corner.',
     coachingPoint: 'Sell the post with eyes and hips before making the second break sharp and explosive.',
-    pathData: 'M220 310 L220 172 Q220 156 238 142 L274 116 Q288 106 276 94 L164 42',
+    pathData: 'M84 310 L84 172 Q84 156 102 142 L158 104 Q172 94 160 82 L24 42',
   },
   {
     number: 20,
@@ -209,7 +226,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     depth: 'Deep',
     summary: 'Break toward the corner first, then cut back to the post after the defender turns outside.',
     coachingPoint: 'Threaten the corner long enough to move the defender before snapping back across the field.',
-    pathData: 'M220 310 L220 172 Q220 156 204 142 L168 114 Q154 102 168 90 L282 42',
+    pathData: 'M84 310 L84 172 Q84 156 68 142 L42 116 Q28 102 42 90 L230 42',
   },
   {
     number: 'C1',
@@ -222,7 +239,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     pathData: '',
     diagramPaths: [
       { label: 'X', startX: 128, pathData: 'M128 310 L128 168 Q128 150 146 136 L300 42' },
-      { label: 'Y', startX: 238, pathData: 'M238 310 L238 184 Q238 166 220 150 L92 42', tone: 'secondary' },
+      { label: 'Y', startX: 158, pathData: 'M158 310 L158 184 Q158 166 140 150 L32 42', tone: 'secondary' },
     ],
   },
   {
@@ -236,7 +253,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     pathData: '',
     diagramPaths: [
       { label: 'X', startX: 108, pathData: 'M108 310 L108 244 Q108 230 96 240 L86 252' },
-      { label: 'Y', startX: 210, pathData: 'M210 310 L210 180 Q210 162 192 146 L76 42', tone: 'secondary' },
+      { label: 'Y', startX: 158, pathData: 'M158 310 L158 180 Q158 162 140 146 L32 42', tone: 'secondary' },
     ],
   },
   {
@@ -264,8 +281,8 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     pathData: '',
     diagramPaths: [
       { label: 'X', startX: 88, pathData: 'M88 310 C84 246 82 146 84 42' },
-      { label: 'Y', startX: 174, pathData: 'M174 310 L174 190 Q174 172 154 158 L68 106', tone: 'secondary' },
-      { label: 'Z', startX: 258, pathData: 'M258 310 Q220 288 184 274 L62 274', tone: 'tertiary' },
+      { label: 'Y', startX: 148, pathData: 'M148 310 L148 190 Q148 172 128 158 L48 106', tone: 'secondary' },
+      { label: 'RB', startX: 220, startY: 338, pathData: 'M220 338 Q190 314 160 294 L42 274', tone: 'tertiary' },
     ],
   },
   {
@@ -279,7 +296,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     pathData: '',
     diagramPaths: [
       { label: 'X', startX: 112, pathData: 'M112 310 L112 238 Q112 224 128 224 L386 224' },
-      { label: 'Y', startX: 214, pathData: 'M214 310 L214 150 Q214 134 232 134 L390 134', tone: 'secondary' },
+      { label: 'Y', startX: 158, pathData: 'M158 310 L158 150 Q158 134 176 134 L390 134', tone: 'secondary' },
     ],
   },
   {
@@ -293,7 +310,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     pathData: '',
     diagramPaths: [
       { label: 'X', startX: 94, pathData: 'M94 310 Q98 274 136 260 C202 238 286 240 390 252' },
-      { label: 'Y', startX: 216, pathData: 'M216 310 L216 150 Q216 134 234 134 L392 134', tone: 'secondary' },
+      { label: 'Y', startX: 158, pathData: 'M158 310 L158 150 Q158 134 176 134 L392 134', tone: 'secondary' },
     ],
   },
   {
@@ -307,7 +324,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     pathData: '',
     diagramPaths: [
       { label: 'X', startX: 116, pathData: 'M116 310 L116 154 Q116 138 134 138 L360 138' },
-      { label: 'Y', startX: 232, pathData: 'M232 310 L232 174 Q232 154 250 138 L350 42', tone: 'secondary' },
+      { label: 'Y', startX: 158, pathData: 'M158 310 L158 174 Q158 154 176 138 L330 42', tone: 'secondary' },
     ],
   },
   {
@@ -321,8 +338,8 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     pathData: '',
     diagramPaths: [
       { label: 'W', startX: 64, pathData: 'M64 310 C62 250 62 140 64 42' },
-      { label: 'X', startX: 182, pathData: 'M182 310 C176 250 150 150 118 42', tone: 'secondary' },
-      { label: 'Y', startX: 258, pathData: 'M258 310 C264 250 290 150 322 42', tone: 'tertiary' },
+      { label: 'X', startX: 148, pathData: 'M148 310 C144 250 126 150 106 42', tone: 'secondary' },
+      { label: 'Y', startX: 292, pathData: 'M292 310 C296 250 314 150 334 42', tone: 'tertiary' },
       { label: 'Z', startX: 376, pathData: 'M376 310 C378 250 378 140 376 42', tone: 'quaternary' },
     ],
   },
@@ -336,9 +353,9 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     coachingPoint: 'Time the snag receiver’s sit-down before the corner route clears, and keep the flat route wide enough to hold the flat defender honest.',
     pathData: '',
     diagramPaths: [
-      { label: 'X', startX: 340, pathData: 'M340 310 L340 160 Q340 142 324 126 L216 42' },
-      { label: 'Y', startX: 240, pathData: 'M240 310 L240 270 Q240 254 224 250 L200 258', tone: 'secondary' },
-      { label: 'Z', startX: 180, pathData: 'M180 310 Q180 288 155 280 L60 280', tone: 'tertiary' },
+      { label: 'X', startX: 84, pathData: 'M84 310 L84 160 Q84 142 68 126 L18 42' },
+      { label: 'Y', startX: 148, pathData: 'M148 310 L148 270 Q148 254 164 250 L188 258', tone: 'secondary' },
+      { label: 'RB', startX: 220, startY: 338, pathData: 'M220 338 Q192 306 158 288 L38 280', tone: 'tertiary' },
     ],
   },
   {
@@ -351,8 +368,8 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     coachingPoint: 'Sell the flat release wide and let the curl settle into the window it opens; both routes must win off the same defender’s leverage.',
     pathData: '',
     diagramPaths: [
-      { label: 'X', startX: 300, pathData: 'M300 310 L300 158 Q300 140 284 152 L262 178' },
-      { label: 'Y', startX: 220, pathData: 'M220 310 L220 286 Q220 264 195 256 L90 256', tone: 'secondary' },
+      { label: 'X', startX: 84, pathData: 'M84 310 L84 158 Q84 140 68 152 L46 178' },
+      { label: 'Y', startX: 148, pathData: 'M148 310 L148 286 Q148 264 123 256 L28 256', tone: 'secondary' },
     ],
   },
 ];

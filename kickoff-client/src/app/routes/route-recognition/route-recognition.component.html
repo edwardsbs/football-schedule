@@ -17,12 +17,12 @@
   <div class="quiz-toolbar">
     <div class="quiz-segments" role="group" aria-label="Route set">
       <button type="button" [class.active]="mode() === 'core'" (click)="newRound('core')">Core 1–9</button>
-      <button type="button" [class.active]="mode() === 'full'" (click)="newRound('full')">Full Playbook</button>
+      <button type="button" [class.active]="mode() === 'full'" (click)="newRound('full')">Mixed 12</button>
     </div>
     <div class="quiz-stats">
       <span><strong>{{ score() }}</strong> correct</span>
       <span><strong>{{ streak() }}</strong> streak</span>
-      <span>{{ questionNumber() }} / {{ roundLength }}</span>
+      <span>{{ questionNumber() }} / {{ roundLength() }}</span>
     </div>
     <button type="button" class="quiz-reset" (click)="newRound()">New Round</button>
   </div>
@@ -30,14 +30,14 @@
   @if (isComplete()) {
     <section class="quiz-finish" aria-live="polite">
       <span class="finish-icon" aria-hidden="true">🏈</span>
-      <h2>{{ score() }} out of {{ roundLength }}</h2>
+      <h2>{{ score() }} out of {{ roundLength() }}</h2>
       <p>Best streak: {{ bestStreak() }}. Your route IQ is taking shape.</p>
       <button type="button" (click)="newRound()">Play Again</button>
     </section>
   } @else if (question(); as current) {
     <section class="quiz-card route-quiz">
       <div class="quiz-prompt centered">
-        <span>Route {{ questionNumber() }} of {{ roundLength }}</span>
+        <span>{{ roundSectionLabel() }} · Route {{ questionNumber() }} of {{ roundLength() }}</span>
         <h2>What route is drawn?</h2>
       </div>
       <div class="route-question-layout">
@@ -56,19 +56,20 @@
             <line x1="174" [attr.y1]="y" x2="190" [attr.y2]="y" class="hash" />
             <line x1="250" [attr.y1]="y" x2="266" [attr.y2]="y" class="hash" />
           }
+          <path d="M166 316 V344 H274 V316" class="tackle-box" />
           <line x1="0" y1="316" x2="440" y2="316" class="line-of-scrimmage" />
           @if (current.correct.diagramPaths; as paths) {
             @for (routePath of paths; track routePath.label) {
-              <circle [attr.cx]="routePath.startX" [attr.cy]="routePath.startY ?? 310" r="11" class="receiver" />
-              <text [attr.x]="routePath.startX" [attr.y]="(routePath.startY ?? 310) + 4" text-anchor="middle" class="receiver-label">{{ routePath.label }}</text>
               <path [attr.d]="routePath.pathData" class="route-path shadow" />
               <path [attr.d]="routePath.pathData" class="route-path" [class.secondary]="routePath.tone === 'secondary'" [class.tertiary]="routePath.tone === 'tertiary'" [class.quaternary]="routePath.tone === 'quaternary'" />
+              <circle [attr.cx]="routePath.startX" [attr.cy]="routePath.startY ?? 310" r="11" class="receiver" />
+              <text [attr.x]="routePath.startX" [attr.y]="(routePath.startY ?? 310) + 4" text-anchor="middle" class="receiver-label">{{ routePath.label }}</text>
             }
           } @else {
-            <circle cx="220" cy="310" r="11" class="receiver" />
-            <text x="220" y="314" text-anchor="middle" class="receiver-label">WR</text>
             <path [attr.d]="current.correct.pathData" class="route-path shadow" />
             <path [attr.d]="current.correct.pathData" class="route-path" />
+            <circle [attr.cx]="current.correct.startX ?? 84" [attr.cy]="current.correct.startY ?? 310" r="11" class="receiver" />
+            <text [attr.x]="current.correct.startX ?? 84" [attr.y]="(current.correct.startY ?? 310) + 4" text-anchor="middle" class="receiver-label">{{ current.correct.positionLabel ?? 'X' }}</text>
           }
         </svg>
         </figure>
@@ -84,7 +85,7 @@
             <div class="quiz-feedback" [class.success]="selectedNumber() === current.correct.number" aria-live="polite">
               <strong>{{ selectedNumber() === current.correct.number ? 'Correct read!' : 'That’s ' + current.correct.name + '.' }}</strong>
               <span>{{ current.correct.summary }}</span>
-              <button type="button" (click)="next()">{{ questionNumber() === roundLength ? 'See Results' : 'Next Route' }} →</button>
+              <button type="button" (click)="next()">{{ questionNumber() === roundLength() ? 'See Results' : 'Next Route' }} →</button>
             </div>
           }
         </div>

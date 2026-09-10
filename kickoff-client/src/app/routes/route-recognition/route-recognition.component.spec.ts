@@ -16,8 +16,11 @@ describe('RouteRecognitionComponent', () => {
     fixture.detectChanges();
   });
 
-  it('starts with the classic nine-route pool and four choices', () => {
-    expect(component.pool().length).toBe(9);
+  it('starts with a twelve-question mixed round and four choices', () => {
+    expect(component.roundLength()).toBe(12);
+    expect(component.round().slice(0, 5).every((route) => route.group === 'Core tree')).toBeTrue();
+    expect(component.round().slice(5, 9).every((route) => route.group === 'Advanced routes')).toBeTrue();
+    expect(component.round().slice(9).every((route) => route.group === 'Combination concepts')).toBeTrue();
     expect(component.question()?.choices.length).toBe(4);
     expect(fixture.nativeElement.querySelector('.recognition-field svg')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.route-answer-panel .quiz-choices')).not.toBeNull();
@@ -31,9 +34,11 @@ describe('RouteRecognitionComponent', () => {
     expect(answerPanel.querySelector('.quiz-feedback button').textContent).toContain('Next Route');
   });
 
-  it('includes advanced routes and concepts in full playbook mode', () => {
-    component.newRound('full');
-    expect(component.pool().length).toBeGreaterThan(20);
+  it('uses every classic route once in core mode', () => {
+    component.newRound('core');
+    expect(component.pool().length).toBe(9);
+    expect(component.roundLength()).toBe(9);
+    expect(new Set(component.round().map((route) => route.number)).size).toBe(9);
   });
 
   it('scores a correct route and advances', () => {
@@ -43,5 +48,17 @@ describe('RouteRecognitionComponent', () => {
     component.next();
     expect(component.questionNumber()).toBe(2);
     expect(component.question()?.correct.number).not.toBe(first.correct.number);
+  });
+
+  it('does not repeat a correct route during a mixed try', () => {
+    const seen = new Set<number | string>();
+    while (!component.isComplete()) {
+      const current = component.question()!;
+      expect(seen.has(current.correct.number)).toBeFalse();
+      seen.add(current.correct.number);
+      component.answer(current.correct);
+      component.next();
+    }
+    expect(seen.size).toBe(12);
   });
 });

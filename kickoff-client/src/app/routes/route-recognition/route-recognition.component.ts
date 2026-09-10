@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RECEIVER_ROUTES, ReceiverRoute } from '../../core/data/receiver-routes.data';
-import { RouteQuestion, routeQuestion } from '../mini-games/quiz-game-data';
+import { RouteQuestion, coreRouteRound, mixedRouteRound, routeQuestionFor } from '../mini-games/quiz-game-data';
 
 type RouteMode = 'core' | 'full';
-const ROUND_LENGTH = 10;
 
 @Component({
   selector: 'app-route-recognition',
@@ -13,9 +12,10 @@ const ROUND_LENGTH = 10;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RouteRecognitionComponent {
-  readonly roundLength = ROUND_LENGTH;
   readonly yardLines = [72, 117, 162, 207, 252, 297];
-  readonly mode = signal<RouteMode>('core');
+  readonly mode = signal<RouteMode>('full');
+  readonly round = signal<ReceiverRoute[]>([]);
+  readonly roundLength = computed(() => this.round().length);
   readonly question = signal<RouteQuestion | null>(null);
   readonly questionNumber = signal(1);
   readonly score = signal(0);
@@ -26,9 +26,14 @@ export class RouteRecognitionComponent {
   readonly pool = computed(() => this.mode() === 'core'
     ? RECEIVER_ROUTES.filter((route) => route.group === 'Core tree')
     : RECEIVER_ROUTES);
+  readonly roundSectionLabel = computed(() => {
+    if (this.mode() === 'core' || this.questionNumber() <= 5) return 'Route tree';
+    if (this.questionNumber() <= 9) return 'Advanced routes';
+    return 'Combination concepts';
+  });
 
   constructor() {
-    this.newRound('core');
+    this.newRound('full');
   }
 
   newRound(mode: RouteMode = this.mode()): void {
@@ -39,7 +44,11 @@ export class RouteRecognitionComponent {
     this.bestStreak.set(0);
     this.selectedNumber.set(null);
     this.isComplete.set(false);
-    this.question.set(routeQuestion(this.pool()));
+    const round = mode === 'core'
+      ? coreRouteRound(RECEIVER_ROUTES)
+      : mixedRouteRound(RECEIVER_ROUTES);
+    this.round.set(round);
+    this.question.set(routeQuestionFor(round[0], this.pool()));
   }
 
   answer(route: ReceiverRoute): void {
@@ -58,13 +67,14 @@ export class RouteRecognitionComponent {
   next(): void {
     const current = this.question();
     if (!current || this.selectedNumber() === null) return;
-    if (this.questionNumber() >= ROUND_LENGTH) {
+    if (this.questionNumber() >= this.roundLength()) {
       this.isComplete.set(true);
       return;
     }
-    this.questionNumber.update((value) => value + 1);
+    const nextIndex = this.questionNumber();
+    this.questionNumber.set(nextIndex + 1);
     this.selectedNumber.set(null);
-    this.question.set(routeQuestion(this.pool(), Math.random, current.correct.number));
+    this.question.set(routeQuestionFor(this.round()[nextIndex], this.pool()));
   }
 
   choiceClass(route: ReceiverRoute): string {

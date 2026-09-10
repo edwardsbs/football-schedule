@@ -80,7 +80,8 @@
   .recognition-field .grass-b { fill: #1a422e; }
   .recognition-field .yard-line { stroke: rgb(255 255 255 / 24%); stroke-width: 2; }
   .recognition-field .hash { stroke: rgb(255 255 255 / 34%); stroke-width: 3; }
-  .recognition-field .line-of-scrimmage { stroke: #72a7d8; stroke-width: 3; stroke-dasharray: 10 6; }
+  .recognition-field .line-of-scrimmage { stroke: rgb(114 167 216 / 48%); stroke-width: 2; stroke-dasharray: 10 6; }
+  .recognition-field .tackle-box { fill: none; stroke: rgb(255 255 255 / 20%); stroke-width: 2; stroke-dasharray: 5 5; }
   .recognition-field .yard-label { fill: rgb(255 255 255 / 55%); font: 700 11px 'Segoe UI', sans-serif; }
   .recognition-field .receiver { fill: #e7ebf2; stroke: #11151c; stroke-width: 3; }
   .recognition-field .receiver-label { fill: #11151c; font: 900 8px 'Segoe UI', sans-serif; }

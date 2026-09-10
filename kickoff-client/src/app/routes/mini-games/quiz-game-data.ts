@@ -106,8 +106,36 @@ export function routeQuestion(
 ): RouteQuestion {
   const eligible = pool.length > 1 ? pool.filter((route) => route.number !== previousRouteNumber) : pool;
   const correct = pickOne(eligible, random);
+  return routeQuestionFor(correct, pool, random);
+}
+
+export function routeQuestionFor(
+  correct: ReceiverRoute,
+  pool: ReceiverRoute[],
+  random: () => number = Math.random,
+): RouteQuestion {
   const distractors = shuffle(pool.filter((route) => route.number !== correct.number), random).slice(0, 3);
   return { correct, choices: shuffle([correct, ...distractors], random) };
+}
+
+/** A teaching-ordered full round: route tree first, then advanced routes, then
+ * combination concepts. Each section is sampled without replacement. */
+export function mixedRouteRound(
+  routes: ReceiverRoute[],
+  random: () => number = Math.random,
+): ReceiverRoute[] {
+  return [
+    ...takeRouteGroup(routes, 'Core tree', 5, random),
+    ...takeRouteGroup(routes, 'Advanced routes', 4, random),
+    ...takeRouteGroup(routes, 'Combination concepts', 3, random),
+  ];
+}
+
+export function coreRouteRound(
+  routes: ReceiverRoute[],
+  random: () => number = Math.random,
+): ReceiverRoute[] {
+  return shuffle(routes.filter((route) => route.group === 'Core tree'), random);
 }
 
 export function shuffle<T>(items: readonly T[], random: () => number = Math.random): T[] {
@@ -136,4 +164,15 @@ function quizTeam(team: AlignmentTeam, targetKey: string): MatchTile {
 function pickOne<T>(items: readonly T[], random: () => number): T {
   if (items.length === 0) throw new Error('Cannot build a quiz question from an empty pool.');
   return items[Math.floor(random() * items.length)];
+}
+
+function takeRouteGroup(
+  routes: ReceiverRoute[],
+  group: ReceiverRoute['group'],
+  count: number,
+  random: () => number,
+): ReceiverRoute[] {
+  const candidates = routes.filter((route) => route.group === group);
+  if (candidates.length < count) throw new Error(`Not enough routes in ${group} to build a round.`);
+  return shuffle(candidates, random).slice(0, count);
 }

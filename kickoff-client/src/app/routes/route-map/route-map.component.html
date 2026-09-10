@@ -68,13 +68,12 @@
             <line x1="174" [attr.y1]="y" x2="190" [attr.y2]="y" class="hash" />
             <line x1="250" [attr.y1]="y" x2="266" [attr.y2]="y" class="hash" />
           }
+          <path d="M166 316 V344 H274 V316" class="tackle-box" />
           <line x1="0" y1="316" x2="440" y2="316" class="line-of-scrimmage" />
           <text x="16" y="338" class="los-label">LINE OF SCRIMMAGE</text>
 
           @if (selected.diagramPaths; as diagramPaths) {
             @for (routePath of diagramPaths; track routePath.label) {
-              <circle [attr.cx]="routePath.startX" [attr.cy]="routePath.startY ?? 310" r="11" class="receiver" />
-              <text [attr.x]="routePath.startX" [attr.y]="(routePath.startY ?? 310) + 4" text-anchor="middle" class="receiver-label">{{ routePath.label }}</text>
               <path [attr.d]="routePath.pathData" class="route-path shadow" />
               <path
                 [attr.d]="routePath.pathData"
@@ -83,12 +82,14 @@
                 [class.tertiary]="routePath.tone === 'tertiary'"
                 [class.quaternary]="routePath.tone === 'quaternary'"
               />
+              <circle [attr.cx]="routePath.startX" [attr.cy]="routePath.startY ?? 310" r="11" class="receiver" />
+              <text [attr.x]="routePath.startX" [attr.y]="(routePath.startY ?? 310) + 4" text-anchor="middle" class="receiver-label">{{ routePath.label }}</text>
             }
           } @else {
-            <circle cx="220" cy="310" r="11" class="receiver" />
-            <text x="220" y="314" text-anchor="middle" class="receiver-label">WR</text>
             <path [attr.d]="selected.pathData" class="route-path shadow" />
             <path [attr.d]="selected.pathData" class="route-path" />
+            <circle [attr.cx]="selected.startX ?? 84" [attr.cy]="selected.startY ?? 310" r="11" class="receiver" />
+            <text [attr.x]="selected.startX ?? 84" [attr.y]="(selected.startY ?? 310) + 4" text-anchor="middle" class="receiver-label">{{ selected.positionLabel ?? 'X' }}</text>
           }
         </svg>
       </figure>
