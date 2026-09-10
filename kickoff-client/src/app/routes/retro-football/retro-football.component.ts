@@ -20,6 +20,16 @@ const KEY_MAP: Record<string, NesButtonName> = {
  * natural only has to be fixed once, not every time the game reloads. */
 const SWAP_FACE_BUTTONS_KEY = 'retro-football:swap-face-buttons';
 
+/** NesJs's own audio pacing assumes exactly this rate (see nextBuffer() in
+ * public/nesjs/js/audio.js), so the emulation step loop below targets it too. */
+const FRAME_MS = 1000 / 60;
+
+/** Caps how many emulation steps a single requestAnimationFrame tick can run
+ * to catch up (e.g. after the tab was backgrounded) -- without this, a huge
+ * elapsed-time gap would try to fast-forward through it all in one tick and
+ * freeze the page instead of just quietly dropping the backlog. */
+const MAX_CATCHUP_STEPS = 4;
+
 /**
  * Phase 1 of the Retro Football mini-game: NesJs wired into a real Angular
  * component. Deliberately just Tecmo Super Bowl -- selecting this game from
@@ -57,6 +67,8 @@ export class RetroFootballComponent implements OnDestroy {
   private imageData: ImageData | null = null;
   private animationFrameId: number | null = null;
   private gamepadHeld: ReadonlySet<NesButtonName> = new Set();
+  private lastFrameTime: number | null = null;
+  private frameAccumulatorMs = 0;
 
   constructor() {
     // Bluetooth pads on Android often register as a real Gamepad AND
@@ -141,7 +153,6 @@ export class RetroFootballComponent implements OnDestroy {
 
     this.ctx = ctx;
     this.imageData = ctx.createImageData(256, 240);
-    if (this.audioHandler) this.audioHandler.stepCallback = () => this.stepEmulation();
     this.audioHandler?.start();
     this.startLoop();
   }
@@ -187,9 +198,14 @@ export class RetroFootballComponent implements OnDestroy {
 
   private startLoop(): void {
     this.stopLoop();
+    // Reset the clock rather than carrying over a stale lastFrameTime -- the
+    // very first tick after start/resume would otherwise see a huge elapsed
+    // gap (time spent loading, or paused) and try to catch up on all of it.
+    this.lastFrameTime = null;
+    this.frameAccumulatorMs = 0;
     this.ngZone.runOutsideAngular(() => {
-      const loop = () => {
-        this.drawFrame();
+      const loop = (timestamp: number) => {
+        this.tick(timestamp);
         this.animationFrameId = requestAnimationFrame(loop);
       };
       this.animationFrameId = requestAnimationFrame(loop);
@@ -203,9 +219,30 @@ export class RetroFootballComponent implements OnDestroy {
     }
   }
 
-  /** Called from the audio callback (see NesAudioHandler.stepCallback), not
-   * from requestAnimationFrame -- this is what keeps emulation paced to the
-   * real audio clock instead of the display's, see public/nesjs/README.md. */
+  /** Steps the emulator as many (or as few) times as real elapsed time since
+   * the last tick actually calls for, instead of assuming exactly one step
+   * per requestAnimationFrame call. NesJs's audio pacing enqueues a fixed
+   * 1/60s of audio per step (see nextBuffer() in public/nesjs/js/audio.js) --
+   * if this device can't sustain 60 real rAF ticks/sec, assuming one step per
+   * tick regardless of actual elapsed time quietly generates audio slower
+   * than real playback speed, forever, which is what caused the persistent
+   * pops no ring-buffer size could outrun. Tying step count to real elapsed
+   * time instead keeps audio generation matched to real time no matter how
+   * fast this particular device can actually run the render loop. */
+  private tick(timestamp: number): void {
+    this.lastFrameTime ??= timestamp;
+    const elapsedMs = timestamp - this.lastFrameTime;
+    this.lastFrameTime = timestamp;
+
+    this.frameAccumulatorMs = Math.min(this.frameAccumulatorMs + elapsedMs, FRAME_MS * MAX_CATCHUP_STEPS);
+    while (this.frameAccumulatorMs >= FRAME_MS) {
+      this.stepEmulation();
+      this.frameAccumulatorMs -= FRAME_MS;
+    }
+
+    this.drawFrame();
+  }
+
   private stepEmulation(): void {
     const { nes, audioHandler } = this;
     if (!nes || !audioHandler) return;
@@ -215,8 +252,6 @@ export class RetroFootballComponent implements OnDestroy {
     audioHandler.nextBuffer();
   }
 
-  /** Purely visual -- just repaints whatever frame the emulator most
-   * recently finished, decoupled from how often stepEmulation() actually ran. */
   private drawFrame(): void {
     const { nes, ctx, imageData } = this;
     if (!nes || !ctx || !imageData) return;
