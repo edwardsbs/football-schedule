@@ -111,12 +111,32 @@ p { margin: 0; color: var(--muted-strong, #aab2c0); font-size: 0.86rem; }
 .location-tile app-team-badge, .location-tile .team-name { pointer-events: none; user-select: none; -webkit-user-select: none; }
 .team-name { min-width: 0; overflow: hidden; font-size: 0.8rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .location-tile.selected { border-color: var(--accent-gold, #c9a227); box-shadow: 0 0 0 1px var(--accent-gold, #c9a227); }
-.location-tile.dragging { z-index: 20; pointer-events: none; cursor: grabbing; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5); }
+.location-tile.dragging { pointer-events: none; opacity: 0.2; cursor: grabbing; }
 .location-tile.hint-revealed { border-color: #6fb3ff; }
 .hint-progress { position: absolute; bottom: 0; left: 0; width: 0; height: 3px; background: #6fb3ff; opacity: 0; pointer-events: none; }
 .location-tile.hint-armed .hint-progress { opacity: 1; animation: location-hint 3000ms linear forwards; }
 .location-tile.hint-revealed .hint-progress { opacity: 1; width: 100%; }
 .hint-label { margin-left: auto; padding: 0.15rem 0.45rem; border-radius: 999px; background: rgba(111, 179, 255, 0.18); color: #6fb3ff; font-size: 0.66rem; font-weight: 800; white-space: nowrap; pointer-events: none; }
+
+.location-drag-ghost {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 50px;
+  padding: 0.4rem 0.55rem;
+  overflow: hidden;
+  border: 1px solid var(--accent-gold, #c9a227);
+  border-radius: 10px;
+  background: var(--surface-2, #1c212b);
+  color: var(--text, #e7ebf2);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+}
+.location-drag-ghost app-team-badge, .location-drag-ghost .team-name { pointer-events: none; }
 
 @keyframes location-miss { 40% { border-color: #ff5a5a; background: rgba(255, 90, 90, 0.16); } }
 @keyframes location-hint { from { width: 0; } to { width: 100%; } }

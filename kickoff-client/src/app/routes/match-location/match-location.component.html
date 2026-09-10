@@ -88,7 +88,6 @@
           [class.dragging]="dragTileKey() === tile.key"
           [class.hint-armed]="hintArmedTileKey() === tile.key && hintTileKey() !== tile.key"
           [class.hint-revealed]="hintTileKey() === tile.key"
-          [style.transform]="dragTileKey() === tile.key ? dragTransform() : null"
           [attr.aria-pressed]="selectedTileKey() === tile.key"
           [attr.title]="'Hold 3 seconds to reveal the home state for ' + tile.name"
           (pointerdown)="onTilePointerDown(tile, $event)"
@@ -109,3 +108,17 @@
     </div>
   </aside>
 </div>
+
+@if (draggedTile(); as tile) {
+  <div
+    class="location-drag-ghost"
+    aria-hidden="true"
+    [style.left.px]="dragOriginLeft()"
+    [style.top.px]="dragOriginTop()"
+    [style.width.px]="dragOriginWidth()"
+    [style.transform]="dragTransform()"
+  >
+    <app-team-badge [name]="tile.name" [logoUrl]="tile.logoUrl" [abbreviation]="tile.abbreviation" [size]="28" />
+    <span class="team-name">{{ tile.name }}</span>
+  </div>
+}

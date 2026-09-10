@@ -50,7 +50,14 @@ export class MatchLocationComponent {
   readonly dragTileKey = signal<string | null>(null);
   private readonly dragDx = signal(0);
   private readonly dragDy = signal(0);
+  readonly dragOriginLeft = signal(0);
+  readonly dragOriginTop = signal(0);
+  readonly dragOriginWidth = signal(0);
   readonly dragTransform = computed(() => `translate(${this.dragDx()}px, ${this.dragDy()}px)`);
+  readonly draggedTile = computed(() => {
+    const key = this.dragTileKey();
+    return key ? this.round().find((tile) => tile.key === key) ?? null : null;
+  });
 
   readonly hintArmedTileKey = signal<string | null>(null);
   readonly hintTileKey = signal<string | null>(null);
@@ -98,8 +105,12 @@ export class MatchLocationComponent {
 
   onTilePointerDown(tile: MatchTile, event: PointerEvent): void {
     const el = event.currentTarget as HTMLElement;
+    const bounds = el.getBoundingClientRect();
     el.setPointerCapture(event.pointerId);
     this.dragStart = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, tile, el };
+    this.dragOriginLeft.set(bounds.left);
+    this.dragOriginTop.set(bounds.top);
+    this.dragOriginWidth.set(bounds.width);
     this.dragDx.set(0);
     this.dragDy.set(0);
     this.hintArmedTileKey.set(tile.key);

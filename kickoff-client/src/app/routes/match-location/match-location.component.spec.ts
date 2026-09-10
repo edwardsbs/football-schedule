@@ -54,4 +54,15 @@ describe('MatchLocationComponent', () => {
     expect(component.hintStateCode()).toBe(tile.targetKey);
     expect(component.stateName(tile.targetKey)).not.toBe(tile.targetKey);
   });
+
+  it('renders the dragged team in a fixed ghost above scroll containers', () => {
+    const tile = component.round()[0];
+    component.dragTileKey.set(tile.key);
+    fixture.detectChanges();
+
+    const ghost = fixture.nativeElement.querySelector('.location-drag-ghost') as HTMLElement;
+    expect(ghost.textContent).toContain(tile.name);
+    expect(getComputedStyle(ghost).position).toBe('fixed');
+    expect(Number(getComputedStyle(ghost).zIndex)).toBeGreaterThan(100);
+  });
 });
