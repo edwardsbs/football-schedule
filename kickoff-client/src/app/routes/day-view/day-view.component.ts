@@ -7,8 +7,12 @@ import { LiveGameStore } from '../../core/services/live-game-store';
 import { GameDayBoardStore } from '../../core/services/game-day-board-store';
 import { FanStore } from '../../core/services/fan-store';
 import { SelectedDayStore } from '../../core/services/selected-day-store';
+import { TeamConferenceStore } from '../../core/services/team-conference-store';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game } from '../../core/models/game.model';
+import { GameFilterContext, GameFilters, countActiveGameFilters, defaultGameFilters, matchesGameFilters } from '../../core/game-filters';
 import { addDays, filterFollowed } from '../../core/timeline';
+import { FindGamesFilterComponent } from '../../shared/find-games-filter/find-games-filter.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { DayGameCardComponent } from './day-game-card.component';
 import {
@@ -23,7 +27,7 @@ const PANEL_SIZE_STORAGE_KEY = 'kickoff.day.panel-size';
 
 @Component({
   selector: 'app-day-view',
-  imports: [DatePipe, DayGameCardComponent, ImportantGamesTickerComponent],
+  imports: [DatePipe, DayGameCardComponent, FindGamesFilterComponent, ImportantGamesTickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './day-view.component.html',
   styleUrls: ['../shared/timeline.scss', './day-view.component.scss'],
@@ -34,6 +38,12 @@ export class DayViewComponent {
   private readonly selectedDay = inject(SelectedDayStore);
   readonly gameDayBoard = inject(GameDayBoardStore);
   private readonly fan = inject(FanStore);
+  private readonly conferences = inject(TeamConferenceStore);
+  private readonly records = inject(TeamRecordStore);
+  private readonly filterCtx: GameFilterContext = {
+    groupOf: (id) => this.conferences.groupOf(id),
+    recordOf: (id) => this.records.record(id),
+  };
 
   readonly day = this.selectedDay.day;
   readonly calendarOpen = signal(false);
@@ -61,7 +71,15 @@ export class DayViewComponent {
   readonly onlyMine = signal(false);
   readonly layout = signal<DayLayout>('kickoff');
   readonly followedCount = computed(() => filterFollowed(this.games()).length);
-  readonly visible = computed(() => (this.onlyMine() ? filterFollowed(this.games()) : this.games()));
+
+  readonly gameFiltersOpen = signal(false);
+  readonly gameFilters = signal<GameFilters>(defaultGameFilters());
+  readonly activeGameFilterCount = computed(() => countActiveGameFilters(this.gameFilters()));
+
+  readonly visible = computed(() => {
+    const base = this.onlyMine() ? filterFollowed(this.games()) : this.games();
+    return base.filter((g) => matchesGameFilters(g, this.gameFilters(), this.filterCtx));
+  });
   readonly groups = computed(() => groupDayGames(this.visible(), this.layout()));
 
   readonly total = computed(() => this.visible().length);

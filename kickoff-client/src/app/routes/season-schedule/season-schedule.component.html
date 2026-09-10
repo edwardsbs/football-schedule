@@ -221,8 +221,27 @@
       <span class="ico">★◉</span> My games
       <span class="badge">{{ followedCount() }}</span>
     </button>
+    <button
+      type="button"
+      class="filter-chip"
+      [class.on]="gameFiltersOpen() || activeGameFilterCount() > 0"
+      [attr.aria-pressed]="gameFiltersOpen()"
+      (click)="gameFiltersOpen.set(true)"
+    >
+      <span class="ico">⚲</span> Filters
+      @if (activeGameFilterCount() > 0) { <span class="badge">{{ activeGameFilterCount() }}</span> }
+    </button>
   </div>
 </div>
+
+<app-find-games-filter
+  [open]="gameFiltersOpen()"
+  [(filters)]="gameFilters"
+  [fixedLeague]="league() === 'nfl' ? 'nfl' : 'ncaa'"
+  [totalCount]="games().length"
+  [matchCount]="total()"
+  (closed)="gameFiltersOpen.set(false)"
+/>
 
 @if (total() === 0) {
   <div class="empty">

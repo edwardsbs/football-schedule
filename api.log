@@ -1,0 +1,1662 @@
+Using launch settings from C:\repos\football-schedule\Kickoff.Api\Properties\launchSettings.json...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (21ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [u].[Id], [u].[Name]
+      FROM [kickoff].[Users] AS [u]
+      ORDER BY [u].[Id]
+info: Kickoff.Api.Services.Sync.LiveScoreSyncWorker[0]
+      Live score sync started (Espn, every 10s, leagues: Nfl, Ncaa).
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Schedule sync started (Espn, every 24h, leagues: Nfl, Ncaa).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[@__league_0='?' (DbType = Int32), @__8__locals1_today_1='?' (DbType = Date)], CommandType='Text', CommandTimeout='30']
+      SELECT [w].[Number], [s].[Year]
+      FROM [kickoff].[Weeks] AS [w]
+      INNER JOIN [kickoff].[Seasons] AS [s] ON [w].[SeasonId] = [s].[Id]
+      WHERE [s].[League] = @__league_0 AND [w].[EndDate] >= @__8__locals1_today_1
+      ORDER BY [w].[Number]
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: https://localhost:55781
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:55782
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\repos\football-schedule\Kickoff.Api
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 78.6845ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 82.2146ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 201.1296ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 204.0255ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__staleBeforeUtc_1='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[ExternalId], [g].[KickoffUtc], [g].[LastUpdatedUtc]
+      FROM [kickoff].[Games] AS [g]
+      WHERE [g].[League] = @__league_0 AND [g].[Status] IN (1, 2) AND [g].[ExternalId] IS NOT NULL AND ([g].[LastUpdatedUtc] IS NULL OR [g].[LastUpdatedUtc] < @__staleBeforeUtc_1)
+      ORDER BY [g].[KickoffUtc]
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 32.1273ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 32.1869ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__staleBeforeUtc_1='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[ExternalId], [g].[KickoffUtc], [g].[LastUpdatedUtc]
+      FROM [kickoff].[Games] AS [g]
+      WHERE [g].[League] = @__league_0 AND [g].[Status] IN (1, 2) AND [g].[ExternalId] IS NOT NULL AND ([g].[LastUpdatedUtc] IS NULL OR [g].[LastUpdatedUtc] < @__staleBeforeUtc_1)
+      ORDER BY [g].[KickoffUtc]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 1 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 47.8632ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 47.9343ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 2 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 94.1676ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 94.2555ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 3 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 121.3053ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 121.392ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 4 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 55.1687ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 55.2682ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 5 schedule sync: 0 added, 15 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 47.1829ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 47.2844ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 6 schedule sync: 0 added, 14 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 60.5903ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 60.6682ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 7 schedule sync: 0 added, 14 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 75.583ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 75.6749ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 8 schedule sync: 0 added, 14 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 62.3398ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 62.4191ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 9 schedule sync: 0 added, 15 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 95.8607ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 95.9518ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 10 schedule sync: 0 added, 14 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 50.7892ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 50.8853ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 11 schedule sync: 0 added, 13 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 78.5801ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 78.6677ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 12 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 65.0277ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 65.1235ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 13 schedule sync: 0 added, 14 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 55.3594ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 55.4478ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 14 schedule sync: 0 added, 15 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 49.6731ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 49.7537ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 15 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 64.8866ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 65.0105ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 16 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 58.8977ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 59.0009ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 17 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 41.4747ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 41.5794ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Nfl week 18 schedule sync: 0 added, 16 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/rankings
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/rankings
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 35.1407ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 35.2235ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa current rankings sync: 25 ranked teams.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__8__locals1_today_1='?' (DbType = Date)], CommandType='Text', CommandTimeout='30']
+      SELECT [w].[Number], [s].[Year]
+      FROM [kickoff].[Weeks] AS [w]
+      INNER JOIN [kickoff].[Seasons] AS [s] ON [w].[SeasonId] = [s].[Id]
+      WHERE [s].[League] = @__league_0 AND [w].[EndDate] >= @__8__locals1_today_1
+      ORDER BY [w].[Number]
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 26.8216ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 26.915ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/2026/types/2/groups/81/children?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/seasons/2026/types/2/groups/81/children?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 192.6248ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 192.7593ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 135.0348ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 135.1341ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 2 schedule sync: 0 added, 86 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 23.4355ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 23.5214ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 100.3023ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 100.415ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 3 schedule sync: 0 added, 75 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 36.641ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 36.7394ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 51.6797ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 51.7723ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 4 schedule sync: 0 added, 71 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 24.2681ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 24.3587ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 61.0787ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 61.172ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 5 schedule sync: 0 added, 59 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 39.0965ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 39.1801ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 57.2772ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 57.4011ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 6 schedule sync: 0 added, 58 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 51.0887ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 51.1655ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 41.7208ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 41.8205ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 7 schedule sync: 0 added, 62 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 30.4337ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 30.5265ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 106.0352ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 106.1174ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 8 schedule sync: 0 added, 56 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 24.3875ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 24.4774ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 47.0213ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 47.1158ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 9 schedule sync: 0 added, 56 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 26.3332ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 26.4049ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 50.3076ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 50.4256ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 10 schedule sync: 0 added, 63 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 21.6616ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 21.7418ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 67.2851ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 67.3844ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 11 schedule sync: 0 added, 67 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 25.2134ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 25.3366ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 58.7863ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 58.8918ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 12 schedule sync: 0 added, 70 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 28.743ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 28.8227ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 84.6258ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 84.7398ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 13 schedule sync: 0 added, 69 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 22.1725ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 22.2413ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 49.3578ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 49.4219ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__year_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[EndDate], [s].[League], [s].[Name], [s].[StartDate], [s].[Year]
+      FROM [kickoff].[Seasons] AS [s]
+      WHERE [s].[League] = @__league_0 AND [s].[Year] = @__year_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__season_Id_0='?' (DbType = Int32), @__feed_Week_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [w].[Id], [w].[EndDate], [w].[Label], [w].[Number], [w].[SeasonId], [w].[StartDate]
+      FROM [kickoff].[Weeks] AS [w]
+      WHERE [w].[SeasonId] = @__season_Id_0 AND [w].[Number] = @__feed_Week_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__ids_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__league_0 AND [t].[ExternalId] IS NOT NULL AND [t].[ExternalId] IN (
+          SELECT [i].[value]
+          FROM OPENJSON(@__ids_1) WITH ([value] nvarchar(64) '$') AS [i]
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__feed_League_0='?' (DbType = Int32), @__externalIds_1='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[Id], [g].[AwayScore], [g].[AwayTeamId], [g].[Clock], [g].[DownDistance], [g].[ExternalId], [g].[HomeScore], [g].[HomeTeamId], [g].[HomeWinProbability], [g].[KickoffUtc], [g].[LastUpdatedUtc], [g].[League], [g].[Period], [g].[PossessionTeamId], [g].[Status], [g].[VenueId], [g].[WeekId], [b].[Id], [b].[GameId], [b].[IsStreaming], [b].[Network]
+      FROM [kickoff].[Games] AS [g]
+      LEFT JOIN [kickoff].[Broadcasts] AS [b] ON [g].[Id] = [b].[GameId]
+      WHERE [g].[League] = @__feed_League_0 AND [g].[ExternalId] IS NOT NULL AND [g].[ExternalId] IN (
+          SELECT [e].[value]
+          FROM OPENJSON(@__externalIds_1) WITH ([value] nvarchar(64) '$') AS [e]
+      )
+      ORDER BY [g].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__feed_League_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Abbreviation], [t].[ConferenceId], [t].[CurrentRank], [t].[DisplayName], [t].[DivisionId], [t].[ExternalId], [t].[IsFcs], [t].[League], [t].[Location], [t].[LogoUrl], [t].[Name], [t].[PreviousRank], [t].[PrimaryColor]
+      FROM [kickoff].[Teams] AS [t]
+      WHERE [t].[League] = @__feed_League_0 AND [t].[ExternalId] IS NOT NULL
+info: Kickoff.Api.Services.Sync.ScheduleSyncWorker[0]
+      Ncaa week 14 schedule sync: 0 added, 10 updated.
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 28.598ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 28.715ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 25.5592ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 25.6086ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 27.3721ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 27.478ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 39.7649ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 39.848ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 25.5047ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 25.6159ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 34.7519ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 34.9169ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 20.4033ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 20.5007ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 36.4279ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 36.5385ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 21.3501ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 21.496ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 28.4373ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 28.5009ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 61.7382ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 61.8166ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 47.2439ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 47.3229ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 29.168ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 29.273ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__league_0='?' (DbType = Int32), @__staleBeforeUtc_1='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[ExternalId], [g].[KickoffUtc], [g].[LastUpdatedUtc]
+      FROM [kickoff].[Games] AS [g]
+      WHERE [g].[League] = @__league_0 AND [g].[Status] IN (1, 2) AND [g].[ExternalId] IS NOT NULL AND ([g].[LastUpdatedUtc] IS NULL OR [g].[LastUpdatedUtc] < @__staleBeforeUtc_1)
+      ORDER BY [g].[KickoffUtc]
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 25.8364ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 25.8982ms - 200
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__league_0='?' (DbType = Int32), @__staleBeforeUtc_1='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      SELECT [g].[ExternalId], [g].[KickoffUtc], [g].[LastUpdatedUtc]
+      FROM [kickoff].[Games] AS [g]
+      WHERE [g].[League] = @__league_0 AND [g].[Status] IN (1, 2) AND [g].[ExternalId] IS NOT NULL AND ([g].[LastUpdatedUtc] IS NULL OR [g].[LastUpdatedUtc] < @__staleBeforeUtc_1)
+      ORDER BY [g].[KickoffUtc]
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 34.8851ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 34.9501ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[100]
+      Start processing HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[100]
+      Sending HTTP request GET https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?*
+info: System.Net.Http.HttpClient.ISportsDataClient.ClientHandler[101]
+      Received HTTP response headers after 38.5399ms - 200
+info: System.Net.Http.HttpClient.ISportsDataClient.LogicalHandler[101]
+      End processing HTTP request after 38.5987ms - 200

@@ -711,3 +711,72 @@ app-conference-alignment {
     }
   }
 }
+
+app-conference-alignment {
+  .find-teams-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    min-height: 40px;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--border, #262c38);
+    background: var(--surface, #161a22);
+    color: var(--muted-strong, #aab2c0);
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+
+    &:active { background: var(--surface-2, #1c212b); }
+
+    &.on {
+      background: var(--accent-gold, #c9a227);
+      border-color: var(--accent-gold, #c9a227);
+      color: #12151b;
+    }
+
+    .badge {
+      background: var(--surface-2, #1c212b);
+      border-radius: 999px;
+      padding: 0.05rem 0.5rem;
+      font-size: 0.72rem;
+      color: var(--text, #e7ebf2);
+    }
+
+    &.on .badge { background: rgba(0, 0, 0, 0.22); color: #12151b; }
+  }
+
+  .filter-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+    margin: 0 0 1rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 10px;
+    background: var(--surface, #161a22);
+    color: var(--muted-strong, #aab2c0);
+    font-size: 0.85rem;
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent-gold, #c9a227);
+      color: #12151b;
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.9rem;
+      min-height: 40px;
+      cursor: pointer;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .find-teams-trigger { min-height: 44px; }
+  }
+}

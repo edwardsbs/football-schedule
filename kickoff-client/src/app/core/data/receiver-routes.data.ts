@@ -1,11 +1,21 @@
 export interface ReceiverRoute {
-  number: number;
+  number: number | string;
   name: string;
   aliases?: string;
+  group: 'Core tree' | 'Advanced routes' | 'Combination concepts';
   depth: string;
   summary: string;
   coachingPoint: string;
   pathData: string;
+  diagramPaths?: ReceiverRoutePath[];
+}
+
+export interface ReceiverRoutePath {
+  label: string;
+  startX: number;
+  startY?: number;
+  pathData: string;
+  tone?: 'primary' | 'secondary' | 'tertiary';
 }
 
 /** Classic 1–9 receiver route tree plus common advanced routes. Terminology can vary by playbook. */
@@ -13,6 +23,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
   {
     number: 1,
     name: 'Flat',
+    group: 'Core tree',
     depth: '1–5 yards',
     summary: 'Release quickly toward the sideline and give the quarterback an immediate outlet.',
     coachingPoint: 'Stay flat after the break so you do not drift into deeper coverage.',
@@ -21,6 +32,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
   {
     number: 2,
     name: 'Slant',
+    group: 'Core tree',
     depth: '3–6 yards',
     summary: 'Attack inside leverage with a sharp diagonal break into the middle of the field.',
     coachingPoint: 'Sell the vertical release, plant outside, and cross the defender’s face.',
@@ -29,6 +41,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
   {
     number: 3,
     name: 'Comeback',
+    group: 'Core tree',
     depth: '12–15 yards',
     summary: 'Threaten deep, then break down and return toward the sideline and quarterback.',
     coachingPoint: 'Drive vertically first; the route only works when the defender fears the go ball.',
@@ -38,6 +51,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     number: 4,
     name: 'Hook',
     aliases: 'Curl',
+    group: 'Core tree',
     depth: '8–12 yards',
     summary: 'Stem vertically, stop in open space, and turn back toward the quarterback.',
     coachingPoint: 'Come back downhill to the ball instead of waiting flat-footed.',
@@ -46,6 +60,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
   {
     number: 5,
     name: 'Out',
+    group: 'Core tree',
     depth: '8–12 yards',
     summary: 'Push vertically, then make a hard 90-degree break toward the sideline.',
     coachingPoint: 'Drop your hips at the top and keep the break square and flat.',
@@ -55,6 +70,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     number: 6,
     name: 'In',
     aliases: 'Dig',
+    group: 'Core tree',
     depth: '10–15 yards',
     summary: 'Push vertically, then cross the field on a firm 90-degree inside break.',
     coachingPoint: 'Do not round the cut; flatten across the field after the break.',
@@ -64,6 +80,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     number: 7,
     name: 'Corner',
     aliases: 'Flag',
+    group: 'Core tree',
     depth: '12–18 yards',
     summary: 'Stem vertically and break diagonally toward the back corner of the field.',
     coachingPoint: 'Aim high enough to clear underneath coverage without drifting out of bounds.',
@@ -72,6 +89,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
   {
     number: 8,
     name: 'Post',
+    group: 'Core tree',
     depth: '12–18 yards',
     summary: 'Stem vertically and break diagonally toward the goalpost and middle of the field.',
     coachingPoint: 'Lean outside before the break to create room across the defender’s face.',
@@ -81,6 +99,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     number: 9,
     name: 'Fade',
     aliases: 'Go · Fly · Streak',
+    group: 'Core tree',
     depth: 'Deep',
     summary: 'Release vertically and stretch the defense all the way downfield.',
     coachingPoint: 'Stack the defender, stay on your line, and leave room for the throw outside.',
@@ -89,6 +108,7 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
   {
     number: 10,
     name: 'Wheel',
+    group: 'Advanced routes',
     depth: 'Deep',
     summary: 'Release toward the flat, turn up the sideline, and accelerate into vertical space.',
     coachingPoint: 'Sell the flat route first, then hug the sideline as you transition upfield.',
@@ -98,9 +118,196 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     number: 11,
     name: 'Sluggo',
     aliases: 'Slant-and-go',
+    group: 'Advanced routes',
     depth: 'Deep',
     summary: 'Sell the slant inside, plant, and redirect vertically past a defender who jumps the break.',
     coachingPoint: 'Make the first three steps look exactly like your slant before snapping back upfield.',
     pathData: 'M220 310 L220 274 Q220 256 238 246 L278 224 Q294 215 296 192 L300 42',
+  },
+  {
+    number: 12,
+    name: 'Hitch',
+    aliases: 'Stop',
+    group: 'Advanced routes',
+    depth: '5–7 yards',
+    summary: 'Push vertically, throttle down, and turn back to present a clean target to the quarterback.',
+    coachingPoint: 'Sell vertical speed, sink your hips, and show your numbers as soon as you stop.',
+    pathData: 'M220 310 L220 226 Q220 212 206 222 L192 238',
+  },
+  {
+    number: 13,
+    name: 'Seam',
+    group: 'Advanced routes',
+    depth: 'Deep',
+    summary: 'Release vertically through the channel between underneath defenders and the deep safety.',
+    coachingPoint: 'Stay skinny through the seam and adjust your leverage to the nearest safety.',
+    pathData: 'M220 310 C226 252 230 158 228 42',
+  },
+  {
+    number: 14,
+    name: 'Shallow Cross',
+    aliases: 'Drag',
+    group: 'Advanced routes',
+    depth: '2–5 yards',
+    summary: 'Cross the formation at a shallow depth to create traffic against man or find space underneath zone.',
+    coachingPoint: 'Stay flat, avoid gaining unnecessary depth, and keep running through the catch.',
+    pathData: 'M220 310 Q222 278 252 270 C294 258 338 252 388 252',
+  },
+  {
+    number: 15,
+    name: 'Over',
+    aliases: 'Deep cross · Crosser',
+    group: 'Advanced routes',
+    depth: '12–18 yards',
+    summary: 'Cross the field behind the linebackers with enough depth to work underneath the safeties.',
+    coachingPoint: 'Gain depth through the stem, then run away from coverage without drifting too far upfield.',
+    pathData: 'M220 310 L220 214 Q220 182 252 164 C296 140 340 120 392 104',
+  },
+  {
+    number: 16,
+    name: 'Pivot',
+    aliases: 'Whip · Zig',
+    group: 'Advanced routes',
+    depth: '4–7 yards',
+    summary: 'Break inside like a shallow route, plant, and snap back outside away from trailing coverage.',
+    coachingPoint: 'Sell the inside break with your shoulders, then pivot tightly without drifting backward.',
+    pathData: 'M220 310 L220 270 Q220 254 238 248 L278 234 Q292 228 282 218 Q272 210 258 220 L174 258',
+  },
+  {
+    number: 17,
+    name: 'Texas',
+    aliases: 'Angle',
+    group: 'Advanced routes',
+    depth: '3–8 yards',
+    summary: 'Release toward the flat, widen the underneath defender, then plant and break sharply back inside.',
+    coachingPoint: 'Make the flat release believable and cross the defender’s face with a decisive inside cut.',
+    pathData: 'M220 310 Q190 302 164 278 Q150 266 160 254 Q170 242 184 234 L286 176',
+  },
+  {
+    number: 18,
+    name: 'Out & Up',
+    aliases: 'Out-and-up · Pump',
+    group: 'Advanced routes',
+    depth: 'Deep',
+    summary: 'Sell the out route, turn up the sideline, and accelerate past a defender who drives on the first break.',
+    coachingPoint: 'Run a convincing out before turning vertically; leave enough boundary space for the throw.',
+    pathData: 'M220 310 L220 202 Q220 186 204 186 L132 186 Q112 186 108 164 L92 42',
+  },
+  {
+    number: 19,
+    name: 'Post-Corner',
+    group: 'Advanced routes',
+    depth: 'Deep',
+    summary: 'Break toward the post, force the defender inside, then redirect toward the back corner.',
+    coachingPoint: 'Sell the post with eyes and hips before making the second break sharp and explosive.',
+    pathData: 'M220 310 L220 172 Q220 156 238 142 L274 116 Q288 106 276 94 L164 42',
+  },
+  {
+    number: 20,
+    name: 'Corner-Post',
+    group: 'Advanced routes',
+    depth: 'Deep',
+    summary: 'Break toward the corner first, then cut back to the post after the defender turns outside.',
+    coachingPoint: 'Threaten the corner long enough to move the defender before snapping back across the field.',
+    pathData: 'M220 310 L220 172 Q220 156 204 142 L168 114 Q154 102 168 90 L282 42',
+  },
+  {
+    number: 'C1',
+    name: 'Scissors',
+    aliases: 'Post + corner',
+    group: 'Combination concepts',
+    depth: 'Deep',
+    summary: 'A post and corner cross downfield to stress a two-high safety and the corner beneath it.',
+    coachingPoint: 'The routes must cross at different levels so the receivers do not collide and the coverage must declare.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 128, pathData: 'M128 310 L128 168 Q128 150 146 136 L300 42' },
+      { label: 'Y', startX: 238, pathData: 'M238 310 L238 184 Q238 166 220 150 L92 42', tone: 'secondary' },
+    ],
+  },
+  {
+    number: 'C2',
+    name: 'Smash',
+    aliases: 'Hitch + corner',
+    group: 'Combination concepts',
+    depth: 'Short + deep',
+    summary: 'A hitch holds the outside corner underneath while a second receiver attacks the corner behind it.',
+    coachingPoint: 'Keep clean vertical spacing and make the corner route climb above the flat defender.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 108, pathData: 'M108 310 L108 244 Q108 230 96 240 L86 252' },
+      { label: 'Y', startX: 210, pathData: 'M210 310 L210 180 Q210 162 192 146 L76 42', tone: 'secondary' },
+    ],
+  },
+  {
+    number: 'C3',
+    name: 'Mesh',
+    aliases: 'Dual shallow crossers',
+    group: 'Combination concepts',
+    depth: '3–6 yards',
+    summary: 'Two shallow routes cross closely to create traffic against man coverage and outlets against zone.',
+    coachingPoint: 'Set a precise mesh point and have one receiver pass over while the other passes underneath.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 100, pathData: 'M100 310 Q104 272 142 258 C210 238 294 240 390 248' },
+      { label: 'Y', startX: 340, pathData: 'M340 310 Q336 278 302 266 C238 244 164 250 54 266', tone: 'secondary' },
+    ],
+  },
+  {
+    number: 'C4',
+    name: 'Flood',
+    aliases: 'Sail',
+    group: 'Combination concepts',
+    depth: 'Three levels',
+    summary: 'Three receivers stretch one sideline vertically with a flat, intermediate sail, and clear-out route.',
+    coachingPoint: 'Preserve the spacing between all three levels so one defender cannot overlap two routes.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 88, pathData: 'M88 310 C84 246 82 146 84 42' },
+      { label: 'Y', startX: 174, pathData: 'M174 310 L174 190 Q174 172 154 158 L68 106', tone: 'secondary' },
+      { label: 'Z', startX: 258, pathData: 'M258 310 Q220 288 184 274 L62 274', tone: 'tertiary' },
+    ],
+  },
+  {
+    number: 'C5',
+    name: 'Levels',
+    aliases: 'Double-in stretch',
+    group: 'Combination concepts',
+    depth: '5 + 12 yards',
+    summary: 'Two in-breaking routes at different depths create a high-low stretch on underneath defenders.',
+    coachingPoint: 'Keep both routes flat after their breaks and maintain enough vertical separation for a clean read.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 112, pathData: 'M112 310 L112 238 Q112 224 128 224 L386 224' },
+      { label: 'Y', startX: 214, pathData: 'M214 310 L214 150 Q214 134 232 134 L390 134', tone: 'secondary' },
+    ],
+  },
+  {
+    number: 'C6',
+    name: 'Drive',
+    aliases: 'Shallow + dig',
+    group: 'Combination concepts',
+    depth: '3 + 12 yards',
+    summary: 'A shallow cross and a dig attack the middle at two depths while forcing linebackers into conflict.',
+    coachingPoint: 'The shallow runner must stay underneath while the dig settles or crosses behind the linebackers.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 94, pathData: 'M94 310 Q98 274 136 260 C202 238 286 240 390 252' },
+      { label: 'Y', startX: 216, pathData: 'M216 310 L216 150 Q216 134 234 134 L392 134', tone: 'secondary' },
+    ],
+  },
+  {
+    number: 'C7',
+    name: 'Mills',
+    aliases: 'Post + dig',
+    group: 'Combination concepts',
+    depth: 'Intermediate + deep',
+    summary: 'A dig pulls the safety forward while a post attacks the vacated deep middle behind it.',
+    coachingPoint: 'Time the dig underneath the post so the middle-field safety cannot drive on both routes.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 116, pathData: 'M116 310 L116 154 Q116 138 134 138 L360 138' },
+      { label: 'Y', startX: 232, pathData: 'M232 310 L232 174 Q232 154 250 138 L350 42', tone: 'secondary' },
+    ],
   },
 ];

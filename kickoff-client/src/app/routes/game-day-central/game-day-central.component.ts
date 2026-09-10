@@ -4,12 +4,16 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { catchError, of, switchMap } from 'rxjs';
 import { Game } from '../../core/models/game.model';
+import { GameFilterContext, GameFilters, countActiveGameFilters, defaultGameFilters, matchesGameFilters } from '../../core/game-filters';
 import { GameDayBoardStore } from '../../core/services/game-day-board-store';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
 import { SelectedDayStore } from '../../core/services/selected-day-store';
+import { TeamConferenceStore } from '../../core/services/team-conference-store';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { addDays } from '../../core/timeline';
+import { FindGamesFilterComponent } from '../../shared/find-games-filter/find-games-filter.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { DayGameCardComponent } from '../day-view/day-game-card.component';
 import { automaticDayPanelSize } from '../day-view/day-panel-size';
@@ -18,9 +22,10 @@ import { GameInterestRating, gameInterest, isGettingInteresting } from './game-d
 
 @Component({
   selector: 'app-game-day-central',
-  imports: [DatePipe, DayGameCardComponent, ImportantGamesTickerComponent, RouterLink],
+  imports: [DatePipe, DayGameCardComponent, FindGamesFilterComponent, ImportantGamesTickerComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './game-day-central.component.html',
+  styleUrls: ['../shared/timeline.scss'],
 })
 export class GameDayCentralComponent {
   private readonly api = inject(KickoffApi);
@@ -28,6 +33,12 @@ export class GameDayCentralComponent {
   private readonly selectedDay = inject(SelectedDayStore);
   readonly board = inject(GameDayBoardStore);
   private readonly fan = inject(FanStore);
+  private readonly conferences = inject(TeamConferenceStore);
+  private readonly records = inject(TeamRecordStore);
+  private readonly filterCtx: GameFilterContext = {
+    groupOf: (id) => this.conferences.groupOf(id),
+    recordOf: (id) => this.records.record(id),
+  };
 
   readonly day = this.selectedDay.day;
   readonly calendarOpen = signal(false);
@@ -53,8 +64,16 @@ export class GameDayCentralComponent {
   readonly watching = computed(() => this.games().filter((game) => this.isOnGameDay(game)));
   readonly otherGames = computed(() => this.games().filter((game) => !this.isOnGameDay(game)));
   readonly watchingSize = computed(() => automaticDayPanelSize(this.watching().length));
-  readonly otherSize = computed(() => automaticDayPanelSize(this.otherGames().length));
-  readonly interestingCount = computed(() => this.otherGames().filter(isGettingInteresting).length);
+
+  readonly gameFiltersOpen = signal(false);
+  readonly gameFilters = signal<GameFilters>(defaultGameFilters());
+  readonly activeGameFilterCount = computed(() => countActiveGameFilters(this.gameFilters()));
+
+  readonly visibleOtherGames = computed(() =>
+    this.otherGames().filter((g) => matchesGameFilters(g, this.gameFilters(), this.filterCtx)),
+  );
+  readonly otherSize = computed(() => automaticDayPanelSize(this.visibleOtherGames().length));
+  readonly interestingCount = computed(() => this.visibleOtherGames().filter(isGettingInteresting).length);
 
   prev(): void {
     this.selectedDay.select(addDays(this.day(), -1));

@@ -4,8 +4,12 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
+import { TeamConferenceStore } from '../../core/services/team-conference-store';
+import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game } from '../../core/models/game.model';
+import { GameFilterContext, GameFilters, countActiveGameFilters, defaultGameFilters, matchesGameFilters } from '../../core/game-filters';
 import { addDays, filterFollowed, groupByDay, startOfWeek } from '../../core/timeline';
+import { FindGamesFilterComponent } from '../../shared/find-games-filter/find-games-filter.component';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
@@ -41,7 +45,7 @@ function seasonWeekStarts(): Date[] {
 
 @Component({
   selector: 'app-week-view',
-  imports: [DatePipe, GameRowComponent, ImportantGamesTickerComponent, WeekStripComponent],
+  imports: [DatePipe, FindGamesFilterComponent, GameRowComponent, ImportantGamesTickerComponent, WeekStripComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './week-view.component.html',
   styleUrls: ['../shared/timeline.scss'],
@@ -49,6 +53,12 @@ function seasonWeekStarts(): Date[] {
 export class WeekViewComponent {
   private readonly api = inject(KickoffApi);
   private readonly live = inject(LiveGameStore);
+  private readonly conferences = inject(TeamConferenceStore);
+  private readonly records = inject(TeamRecordStore);
+  private readonly filterCtx: GameFilterContext = {
+    groupOf: (id) => this.conferences.groupOf(id),
+    recordOf: (id) => this.records.record(id),
+  };
   private readonly reload = signal(0);
 
   readonly weekStart = signal(startOfWeek(new Date()));
@@ -75,7 +85,15 @@ export class WeekViewComponent {
   /** "My games" filter: only favorite-team or circled games (mixes NCAA + NFL). */
   readonly onlyMine = signal(false);
   readonly followedCount = computed(() => filterFollowed(this.games()).length);
-  readonly visible = computed(() => (this.onlyMine() ? filterFollowed(this.games()) : this.games()));
+
+  readonly gameFiltersOpen = signal(false);
+  readonly gameFilters = signal<GameFilters>(defaultGameFilters());
+  readonly activeGameFilterCount = computed(() => countActiveGameFilters(this.gameFilters()));
+
+  readonly visible = computed(() => {
+    const base = this.onlyMine() ? filterFollowed(this.games()) : this.games();
+    return base.filter((g) => matchesGameFilters(g, this.gameFilters(), this.filterCtx));
+  });
 
   readonly days = computed(() => groupByDay(this.visible()));
   readonly total = computed(() => this.visible().length);

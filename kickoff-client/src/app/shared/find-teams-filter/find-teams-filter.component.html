@@ -1,0 +1,89 @@
+@if (open()) {
+  <div class="sheet-backdrop" (click)="close()">
+    <div
+      class="sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="find-teams-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="sheet-head">
+        <h2 id="find-teams-title">Find Teams</h2>
+        <span class="result-count">{{ matchCount() }} of {{ totalCount() }}</span>
+        <button type="button" class="sheet-close" aria-label="Close filters" (click)="close()">✕</button>
+      </header>
+
+      <div class="sheet-body">
+        <section class="filter-section">
+          <h3>Search</h3>
+          <div class="search-field">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+            <input
+              type="text"
+              placeholder="Team or mascot…"
+              [value]="filters().search"
+              (input)="setSearch($any($event.target).value)"
+            />
+          </div>
+        </section>
+
+        <section class="filter-section">
+          <h3>My teams</h3>
+          <div class="chip-strip">
+            <button
+              type="button"
+              class="chip"
+              [class.active]="filters().favoritesOnly"
+              [attr.aria-pressed]="filters().favoritesOnly"
+              (click)="toggleFavoritesOnly()"
+            >★ Favorites only</button>
+            <button
+              type="button"
+              class="chip teal"
+              [class.active]="filters().interestOnly"
+              [attr.aria-pressed]="filters().interestOnly"
+              (click)="toggleInterestOnly()"
+            >◆ Interest only</button>
+          </div>
+        </section>
+
+        @if (showRankings()) {
+          <section class="filter-section">
+            <h3>Rankings</h3>
+            <div class="toggle-row">
+              <span class="label">
+                Ranked only
+                <small>Currently in the AP or CFP Top 25</small>
+              </span>
+              <span
+                class="switch"
+                [class.on]="filters().rankedOnly"
+                role="switch"
+                tabindex="0"
+                [attr.aria-checked]="filters().rankedOnly"
+                (click)="toggleRankedOnly()"
+                (keydown.enter)="toggleRankedOnly()"
+                (keydown.space)="toggleRankedOnly()"
+              ></span>
+            </div>
+          </section>
+        }
+
+        <section class="filter-section">
+          <h3>Season record</h3>
+          <div class="seg" role="group" aria-label="Minimum record">
+            <button type="button" [class.active]="filters().minRecord === 'any'" (click)="setMinRecord('any')">Any</button>
+            <button type="button" [class.active]="filters().minRecord === '500'" (click)="setMinRecord('500')">.500+</button>
+            <button type="button" [class.active]="filters().minRecord === '750'" (click)="setMinRecord('750')">.750+</button>
+            <button type="button" [class.active]="filters().minRecord === 'undefeated'" (click)="setMinRecord('undefeated')">Undefeated</button>
+          </div>
+        </section>
+      </div>
+
+      <footer class="sheet-foot">
+        <button type="button" class="reset-btn" (click)="reset()">Reset filters</button>
+        <button type="button" class="done-btn" (click)="close()">Done</button>
+      </footer>
+    </div>
+  </div>
+}

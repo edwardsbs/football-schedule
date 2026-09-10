@@ -1,0 +1,195 @@
+@if (open()) {
+  <div class="sheet-backdrop" (click)="close()">
+    <div
+      class="sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="find-games-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="sheet-head">
+        <h2 id="find-games-title">Find Games</h2>
+        <span class="result-count">{{ matchCount() }} of {{ totalCount() }}</span>
+        <button type="button" class="sheet-close" aria-label="Close filters" (click)="close()">✕</button>
+      </header>
+
+      <div class="sheet-body">
+        @if (!fixedLeague()) {
+          <section class="filter-section">
+            <h3>League</h3>
+            <div class="seg" role="group" aria-label="League">
+              <button type="button" [class.active]="filters().league === 'all'" (click)="setLeague('all')">All</button>
+              <button type="button" [class.active]="filters().league === 'nfl'" (click)="setLeague('nfl')">NFL</button>
+              <button type="button" [class.active]="filters().league === 'ncaa'" (click)="setLeague('ncaa')">NCAA</button>
+            </div>
+          </section>
+        }
+
+        @if (groupOptions().length) {
+          <section class="filter-section">
+            <h3>Conference / division</h3>
+            <div class="chip-strip">
+              @for (group of groupOptions(); track group) {
+                <button
+                  type="button"
+                  class="chip"
+                  [class.active]="filters().groups.includes(group)"
+                  [attr.aria-pressed]="filters().groups.includes(group)"
+                  (click)="toggleGroup(group)"
+                >{{ group }}</button>
+              }
+            </div>
+          </section>
+        } @else if (effectiveLeague() === 'all') {
+          <section class="filter-section">
+            <h3>Conference / division</h3>
+            <p class="hint">Pick NFL or NCAA above to filter by conference or division.</p>
+          </section>
+        }
+
+        <section class="filter-section">
+          <h3>Rankings</h3>
+          <div class="seg" role="group" aria-label="Rankings">
+            <button type="button" [class.active]="filters().rankScope === 'any'" (click)="setRankScope('any')">Any</button>
+            <button type="button" [class.active]="filters().rankScope === 'top25'" (click)="setRankScope('top25')">Has a Top 25 team</button>
+            <button type="button" [class.active]="filters().rankScope === 'vs'" (click)="setRankScope('vs')">Ranked vs. ranked</button>
+          </div>
+          <p class="hint">NCAA only — AP/CFP polls don't cover the NFL.</p>
+        </section>
+
+        <section class="filter-section">
+          <h3>Matchup type</h3>
+          <div class="toggle-row">
+            <span class="label">
+              In-conference / in-division only
+              <small>No head-to-head rivalry list exists yet — this is the closest proxy</small>
+            </span>
+            <span
+              class="switch"
+              [class.on]="filters().sameGroupOnly"
+              role="switch"
+              tabindex="0"
+              [attr.aria-checked]="filters().sameGroupOnly"
+              (click)="toggleSameGroup()"
+              (keydown.enter)="toggleSameGroup()"
+              (keydown.space)="toggleSameGroup()"
+            ></span>
+          </div>
+          <div class="toggle-row disabled">
+            <span class="label">
+              Playoff-impact only
+              <small>Coming soon — needs real standings math first</small>
+            </span>
+            <span class="switch" aria-disabled="true"></span>
+          </div>
+        </section>
+
+        <section class="filter-section">
+          <h3>Kickoff time</h3>
+          <div class="chip-strip">
+            <button type="button" class="chip" [class.active]="filters().kickoffAfterHour === null" (click)="setKickoffAfter(null)">Any time</button>
+            <button type="button" class="chip" [class.active]="filters().kickoffAfterHour === 12" (click)="setKickoffAfter(12)">12 PM+</button>
+            <button type="button" class="chip" [class.active]="filters().kickoffAfterHour === 15" (click)="setKickoffAfter(15)">3 PM+</button>
+            <button type="button" class="chip" [class.active]="filters().kickoffAfterHour === 18" (click)="setKickoffAfter(18)">6 PM+</button>
+            <button type="button" class="chip" [class.active]="filters().kickoffAfterHour === 20" (click)="setKickoffAfter(20)">8 PM+</button>
+          </div>
+        </section>
+
+        <section class="filter-section">
+          <h3>Game status</h3>
+          <div class="toggle-row">
+            <span class="label">Hide completed games</span>
+            <span
+              class="switch"
+              [class.on]="filters().hideCompleted"
+              role="switch"
+              tabindex="0"
+              [attr.aria-checked]="filters().hideCompleted"
+              (click)="toggleHideCompleted()"
+              (keydown.enter)="toggleHideCompleted()"
+              (keydown.space)="toggleHideCompleted()"
+            ></span>
+          </div>
+          @if (filters().hideCompleted) {
+            <div class="sub-toggle">
+              <span
+                class="mini-switch"
+                [class.on]="filters().keepMineWhenHidden"
+                role="switch"
+                tabindex="0"
+                [attr.aria-checked]="filters().keepMineWhenHidden"
+                (click)="toggleKeepMine()"
+                (keydown.enter)="toggleKeepMine()"
+                (keydown.space)="toggleKeepMine()"
+              ></span>
+              <span>Still show my favorites &amp; circled games</span>
+            </div>
+          }
+        </section>
+
+        <section class="filter-section">
+          <h3>Team records</h3>
+          <div class="toggle-row">
+            <span class="label">
+              Elite records only
+              <small>Both teams .750 or better — meaningful after Week 8</small>
+            </span>
+            <span
+              class="switch"
+              [class.on]="filters().eliteRecordsOnly"
+              role="switch"
+              tabindex="0"
+              [attr.aria-checked]="filters().eliteRecordsOnly"
+              (click)="toggleElite()"
+              (keydown.enter)="toggleElite()"
+              (keydown.space)="toggleElite()"
+            ></span>
+          </div>
+          <div class="toggle-row">
+            <span class="label">
+              Undefeated only
+              <small>Both teams zero losses — meaningful after Week 6</small>
+            </span>
+            <span
+              class="switch"
+              [class.on]="filters().undefeatedOnly"
+              role="switch"
+              tabindex="0"
+              [attr.aria-checked]="filters().undefeatedOnly"
+              (click)="toggleUndefeated()"
+              (keydown.enter)="toggleUndefeated()"
+              (keydown.space)="toggleUndefeated()"
+            ></span>
+          </div>
+        </section>
+
+        @if (effectiveLeague() !== 'nfl') {
+          <section class="filter-section">
+            <h3>NCAA classification</h3>
+            <div class="toggle-row">
+              <span class="label">
+                Hide games with an FCS opponent
+                <small>NCAA only — ignored for NFL games</small>
+              </span>
+              <span
+                class="switch"
+                [class.on]="filters().hideFcsOpponent"
+                role="switch"
+                tabindex="0"
+                [attr.aria-checked]="filters().hideFcsOpponent"
+                (click)="toggleHideFcs()"
+                (keydown.enter)="toggleHideFcs()"
+                (keydown.space)="toggleHideFcs()"
+              ></span>
+            </div>
+          </section>
+        }
+      </div>
+
+      <footer class="sheet-foot">
+        <button type="button" class="reset-btn" (click)="reset()">Reset filters</button>
+        <button type="button" class="done-btn" (click)="close()">Done</button>
+      </footer>
+    </div>
+  </div>
+}

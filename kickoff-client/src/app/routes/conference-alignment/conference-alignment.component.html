@@ -30,8 +30,34 @@
         <button type="button" [class.active]="palette() === 'muted'" [attr.aria-pressed]="palette() === 'muted'" (click)="setPalette('muted')">Muted</button>
         <button type="button" [class.active]="palette() === 'mono'" [attr.aria-pressed]="palette() === 'mono'" (click)="setPalette('mono')">B&amp;W</button>
       </div>
+      <button
+        type="button"
+        class="find-teams-trigger"
+        [class.on]="teamFiltersOpen() || activeTeamFilterCount() > 0"
+        [attr.aria-pressed]="teamFiltersOpen()"
+        (click)="teamFiltersOpen.set(true)"
+      >
+        <span class="ico">⚲</span> Find teams
+        @if (activeTeamFilterCount() > 0) { <span class="badge">{{ activeTeamFilterCount() }}</span> }
+      </button>
     </div>
   </header>
+
+  <app-find-teams-filter
+    [open]="teamFiltersOpen()"
+    [(filters)]="teamFilters"
+    [league]="a.league"
+    [totalCount]="teamCount()"
+    [matchCount]="visibleTeamCount()"
+    (closed)="teamFiltersOpen.set(false)"
+  />
+
+  @if (visibleTeamCount() === 0) {
+    <div class="filter-empty">
+      <p>No teams match your filters.</p>
+      <button type="button" (click)="teamFilters.set({ search: '', favoritesOnly: false, interestOnly: false, rankedOnly: false, minRecord: 'any' })">Reset filters</button>
+    </div>
+  }
 
   @if (a.league === 'ncaa') {
     @if (rankingRailOpen()) {
@@ -150,6 +176,7 @@
 
           <div class="division-ledgers">
             @for (div of conf.divisions; track div.name) {
+              @if (divisionHasMatch(div)) {
               <table class="division-ledger">
                 <colgroup>
                   <col class="club-column" />
@@ -167,6 +194,7 @@
                 </thead>
                 <tbody>
                   @for (team of div.teams; track team.name) {
+                    @if (matchesTeamFilter(team)) {
                     <tr
                       [class.ranked-team]="teamRank(team) !== null"
                       [class.favorite-team]="isFavorite(team)"
@@ -204,9 +232,11 @@
                       <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
                       <td [attr.aria-label]="record(team) ? record(team)!.ties + ' ties' : 'Ties unavailable'">{{ record(team)?.ties ?? '—' }}</td>
                     </tr>
+                    }
                   }
                 </tbody>
               </table>
+              }
             }
           </div>
         </article>
@@ -228,6 +258,7 @@
 
               <div class="division-ledgers ncaa-division-ledgers">
                 @for (div of conf.divisions; track div.name) {
+                  @if (divisionHasMatch(div)) {
                   <table class="division-ledger ncaa-division-ledger">
                     <colgroup>
                       <col class="club-column" />
@@ -245,6 +276,7 @@
                     </thead>
                     <tbody>
                       @for (team of div.teams; track team.name) {
+                        @if (matchesTeamFilter(team)) {
                         <tr
                           [class.ranked-team]="teamRank(team) !== null"
                           [class.favorite-team]="isFavorite(team)"
@@ -282,9 +314,11 @@
                           <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
                           <td [attr.aria-label]="record(team) ? record(team)!.ties + ' ties' : 'Ties unavailable'">{{ record(team)?.ties ?? '—' }}</td>
                         </tr>
+                        }
                       }
                     </tbody>
                   </table>
+                  }
                 }
               </div>
             </article>
@@ -295,7 +329,7 @@
 
   }
 
-  @if (a.independents.length) {
+  @if (a.independents.length && anyMatch(a.independents)) {
     <section class="tier">
       <h2 class="tier-title">Independents</h2>
       <div class="conference-grid">
@@ -318,6 +352,7 @@
               </thead>
               <tbody>
                 @for (team of a.independents; track team.name) {
+                  @if (matchesTeamFilter(team)) {
                   <tr
                     [class.ranked-team]="teamRank(team) !== null"
                     [class.favorite-team]="isFavorite(team)"
@@ -355,6 +390,7 @@
                     <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
                     <td [attr.aria-label]="record(team) ? record(team)!.ties + ' ties' : 'Ties unavailable'">{{ record(team)?.ties ?? '—' }}</td>
                   </tr>
+                  }
                 }
               </tbody>
             </table>

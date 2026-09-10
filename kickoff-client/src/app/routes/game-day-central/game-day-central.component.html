@@ -101,17 +101,40 @@
     </div>
     <div class="board-head-meta">
       @if (interestingCount() > 0) { <span class="interesting-total">{{ interestingCount() }} getting interesting</span> }
-      <span class="board-count">{{ otherGames().length }}</span>
+      <span class="board-count">{{ visibleOtherGames().length }}</span>
     </div>
   </header>
+
+  <div class="filter-row">
+    <button
+      type="button"
+      class="filter-chip"
+      [class.on]="gameFiltersOpen() || activeGameFilterCount() > 0"
+      [attr.aria-pressed]="gameFiltersOpen()"
+      (click)="gameFiltersOpen.set(true)"
+    >
+      <span class="ico">⚲</span> Filters
+      @if (activeGameFilterCount() > 0) { <span class="badge">{{ activeGameFilterCount() }}</span> }
+    </button>
+  </div>
+
+  <app-find-games-filter
+    [open]="gameFiltersOpen()"
+    [(filters)]="gameFilters"
+    [totalCount]="otherGames().length"
+    [matchCount]="visibleOtherGames().length"
+    (closed)="gameFiltersOpen.set(false)"
+  />
 
   @if (games().length === 0) {
     <div class="board-empty"><strong>No games on this date.</strong><span>Choose another day above.</span></div>
   } @else if (otherGames().length === 0) {
     <div class="board-empty"><strong>Every game is on your Watching board.</strong></div>
+  } @else if (visibleOtherGames().length === 0) {
+    <div class="board-empty"><strong>No games match your filters.</strong><span>Adjust or reset the filters above.</span></div>
   } @else {
     <div class="control-board-grid other-grid" [class.panels-medium]="otherSize() === 'medium'" [class.panels-live]="otherSize() === 'live'">
-      @for (game of otherGames(); track game.id) {
+      @for (game of visibleOtherGames(); track game.id) {
         <div
           class="game-board-card"
           [class.getting-interesting]="interesting(game)"

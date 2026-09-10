@@ -1,7 +1,7 @@
 <header class="page-head">
   <h1>Receiver Route Tree</h1>
-  <p class="subtitle">Select a numbered route to study its break, depth, and finish</p>
-  <p class="note">Classic 1–9 tree plus advanced routes · names and numbering can vary by playbook</p>
+  <p class="subtitle">Study individual routes, double moves, and passing concepts</p>
+  <p class="note">Classic 1–9 tree plus advanced routes and combinations · names and numbering vary by playbook</p>
 </header>
 
 <div class="route-tree-layout">
@@ -11,26 +11,29 @@
       <span>Receiver route tree</span>
     </div>
 
-    @for (route of routes; track route.number) {
-      <div class="branch">
-        <span class="stem" aria-hidden="true"></span>
-        <button
-          type="button"
-          class="route-node"
-          [class.selected]="selectedRoute().number === route.number"
-          [attr.aria-pressed]="selectedRoute().number === route.number"
-          (click)="selectRoute(route)"
-        >
-          <span class="route-number">{{ route.number }}</span>
-          <span class="route-name">
-            <strong>{{ route.name }}</strong>
-            @if (route.aliases) {
-              <small>{{ route.aliases }}</small>
-            }
-          </span>
-          <span class="route-depth">{{ route.depth }}</span>
-        </button>
-      </div>
+    @for (group of routeGroups; track group) {
+      <h2 class="group-title">{{ group }}</h2>
+      @for (route of routesFor(group); track route.number) {
+        <div class="branch">
+          <span class="stem" aria-hidden="true"></span>
+          <button
+            type="button"
+            class="route-node"
+            [class.selected]="selectedRoute().number === route.number"
+            [attr.aria-pressed]="selectedRoute().number === route.number"
+            (click)="selectRoute(route)"
+          >
+            <span class="route-number">{{ route.number }}</span>
+            <span class="route-name">
+              <strong>{{ route.name }}</strong>
+              @if (route.aliases) {
+                <small>{{ route.aliases }}</small>
+              }
+            </span>
+            <span class="route-depth">{{ route.depth }}</span>
+          </button>
+        </div>
+      }
     }
   </section>
 
@@ -52,8 +55,8 @@
         <svg viewBox="0 0 440 350" role="img" [attr.aria-labelledby]="'route-title-' + selected.number">
           <title [id]="'route-title-' + selected.number">{{ selected.name }} receiver route diagram</title>
           <defs>
-            <marker id="route-arrow" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="userSpaceOnUse">
-              <path d="M0 0 L5 2.5 L0 5 Z" class="arrow-head" />
+            <marker id="route-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M0 0 L12 6 L0 12 Z" class="arrow-head" />
             </marker>
             <pattern id="grass-stripes" width="80" height="80" patternUnits="userSpaceOnUse">
               <rect width="40" height="80" class="grass-a" />
@@ -71,10 +74,25 @@
           <line x1="0" y1="316" x2="440" y2="316" class="line-of-scrimmage" />
           <text x="16" y="338" class="los-label">LINE OF SCRIMMAGE</text>
 
-          <circle cx="220" cy="310" r="11" class="receiver" />
-          <text x="220" y="314" text-anchor="middle" class="receiver-label">WR</text>
-          <path [attr.d]="selected.pathData" class="route-path shadow" />
-          <path [attr.d]="selected.pathData" class="route-path" marker-end="url(#route-arrow)" />
+          @if (selected.diagramPaths; as diagramPaths) {
+            @for (routePath of diagramPaths; track routePath.label) {
+              <circle [attr.cx]="routePath.startX" [attr.cy]="routePath.startY ?? 310" r="11" class="receiver" />
+              <text [attr.x]="routePath.startX" [attr.y]="(routePath.startY ?? 310) + 4" text-anchor="middle" class="receiver-label">{{ routePath.label }}</text>
+              <path [attr.d]="routePath.pathData" class="route-path shadow" />
+              <path
+                [attr.d]="routePath.pathData"
+                class="route-path"
+                [class.secondary]="routePath.tone === 'secondary'"
+                [class.tertiary]="routePath.tone === 'tertiary'"
+                marker-end="url(#route-arrow)"
+              />
+            }
+          } @else {
+            <circle cx="220" cy="310" r="11" class="receiver" />
+            <text x="220" y="314" text-anchor="middle" class="receiver-label">WR</text>
+            <path [attr.d]="selected.pathData" class="route-path shadow" />
+            <path [attr.d]="selected.pathData" class="route-path" marker-end="url(#route-arrow)" />
+          }
         </svg>
       </figure>
 

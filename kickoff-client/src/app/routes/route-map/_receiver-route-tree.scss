@@ -1,5 +1,18 @@
 /* Field-diagram paint rules live globally to stay outside Angular's component-style budget. */
 app-route-map {
+  .group-title {
+    position: relative;
+    z-index: 1;
+    margin: 1.25rem 0 0.55rem -4px;
+    color: var(--muted, #8b93a1);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+
+    &:first-of-type { margin-top: 0; }
+  }
+
   .diagram {
     margin: 0;
     padding: 1rem;
@@ -23,5 +36,7 @@ app-route-map {
   .receiver-label { fill: #11151c; font: 900 8px 'Segoe UI', sans-serif; }
   .route-path { fill: none; stroke: var(--accent-gold, #c9a227); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
   .route-path.shadow { stroke: rgb(0 0 0 / 35%); stroke-width: 13; }
-  .arrow-head { fill: var(--accent-gold, #c9a227); }
+  .route-path.secondary { stroke: #70c1e8; }
+  .route-path.tertiary { stroke: #ef8f6a; }
+  .arrow-head { fill: context-stroke; }
 }

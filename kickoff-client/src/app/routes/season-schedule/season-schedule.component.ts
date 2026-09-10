@@ -9,8 +9,11 @@ import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { LiveGameStore } from '../../core/services/live-game-store';
+import { TeamConferenceStore } from '../../core/services/team-conference-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
+import { GameFilterContext, GameFilters, countActiveGameFilters, defaultGameFilters, matchesGameFilters } from '../../core/game-filters';
 import { filterFollowed, groupByWeek } from '../../core/timeline';
+import { FindGamesFilterComponent } from '../../shared/find-games-filter/find-games-filter.component';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { LeagueSectionToggleComponent } from '../../shared/league-section-toggle/league-section-toggle.component';
@@ -46,6 +49,7 @@ function rangeLabel(first: Date, last: Date): string {
   selector: 'app-season-schedule',
   imports: [
     DatePipe,
+    FindGamesFilterComponent,
     GameRowComponent,
     ImportantGamesTickerComponent,
     LeagueSectionToggleComponent,
@@ -60,6 +64,11 @@ export class SeasonScheduleComponent {
   private readonly api = inject(KickoffApi);
   private readonly live = inject(LiveGameStore);
   private readonly records = inject(TeamRecordStore);
+  private readonly conferences = inject(TeamConferenceStore);
+  private readonly filterCtx: GameFilterContext = {
+    groupOf: (id) => this.conferences.groupOf(id),
+    recordOf: (id) => this.records.record(id),
+  };
   readonly fan = inject(FanStore);
   private readonly reload = signal(0);
   private readonly scheduleRange = seasonRange();
@@ -91,7 +100,15 @@ export class SeasonScheduleComponent {
 
   /** "My games" filter: only favorite-team or circled games. */
   readonly onlyMine = signal(false);
-  readonly visible = computed(() => (this.onlyMine() ? filterFollowed(this.games()) : this.games()));
+
+  readonly gameFiltersOpen = signal(false);
+  readonly gameFilters = signal<GameFilters>(defaultGameFilters());
+  readonly activeGameFilterCount = computed(() => countActiveGameFilters(this.gameFilters()));
+
+  readonly visible = computed(() => {
+    const base = this.onlyMine() ? filterFollowed(this.games()) : this.games();
+    return base.filter((g) => matchesGameFilters(g, this.gameFilters(), this.filterCtx));
+  });
 
   readonly weeks = computed(() => groupByWeek(this.visible()));
   readonly total = computed(() => this.visible().length);

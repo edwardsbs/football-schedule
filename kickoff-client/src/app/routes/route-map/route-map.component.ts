@@ -13,8 +13,13 @@ import { RECEIVER_ROUTES, ReceiverRoute } from '../../core/data/receiver-routes.
 })
 export class RouteMapComponent {
   protected readonly routes = RECEIVER_ROUTES;
+  protected readonly routeGroups = ['Core tree', 'Advanced routes', 'Combination concepts'] as const;
   protected readonly selectedRoute = signal<ReceiverRoute>(RECEIVER_ROUTES[0]);
   protected readonly yardLines = [72, 117, 162, 207, 252, 297];
+
+  protected routesFor(group: ReceiverRoute['group']): ReceiverRoute[] {
+    return this.routes.filter((route) => route.group === group);
+  }
 
   protected selectRoute(route: ReceiverRoute): void {
     this.selectedRoute.set(route);

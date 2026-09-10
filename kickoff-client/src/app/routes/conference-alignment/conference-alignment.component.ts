@@ -3,14 +3,17 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { catchError, of, switchMap } from 'rxjs';
 import { getAlignment } from '../../core/data/alignment-lookup';
-import { AlignmentConference, AlignmentTeam } from '../../core/models/alignment.model';
+import { AlignmentConference, AlignmentDivision, AlignmentTeam } from '../../core/models/alignment.model';
 import { TeamRecord, TeamSummary } from '../../core/models/game.model';
 import { NcaaRankings, RankingRow } from '../../core/models/ranking.model';
 import { mergeRankingPolls, rankingPoll } from '../../core/ranking-comparison';
 import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
+import { ncaaEspnId } from '../../core/team-key';
+import { TeamFilterEntry, TeamFilters, countActiveTeamFilters, defaultTeamFilters, matchesTeamFilters } from '../../core/team-filters';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
 import { TeamRecordStore } from '../../core/services/team-record-store';
+import { FindTeamsFilterComponent } from '../../shared/find-teams-filter/find-teams-filter.component';
 import { LeagueSectionToggleComponent } from '../../shared/league-section-toggle/league-section-toggle.component';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 
@@ -20,7 +23,7 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
  */
 @Component({
   selector: 'app-conference-alignment',
-  imports: [RouterLink, LeagueSectionToggleComponent, TeamBadgeComponent],
+  imports: [RouterLink, FindTeamsFilterComponent, LeagueSectionToggleComponent, TeamBadgeComponent],
   templateUrl: './conference-alignment.component.html',
   styleUrl: './conference-alignment.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -232,9 +235,43 @@ export class ConferenceAlignmentComponent {
   setPalette(palette: 'original' | 'muted' | 'mono'): void {
     this.palette.set(palette);
   }
-}
 
-/** Extracts the numeric ESPN team id from an `.../ncaa/500/{id}.png` logo URL. */
-function ncaaEspnId(logoUrl: string | null | undefined): string | null {
-  return logoUrl?.match(/\/ncaa\/500\/(\d+)\.png/)?.[1] ?? null;
+  // --- Find Teams ---
+
+  readonly teamFiltersOpen = signal(false);
+  readonly teamFilters = signal<TeamFilters>(defaultTeamFilters());
+  readonly activeTeamFilterCount = computed(() => countActiveTeamFilters(this.teamFilters()));
+
+  private teamFilterEntry(team: AlignmentTeam): TeamFilterEntry {
+    return {
+      name: team.name,
+      isFavorite: this.isFavorite(team),
+      isInterest: this.isInterest(team),
+      rank: this.teamRank(team),
+      record: this.record(team),
+    };
+  }
+
+  matchesTeamFilter(team: AlignmentTeam): boolean {
+    return matchesTeamFilters(this.teamFilterEntry(team), this.teamFilters());
+  }
+
+  divisionHasMatch(division: AlignmentDivision): boolean {
+    return division.teams.some((team) => this.matchesTeamFilter(team));
+  }
+
+  anyMatch(teams: AlignmentTeam[]): boolean {
+    return teams.some((team) => this.matchesTeamFilter(team));
+  }
+
+  readonly visibleTeamCount = computed(() => {
+    const a = this.alignment();
+    if (!a) return 0;
+    const teams = a.tiers
+      .flatMap((tier) => tier.conferences)
+      .flatMap((conf) => conf.divisions)
+      .flatMap((div) => div.teams)
+      .concat(a.independents);
+    return teams.filter((team) => this.matchesTeamFilter(team)).length;
+  });
 }
