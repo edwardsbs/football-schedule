@@ -1,0 +1,120 @@
+:host {
+  display: block;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.load-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  padding: 3rem 1.5rem;
+  border: 1px solid var(--border, #262c38);
+  border-radius: 16px;
+  background: linear-gradient(145deg, var(--surface, #161a22), var(--surface-2, #1c212b));
+}
+
+.cart-icon {
+  font-size: 2.5rem;
+}
+
+.load-screen h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.load-screen p {
+  margin: 0 0 0.5rem;
+  max-width: 46ch;
+  color: var(--muted-strong, #aab2c0);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.load-screen p code {
+  color: var(--text, #e7ebf2);
+}
+
+.load-btn {
+  min-height: 48px;
+  padding: 0.7rem 1.6rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent-gold, #c9a227);
+  color: #12151b;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.error {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid rgba(255, 90, 90, 0.4);
+  border-radius: 8px;
+  background: rgba(255, 90, 90, 0.08);
+  color: #ff8a8a;
+  font-size: 0.85rem;
+}
+
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.nes-canvas {
+  width: min(100%, 768px);
+  aspect-ratio: 256 / 240;
+  image-rendering: pixelated;
+  border: 2px solid var(--accent-gold, #c9a227);
+  border-radius: 4px;
+  background: #000;
+}
+
+.controls {
+  display: flex;
+  gap: 0.6rem;
+
+  button {
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 8px;
+    background: var(--surface, #161a22);
+    color: var(--text, #e7ebf2);
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    touch-action: manipulation;
+
+    &:active {
+      background: var(--surface-2, #1c212b);
+    }
+  }
+}
+
+.keys-hint {
+  margin: 0;
+  color: var(--muted, #8b93a1);
+  font-size: 0.78rem;
+  text-align: center;
+
+  .dim {
+    color: var(--muted, #8b93a1);
+    opacity: 0.75;
+  }
+}

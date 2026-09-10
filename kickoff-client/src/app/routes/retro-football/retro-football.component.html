@@ -1,0 +1,35 @@
+@if (!romLoaded()) {
+  <div class="load-screen">
+    <span class="cart-icon" aria-hidden="true">🏈</span>
+    <h1>Tecmo Super Bowl</h1>
+    <p>
+      Kickoff never ships, stores, or downloads this ROM itself — load your own legally-owned
+      <code>.nes</code> file to play. You'll need to have already copied it onto this device.
+    </p>
+
+    <button type="button" class="load-btn" (click)="promptForRom()" [disabled]="loadingCore()">
+      {{ loadingCore() ? 'Loading…' : 'Load Tecmo Super Bowl' }}
+    </button>
+    <input #romInput type="file" accept=".nes" hidden (change)="onRomSelected($event)" />
+
+    @if (errorMessage(); as message) {
+      <p class="error" role="alert">{{ message }}</p>
+    }
+  </div>
+} @else {
+  <div class="game-screen">
+    <canvas #screen class="nes-canvas" width="256" height="240"></canvas>
+
+    <div class="controls">
+      <button type="button" (click)="togglePause()">{{ paused() ? 'Resume' : 'Pause' }}</button>
+      <button type="button" (click)="softReset()">Reset</button>
+      <button type="button" (click)="hardReset()">Power Cycle</button>
+    </div>
+
+    <p class="keys-hint">
+      Arrows = D-pad · Z = B · A = A · Enter = Start · Shift = Select
+      <br>
+      <span class="dim">Bluetooth controller and touch controls are coming in a later pass.</span>
+    </p>
+  </div>
+}

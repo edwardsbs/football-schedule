@@ -8,11 +8,17 @@ import {
   OFFENSE_STARTS,
   ReceiverId,
   advanceSeries,
+  distanceBetween,
   fieldGoalIsGood,
+  isOutOfBounds,
   movementVector,
+  passChances,
+  PassOutcome,
+  resolvePass,
+  tackleOccurs,
 } from './kickoff-drive-engine';
 
-type DrivePhase = 'ready' | 'snap' | 'routes' | 'passing' | 'running' | 'yac' | 'kick-ready' | 'kicking' | 'complete' | 'game-over';
+type DrivePhase = 'ready' | 'snap' | 'routes' | 'passing' | 'catch-window' | 'running' | 'qb-running' | 'yac' | 'kick-ready' | 'kicking' | 'complete' | 'game-over';
 type OffensivePositions = Record<ReceiverId | 'qb', DrivePoint>;
 
 interface BallState extends DrivePoint {
@@ -63,6 +69,8 @@ export class KickoffDriveComponent implements OnDestroy {
   readonly result = signal('');
   readonly resultDetail = signal('');
   readonly kickPower = signal(0);
+  readonly catchProgress = signal(0);
+  readonly passFeedback = signal('');
   readonly demoRunning = signal(false);
   readonly sprinting = signal(false);
   readonly stick = signal<DrivePoint>({ x: 0, y: 0 });
@@ -77,7 +85,9 @@ export class KickoffDriveComponent implements OnDestroy {
       case 'snap': return 'Ball live';
       case 'routes': return 'Tap an open receiver';
       case 'passing': return 'Pass in flight';
+      case 'catch-window': return 'Tap CATCH now';
       case 'running': return 'Steer through the crease';
+      case 'qb-running': return 'Quarterback across the line';
       case 'yac': return 'Make a move after the catch';
       case 'kick-ready': return 'Swipe up to kick';
       case 'kicking': return 'Track the uprights';
@@ -91,18 +101,21 @@ export class KickoffDriveComponent implements OnDestroy {
     if (this.phase() === 'game-over') return 'QUARTER COMPLETE';
     return 'BALL LIVE';
   });
-  readonly isLive = computed(() => ['snap', 'routes', 'passing', 'running', 'yac', 'kick-ready', 'kicking'].includes(this.phase()));
+  readonly isLive = computed(() => ['snap', 'routes', 'passing', 'catch-window', 'running', 'qb-running', 'yac', 'kick-ready', 'kicking'].includes(this.phase()));
 
   private animationId: number | null = null;
   private resetTimerId: number | null = null;
   private demoTimerIds: number[] = [];
   private phaseStartedAt = 0;
   private lastFrameAt = 0;
-  private carrier: ReceiverId | null = null;
+  private carrier: ReceiverId | 'qb' | null = null;
   private carrierPosition: DrivePoint = { ...OFFENSE_STARTS.r };
   private passTarget: ReceiverId | null = null;
   private passOrigin: DrivePoint = { ...OFFENSE_STARTS.qb };
   private passDestination: DrivePoint = { ...OFFENSE_STARTS.y };
+  private passCatchPoint: DrivePoint = { ...OFFENSE_STARTS.y };
+  private passOutcome: PassOutcome = 'catchable';
+  private jukeUntil = 0;
   private kickPowerValue = 0;
   private kickDrift = 0;
   private kickStart: DrivePoint | null = null;
@@ -133,7 +146,36 @@ export class KickoffDriveComponent implements OnDestroy {
     if (this.phase() !== 'routes') return;
     this.passTarget = receiver;
     this.passOrigin = { ...this.offense().qb };
-    this.passDestination = { ...this.offense()[receiver] };
+    this.passCatchPoint = { ...this.offense()[receiver] };
+    const separation = Math.min(...this.defense().map((defender) => distanceBetween(defender, this.passCatchPoint)));
+    const pocketPressure = Math.min(...this.defense().map((defender) => distanceBetween(defender, this.passOrigin)));
+    const read = {
+      separation,
+      pocketPressure,
+      depth: Math.max(0, this.passCatchPoint.x - 220),
+      movement: Math.hypot(this.stick().x, this.stick().y),
+    };
+    const chances = passChances(read);
+    const roll = Math.random();
+    this.passOutcome = this.demoRunning() ? 'catchable' : resolvePass(read, roll);
+    this.passFeedback.set(
+      pocketPressure < 26 ? 'UNDER PRESSURE'
+        : separation >= 38 ? `OPEN · ${Math.round(chances.completion * 100)}%`
+          : `CONTESTED · ${Math.round(chances.completion * 100)}%`,
+    );
+    if (this.passOutcome === 'interception') {
+      const defender = this.defense().reduce((nearest, current) =>
+        distanceBetween(current, this.passCatchPoint) < distanceBetween(nearest, this.passCatchPoint) ? current : nearest,
+      );
+      this.passDestination = { x: defender.x, y: defender.y };
+    } else if (this.passOutcome === 'incomplete') {
+      this.passDestination = {
+        x: this.passCatchPoint.x + 20,
+        y: clamp(this.passCatchPoint.y + (roll > 0.5 ? 34 : -34), 30, 390),
+      };
+    } else {
+      this.passDestination = { ...this.passCatchPoint };
+    }
     this.phase.set('passing');
     this.ball.set({ ...this.passOrigin, visible: true, rotation: 0 });
     this.beginPhase();
@@ -145,9 +187,32 @@ export class KickoffDriveComponent implements OnDestroy {
     return receiver === 'y' ? progress > 0.28 : receiver === 'x' ? progress > 0.48 : progress > 0.64;
   }
 
+  isCatchTarget(receiver: ReceiverId): boolean {
+    return this.phase() === 'catch-window' && this.passTarget === receiver;
+  }
+
+  receiverAction(receiver: ReceiverId): void {
+    if (this.isCatchTarget(receiver)) this.attemptCatch();
+    else this.throwTo(receiver);
+  }
+
+  attemptCatch(): void {
+    if (this.phase() !== 'catch-window' || !this.passTarget) return;
+    const target = this.passTarget;
+    this.carrier = target;
+    this.carrierPosition = { ...this.passCatchPoint };
+    this.offense.update((positions) => ({ ...positions, [target]: { ...this.passCatchPoint } }));
+    this.ball.update((ball) => ({ ...ball, visible: false }));
+    this.passFeedback.set('CAUGHT');
+    this.phase.set('yac');
+    this.beginPhase();
+  }
+
   pressJuke(): void {
-    if (!this.carrier || !['running', 'yac'].includes(this.phase())) return;
-    this.carrierPosition.y = clamp(this.carrierPosition.y + (this.carrierPosition.y > 210 ? -38 : 38), 46, 374);
+    if (!this.carrier || !['running', 'qb-running', 'yac'].includes(this.phase())) return;
+    const direction = Math.abs(this.stick().y) > 0.2 ? Math.sign(this.stick().y) : this.carrierPosition.y > 210 ? -1 : 1;
+    this.carrierPosition.y = clamp(this.carrierPosition.y + direction * 38, 18, 402);
+    this.jukeUntil = performance.now() + 650;
     this.updateCarrierPosition();
     this.resultDetail.set('Juke! Defender missed.');
   }
@@ -217,6 +282,7 @@ export class KickoffDriveComponent implements OnDestroy {
     this.selectedPlayId.set('slant');
     this.demoTimerIds.push(window.setTimeout(() => this.snap(), 550));
     this.demoTimerIds.push(window.setTimeout(() => this.throwTo('y'), 2_050));
+    this.demoTimerIds.push(window.setTimeout(() => this.attemptCatch(), 2_760));
     this.demoTimerIds.push(window.setTimeout(() => this.demoRunning.set(false), 5_500));
   }
 
@@ -279,14 +345,16 @@ export class KickoffDriveComponent implements OnDestroy {
 
     switch (this.phase()) {
       case 'snap': this.animateSnap(elapsed); break;
-      case 'routes': this.animateRoutes(elapsed); break;
+      case 'routes': this.animateRoutes(elapsed, delta); break;
       case 'passing': this.animatePass(elapsed); break;
+      case 'catch-window': this.animateCatchWindow(elapsed); break;
       case 'running':
+      case 'qb-running':
       case 'yac': this.animateCarrier(elapsed, delta); break;
       case 'kicking': this.animateKick(elapsed); break;
     }
 
-    if (['snap', 'routes', 'passing', 'running', 'yac', 'kicking'].includes(this.phase())) {
+    if (['snap', 'routes', 'passing', 'catch-window', 'running', 'qb-running', 'yac', 'kicking'].includes(this.phase())) {
       this.animationId = requestAnimationFrame(this.animate);
     } else {
       this.animationId = null;
@@ -316,22 +384,52 @@ export class KickoffDriveComponent implements OnDestroy {
     this.resetPhaseClock();
   }
 
-  private animateRoutes(elapsed: number): void {
+  private animateRoutes(elapsed: number, delta: number): void {
     const progress = clamp(elapsed / 2.75, 0, 1);
     const play = this.selectedPlay();
+    const currentQuarterback = this.offense().qb;
+    const quarterback = {
+      x: clamp(currentQuarterback.x + this.stick().x * 72 * delta - (Math.abs(this.stick().x) < 0.05 ? 5 * delta : 0), 122, 228),
+      y: clamp(currentQuarterback.y + this.stick().y * 96 * delta, 30, 390),
+    };
     this.offense.set({
-      qb: { x: 164 - Math.min(18, progress * 21), y: 210 + Math.sin(elapsed * 8) * 1.5 },
+      qb: quarterback,
       x: play.routes.x.pointAt(progress),
       y: play.routes.y.pointAt(progress),
       r: play.routes.r.pointAt(progress),
     });
-    this.defense.set(DEFENSE_STARTS.map((defender, index) => ({
-      ...defender,
-      x: defender.x + Math.min(46, progress * 50),
-      y: defender.y + Math.sin(elapsed * 1.7 + index) * 5,
-    })));
+    const currentDefense = this.defense();
+    this.defense.set(DEFENSE_STARTS.map((defender, index) => {
+      if (index < 5) {
+        return {
+          ...defender,
+          x: defender.x + Math.min(46, progress * 50),
+          y: defender.y + Math.sin(elapsed * 1.7 + index) * 5,
+        };
+      }
+      const current = currentDefense[index];
+      const distance = Math.max(1, distanceBetween(current, quarterback));
+      const rushSpeed = index === 5 ? 33 : 29;
+      return {
+        ...current,
+        x: current.x + (quarterback.x - current.x) / distance * rushSpeed * delta,
+        y: current.y + (quarterback.y - current.y) / distance * rushSpeed * delta,
+      };
+    }));
     this.playProgress.set(clamp(0.08 + elapsed / 5.5, 0, 0.82));
-    if (elapsed >= 4.8) this.finishPlay(-5, 'SACKED', 'Quarterback wrapped up for a 5-yard loss.');
+    if (quarterback.x >= 220) {
+      this.carrier = 'qb';
+      this.carrierPosition = { ...quarterback };
+      this.phase.set('qb-running');
+      this.passFeedback.set('SCRAMBLE');
+      this.resetPhaseClock();
+      return;
+    }
+    const pressure = Math.min(...this.defense().map((defender) => distanceBetween(defender, quarterback)));
+    if (pressure <= 27 || elapsed >= 6.2) {
+      const loss = clamp(Math.round((quarterback.x - 220) / 6), -8, -1);
+      this.finishPlay(loss, 'SACKED', `Quarterback dropped for a ${Math.abs(loss)}-yard loss.`);
+    }
   }
 
   private animatePass(elapsed: number): void {
@@ -344,38 +442,70 @@ export class KickoffDriveComponent implements OnDestroy {
     });
     this.playProgress.set(0.5 + progress * 0.18);
     if (progress < 1 || !this.passTarget) return;
-    this.carrier = this.passTarget;
-    this.carrierPosition = { ...this.passDestination };
-    this.ball.update((ball) => ({ ...ball, visible: false }));
-    this.phase.set('yac');
+    if (this.passOutcome === 'interception') {
+      this.ball.update((ball) => ({ ...ball, visible: false }));
+      this.turnoverResult('INTERCEPTED', 'Defender jumped the throw. New drive starts at the 25.');
+      return;
+    }
+    if (this.passOutcome === 'incomplete') {
+      this.ball.update((ball) => ({ ...ball, visible: false }));
+      this.finishPlay(0, 'INCOMPLETE', 'Pass falls incomplete.');
+      return;
+    }
+    this.ball.set({ ...this.passCatchPoint, visible: true, rotation: 0 });
+    this.catchProgress.set(1);
+    this.phase.set('catch-window');
     this.resetPhaseClock();
+  }
+
+  private animateCatchWindow(elapsed: number): void {
+    const remaining = clamp(1 - elapsed / 0.9, 0, 1);
+    this.catchProgress.set(remaining);
+    if (remaining > 0) return;
+    this.ball.update((ball) => ({ ...ball, visible: false }));
+    this.finishPlay(0, 'INCOMPLETE', 'Catch window closed before the receiver secured it.');
   }
 
   private animateCarrier(elapsed: number, delta: number): void {
     if (!this.carrier) return;
-    const speed = this.sprinting() ? 82 : 57;
+    const speed = this.sprinting() ? 82 : this.phase() === 'qb-running' ? 52 : 57;
     this.carrierPosition.x += speed * delta;
-    this.carrierPosition.y = clamp(this.carrierPosition.y + this.stick().y * 112 * delta, 46, 374);
+    this.carrierPosition.y = clamp(this.carrierPosition.y + this.stick().y * 126 * delta, 18, 402);
     this.updateCarrierPosition();
 
     const defenders = this.defense();
     let nearestIndex = 0;
     let nearestDistance = Number.POSITIVE_INFINITY;
     defenders.forEach((defender, index) => {
+      if (this.phase() === 'running' && index < 5) return;
       const distance = Math.hypot(defender.x - this.carrierPosition.x, defender.y - this.carrierPosition.y);
       if (distance < nearestDistance) { nearestDistance = distance; nearestIndex = index; }
     });
-    this.defense.set(defenders.map((defender, index) => index === nearestIndex ? {
-      ...defender,
-      x: defender.x + (this.carrierPosition.x - defender.x) * delta * 1.2,
-      y: defender.y + (this.carrierPosition.y - defender.y) * delta * 1.2,
-    } : defender));
+    const nextDefense = defenders.map((defender, index) => {
+      if (index !== nearestIndex) return defender;
+      const distance = Math.max(1, distanceBetween(defender, this.carrierPosition));
+      const pursuitSpeed = this.phase() === 'running' ? 42 : 48;
+      return {
+        ...defender,
+        x: defender.x + (this.carrierPosition.x - defender.x) / distance * pursuitSpeed * delta,
+        y: defender.y + (this.carrierPosition.y - defender.y) / distance * pursuitSpeed * delta,
+      };
+    });
+    this.defense.set(nextDefense);
 
     this.playProgress.set(clamp(0.35 + elapsed / 4.2, 0, 0.98));
-    const startX = this.phase() === 'running' ? OFFENSE_STARTS.r.x : this.passDestination.x;
-    const gain = Math.max(this.phase() === 'running' ? 0 : Math.round((this.passDestination.x - 220) / 6), Math.round((this.carrierPosition.x - startX) / 6));
+    const gain = Math.max(0, Math.round((this.carrierPosition.x - 220) / 6));
+    if (isOutOfBounds(this.carrierPosition)) {
+      this.finishPlay(gain, 'OUT OF BOUNDS', `${gain}-yard gain before stepping out.`);
+      return;
+    }
+    const postChaseDistance = Math.min(...nextDefense.map((defender) => distanceBetween(defender, this.carrierPosition)));
+    if (tackleOccurs(postChaseDistance, elapsed, performance.now() <= this.jukeUntil)) {
+      this.finishPlay(gain, 'TACKLED', `${gain}-yard gain`);
+      return;
+    }
     if (elapsed >= (this.phase() === 'running' ? 3.15 : 1.75) || this.carrierPosition.x >= 570) {
-      this.finishPlay(Math.max(1, gain), gain >= this.yardsToGo() ? 'FIRST DOWN' : 'PLAY COMPLETE', `${Math.max(1, gain)}-yard gain`);
+      this.finishPlay(gain, gain >= this.yardsToGo() ? 'FIRST DOWN' : 'PLAY COMPLETE', `${gain}-yard gain`);
     }
   }
 
@@ -416,6 +546,13 @@ export class KickoffDriveComponent implements OnDestroy {
     this.completeResult(outcome.firstDown ? 'FIRST DOWN' : headline, detail);
   }
 
+  private turnoverResult(headline: string, detail: string): void {
+    this.ballOn.set(25);
+    this.down.set(1);
+    this.yardsToGo.set(10);
+    this.completeResult(headline, detail);
+  }
+
   private completeResult(headline: string, detail: string): void {
     this.stopAnimation();
     this.phase.set(this.gameClock() <= 0 ? 'game-over' : 'complete');
@@ -437,6 +574,7 @@ export class KickoffDriveComponent implements OnDestroy {
     this.stopAnimation();
     this.carrier = null;
     this.passTarget = null;
+    this.passOutcome = 'catchable';
     this.offense.set(cloneOffense());
     this.defense.set(cloneDefense());
     this.ball.set({ x: 203, y: 210, visible: false, rotation: 0 });
@@ -444,6 +582,9 @@ export class KickoffDriveComponent implements OnDestroy {
     this.result.set('');
     this.resultDetail.set('');
     this.kickPower.set(0);
+    this.catchProgress.set(0);
+    this.passFeedback.set('');
+    this.jukeUntil = 0;
     this.stick.set({ x: 0, y: 0 });
     this.sprinting.set(false);
     this.phase.set(this.gameClock() <= 0 ? 'game-over' : 'ready');

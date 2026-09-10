@@ -78,9 +78,12 @@ app-kickoff-drive {
   .drive-defense circle { fill: #bd3041; stroke: #fff1f3; stroke-width: 3; }
   .drive-defense text { fill: #fff; }
   .drive-receiver, .drive-quarterback { cursor: pointer; }
+  .drive-receiver:focus, .drive-quarterback:focus { outline: none; }
+  .drive-receiver:focus-visible > circle:first-child, .drive-quarterback:focus-visible > circle:first-child { stroke: #f4c430; stroke-width: 6; }
   .target-ring, .qb-ring { fill: none; stroke: #f4c430; stroke-width: 3; opacity: 0; }
   .drive-quarterback .qb-ring { opacity: .85; animation: kickoff-drive-pulse 1.3s ease-out infinite; }
   .drive-receiver.open .target-ring { opacity: 1; animation: kickoff-drive-pulse .8s ease-out infinite; }
+  .drive-receiver.catch-target .target-ring { opacity: 1; stroke: #6ff3a0; stroke-width: 5; animation: kickoff-drive-pulse .42s ease-out infinite; }
   @keyframes kickoff-drive-pulse { from { transform: scale(.75); opacity: 1; } to { transform: scale(1.22); opacity: 0; } }
   .drive-football ellipse { fill: #d8843f; stroke: #ffe1bd; stroke-width: 1.5; }
   .drive-football path { stroke: #fff2dc; stroke-width: 1; }
@@ -114,6 +117,11 @@ app-kickoff-drive {
   .drive-kick-pad strong { font-size: .52rem; letter-spacing: .1em; }
   .drive-kick-pad i { position: absolute; left: 0; bottom: 0; height: 4px; background: #f4c430; }
   @keyframes kickoff-drive-kick { to { transform: translateY(-5px); } }
+  .drive-catch-button { position: relative; min-height: 88px; display: grid; place-items: center; overflow: hidden; color: #07150d; background: #6ff3a0; border: 2px solid #c7ffdc; border-radius: 999px; box-shadow: 0 0 0 7px rgba(111,243,160,.12); cursor: pointer; animation: kickoff-drive-catch .38s ease-in-out infinite alternate; }
+  .drive-catch-button span { font-size: .78rem; font-weight: 950; letter-spacing: .08em; }
+  .drive-catch-button small { font-size: .48rem; font-weight: 850; }
+  .drive-catch-button i { position: absolute; left: 8px; right: 8px; bottom: 7px; height: 4px; transform-origin: left; background: #123f24; border-radius: 4px; }
+  @keyframes kickoff-drive-catch { to { transform: scale(1.045); } }
   .drive-footer { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .4rem .85rem; color: #8294a9; background: #0d141e; border-top: 1px solid #263246; font-size: .54rem; }
   .drive-footer b { margin-right: .35rem; color: #f4c430; }
   .drive-footer button { min-height: 34px; padding: 0 .75rem; color: #d8e1eb; background: #172230; border: 1px solid #34445b; border-radius: 7px; cursor: pointer; }
@@ -174,11 +182,11 @@ app-kickoff-drive {
     .drive-action-buttons { gap: .2rem; }
     .drive-action-buttons button { min-height: 48px; font-size: .42rem; }
     .drive-action-buttons button span { font-size: 1.05rem; }
-    .drive-kick-pad { min-height: 72px; }
+    .drive-kick-pad, .drive-catch-button { min-height: 72px; }
     .drive-footer span:nth-child(2) { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .drive-routes, .drive-kick-aim, .drive-quarterback .qb-ring, .drive-receiver.open .target-ring, .drive-snap, .drive-kick-pad span { animation: none; }
+    .drive-routes, .drive-kick-aim, .drive-quarterback .qb-ring, .drive-receiver.open .target-ring, .drive-receiver.catch-target .target-ring, .drive-snap, .drive-kick-pad span, .drive-catch-button { animation: none; }
   }
 }

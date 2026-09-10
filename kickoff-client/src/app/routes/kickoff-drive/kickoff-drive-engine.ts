@@ -1,6 +1,7 @@
 export type DrivePlayId = 'slant' | 'zone' | 'verticals' | 'fieldgoal';
 export type DrivePlayKind = 'pass' | 'run' | 'kick';
 export type ReceiverId = 'x' | 'y' | 'r';
+export type PassOutcome = 'catchable' | 'incomplete' | 'interception';
 
 export interface DrivePoint {
   x: number;
@@ -30,6 +31,18 @@ export interface SeriesResult extends SeriesState {
   firstDown: boolean;
   touchdown: boolean;
   turnover: boolean;
+}
+
+export interface PassRead {
+  separation: number;
+  pocketPressure: number;
+  depth: number;
+  movement: number;
+}
+
+export interface PassChances {
+  completion: number;
+  interception: number;
 }
 
 export const OFFENSE_STARTS: Record<ReceiverId | 'qb', DrivePoint> = {
@@ -155,3 +168,34 @@ export function fieldGoalIsGood(power: number, horizontalDrift: number): boolean
   return power >= 0.58 && Math.abs(horizontalDrift) <= 0.55;
 }
 
+export function distanceBetween(a: DrivePoint, b: DrivePoint): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+export function isOutOfBounds(position: DrivePoint): boolean {
+  return position.y <= 28 || position.y >= 392;
+}
+
+export function tackleOccurs(separation: number, secondsSinceCarry: number, jukeProtected: boolean): boolean {
+  return !jukeProtected && secondsSinceCarry > 0.42 && separation <= 28;
+}
+
+export function passChances(read: PassRead): PassChances {
+  const pressurePenalty = Math.max(0, 34 - read.pocketPressure) / 90;
+  const separationBonus = Math.min(0.22, Math.max(-0.18, (read.separation - 28) / 120));
+  const depthPenalty = Math.max(0, read.depth - 32) / 190;
+  const movementPenalty = Math.min(1, Math.max(0, read.movement)) * 0.14;
+  const completion = Math.min(0.95, Math.max(0.28, 0.74 + separationBonus - pressurePenalty - depthPenalty - movementPenalty));
+  const interception = Math.min(0.26, Math.max(0.025,
+    0.035 + Math.max(0, 24 - read.separation) / 105 + Math.max(0, 22 - read.pocketPressure) / 125 + depthPenalty * 0.28,
+  ));
+  return { completion, interception };
+}
+
+export function resolvePass(read: PassRead, randomValue: number): PassOutcome {
+  const chances = passChances(read);
+  const roll = Math.min(0.999_999, Math.max(0, randomValue));
+  if (roll < chances.interception) return 'interception';
+  if (roll < chances.interception + chances.completion * (1 - chances.interception)) return 'catchable';
+  return 'incomplete';
+}

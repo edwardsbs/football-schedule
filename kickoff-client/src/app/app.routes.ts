@@ -118,6 +118,12 @@ export const routes: Routes = [
           import('./routes/kickoff-drive/kickoff-drive.component').then((m) => m.KickoffDriveComponent),
       },
       {
+        path: 'games/retro-football',
+        title: 'Retro Football · Kickoff',
+        loadComponent: () =>
+          import('./routes/retro-football/retro-football.component').then((m) => m.RetroFootballComponent),
+      },
+      {
         path: 'playoffs/:league',
         title: 'Playoff Bracket · Kickoff',
         loadComponent: () =>

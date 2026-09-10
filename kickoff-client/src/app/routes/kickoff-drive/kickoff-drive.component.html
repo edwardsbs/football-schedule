@@ -104,16 +104,16 @@
             </g>
 
             <g class="drive-offense" filter="url(#kickoffDriveShadow)">
-              <g class="drive-receiver" [class.open]="isReceiverOpen('x')" [attr.transform]="playerTransform('x')" role="button" tabindex="0" aria-label="Throw to X receiver" (click)="throwTo('x')" (keydown.enter)="throwTo('x')" (keydown.space)="throwTo('x'); $event.preventDefault()">
+              <g class="drive-receiver" [class.open]="isReceiverOpen('x')" [class.catch-target]="isCatchTarget('x')" [attr.transform]="playerTransform('x')" role="button" tabindex="0" aria-label="Throw to X receiver" (click)="receiverAction('x')" (keydown.enter)="receiverAction('x')" (keydown.space)="receiverAction('x'); $event.preventDefault()">
                 <circle r="15" /><text>X</text><circle class="target-ring" r="23" />
               </g>
-              <g class="drive-receiver" [class.open]="isReceiverOpen('y')" [attr.transform]="playerTransform('y')" role="button" tabindex="0" aria-label="Throw to Y receiver" (click)="throwTo('y')" (keydown.enter)="throwTo('y')" (keydown.space)="throwTo('y'); $event.preventDefault()">
+              <g class="drive-receiver" [class.open]="isReceiverOpen('y')" [class.catch-target]="isCatchTarget('y')" [attr.transform]="playerTransform('y')" role="button" tabindex="0" aria-label="Throw to Y receiver" (click)="receiverAction('y')" (keydown.enter)="receiverAction('y')" (keydown.space)="receiverAction('y'); $event.preventDefault()">
                 <circle r="15" /><text>Y</text><circle class="target-ring" r="23" />
               </g>
               <g class="drive-lineman" transform="translate(205 185)"><circle r="12" /></g>
               <g class="drive-lineman" transform="translate(205 210)"><circle r="12" /></g>
               <g class="drive-lineman" transform="translate(205 235)"><circle r="12" /></g>
-              <g class="drive-receiver" [class.open]="isReceiverOpen('r')" [attr.transform]="playerTransform('r')" role="button" tabindex="0" aria-label="Throw to running back" (click)="throwTo('r')" (keydown.enter)="throwTo('r')" (keydown.space)="throwTo('r'); $event.preventDefault()">
+              <g class="drive-receiver" [class.open]="isReceiverOpen('r')" [class.catch-target]="isCatchTarget('r')" [attr.transform]="playerTransform('r')" role="button" tabindex="0" aria-label="Throw to running back" (click)="receiverAction('r')" (keydown.enter)="receiverAction('r')" (keydown.space)="receiverAction('r'); $event.preventDefault()">
                 <circle r="15" /><text>R</text><circle class="target-ring" r="23" />
               </g>
               <g class="drive-quarterback" [attr.transform]="playerTransform('qb')" role="button" tabindex="0" aria-label="Tap quarterback to snap" (click)="snap()" (keydown.enter)="snap()" (keydown.space)="snap(); $event.preventDefault()">
@@ -137,8 +137,11 @@
           }
           <div class="drive-field-status" aria-live="polite">
             @if (phase() === 'ready') { Routes are hot. Read the defense. }
-            @else if (phase() === 'routes') { Tap X, Y, or R when the target ring opens. }
+            @else if (phase() === 'routes') { Tap X, Y, or R—or steer the QB across the line to scramble. }
+            @else if (phase() === 'passing') { {{ passFeedback() }} · Pass in flight. }
+            @else if (phase() === 'catch-window') { Tap the receiver or the CATCH button before the ring closes. }
             @else if (phase() === 'running') { Hold SPRINT for speed. Tap JUKE to evade. }
+            @else if (phase() === 'qb-running') { Passing is locked past the line—run for daylight. }
             @else if (phase() === 'yac') { Catch secured—make a move. }
             @else { {{ prompt() }} }
           </div>
@@ -162,13 +165,17 @@
             <span>
               @if (selectedPlay().kind === 'kick') { Snap, then swipe upward to set kick power }
               @else if (selectedPlay().kind === 'run') { Use the left pad to steer through the crease }
-              @else { After the snap, tap a receiver to pass }
+              @else { Move the QB, tap a receiver to pass, then secure the catch }
             </span>
             <div class="drive-progress"><i [style.width.%]="playProgress() * 100"></i></div>
-            <small><b>{{ phase().toUpperCase() }}</b><span>BALL · {{ fieldPositionLabel() }}</span></small>
+            <small><b>{{ passFeedback() || phase().toUpperCase() }}</b><span>BALL · {{ fieldPositionLabel() }}</span></small>
           </div>
 
-          @if (phase() === 'kick-ready') {
+          @if (phase() === 'catch-window') {
+            <button type="button" class="drive-catch-button" (click)="attemptCatch()">
+              <span>CATCH</span><small>Tap now</small><i [style.transform]="'scaleX(' + catchProgress() + ')'"> </i>
+            </button>
+          } @else if (phase() === 'kick-ready') {
             <div
               class="drive-kick-pad"
               tabindex="0"
@@ -194,9 +201,8 @@
 
     <footer class="drive-footer">
       <span><b>EARLY ACCESS</b> Offense prototype</span>
-      <span>Touch-first · responsive field · assisted catches</span>
+      <span>Touch-first · responsive field · timed catches</span>
       <button type="button" (click)="newGame()">↻ New game</button>
     </footer>
   </section>
 </div>
-
