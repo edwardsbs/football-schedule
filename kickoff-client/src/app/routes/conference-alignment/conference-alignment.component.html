@@ -160,6 +160,14 @@
   }
 
   @if (a.league === 'nfl') {
+    <div class="playoff-status-legend">
+      <span class="row"><app-playoff-status-icon status="hunt" /> In the hunt</span>
+      <span class="row"><app-playoff-status-icon status="clinched-berth" /> Clinched a spot</span>
+      <span class="row"><app-playoff-status-icon status="clinched-division" /> Clinched division</span>
+      <span class="row"><app-playoff-status-icon status="clinched-bye" /> Clinched the bye</span>
+      <span class="row"><app-playoff-status-icon status="eliminated" /> Eliminated</span>
+    </div>
+
     <section class="nfl-ledger" aria-label="NFL conference alignment">
       @for (conf of nflConferences(); track conf.shortName) {
         <article class="conference nfl-conference" [style.--conference-color]="conf.color || '#555'">
@@ -183,6 +191,7 @@
                   <col class="record-column" />
                   <col class="record-column" />
                   <col class="record-column" />
+                  <col class="division-record-column" />
                 </colgroup>
                 <thead>
                   <tr>
@@ -190,6 +199,7 @@
                     <th scope="col"><abbr title="Wins">W</abbr></th>
                     <th scope="col"><abbr title="Losses">L</abbr></th>
                     <th scope="col"><abbr title="Ties">T</abbr></th>
+                    <th scope="col"><abbr title="Record against division opponents">DIV</abbr></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -218,12 +228,12 @@
                           [attr.title]="isInterest(team) ? 'Remove team of interest' : 'Mark as team of interest'"
                           (click)="toggleInterest(team, $event)"
                         >{{ isInterest(team) ? '◆' : '◇' }}</button>
+                        <app-playoff-status-icon [status]="playoffStatusFor(team)" />
                         <app-team-badge
                           [name]="team.name"
                           [logoUrl]="team.logoUrl"
                           [abbreviation]="team.abbreviation"
                           [rank]="teamRank(team)"
-                          [reserveRankSpace]="true"
                           [size]="26"
                         />
                         <span class="team-name">{{ team.name }}</span>
@@ -231,6 +241,7 @@
                       <td [attr.aria-label]="record(team) ? record(team)!.wins + ' wins' : 'Wins unavailable'">{{ record(team)?.wins ?? '—' }}</td>
                       <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
                       <td [attr.aria-label]="record(team) ? record(team)!.ties + ' ties' : 'Ties unavailable'">{{ record(team)?.ties ?? '—' }}</td>
+                      <td class="division-record" [attr.aria-label]="'Division record ' + divisionRecordLabelFor(team)">{{ divisionRecordLabelFor(team) }}</td>
                     </tr>
                     }
                   }
@@ -265,6 +276,7 @@
                       <col class="record-column" />
                       <col class="record-column" />
                       <col class="record-column" />
+                      <col class="division-record-column" />
                     </colgroup>
                     <thead>
                       <tr>
@@ -272,6 +284,7 @@
                         <th scope="col"><abbr title="Wins">W</abbr></th>
                         <th scope="col"><abbr title="Losses">L</abbr></th>
                         <th scope="col"><abbr title="Ties">T</abbr></th>
+                        <th scope="col"><abbr title="Record against conference opponents">CONF</abbr></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -313,6 +326,7 @@
                           <td [attr.aria-label]="record(team) ? record(team)!.wins + ' wins' : 'Wins unavailable'">{{ record(team)?.wins ?? '—' }}</td>
                           <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
                           <td [attr.aria-label]="record(team) ? record(team)!.ties + ' ties' : 'Ties unavailable'">{{ record(team)?.ties ?? '—' }}</td>
+                          <td class="division-record" [attr.aria-label]="'Conference record ' + conferenceRecordLabelFor(team)">{{ conferenceRecordLabelFor(team) }}</td>
                         </tr>
                         }
                       }

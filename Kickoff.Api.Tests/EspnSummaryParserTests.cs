@@ -6,6 +6,36 @@ namespace Kickoff.Api.Tests;
 public class EspnSummaryParserTests
 {
     [Fact]
+    public void Parse_MapsLiveWinProbabilitySeries()
+    {
+        using var document = JsonDocument.Parse("""
+        {
+          "winprobability": [
+            { "playId": "101", "homeWinPercentage": 0.48 },
+            { "playId": "102", "homeWinPercentage": 0.63 }
+          ]
+        }
+        """);
+
+        var summary = EspnSummaryParser.Parse(document.RootElement, DateTimeOffset.UtcNow);
+
+        Assert.Equal(0.63, summary.HomeWinProbability);
+        Assert.Collection(summary.WinProbability,
+            first =>
+            {
+                Assert.Equal(0, first.Sequence);
+                Assert.Equal("101", first.PlayId);
+                Assert.Equal(0.48, first.HomeWinPercentage);
+            },
+            second =>
+            {
+                Assert.Equal(1, second.Sequence);
+                Assert.Equal("102", second.PlayId);
+                Assert.Equal(0.63, second.HomeWinPercentage);
+            });
+    }
+
+    [Fact]
     public void Parse_MapsAvailableInjuryReports()
     {
         using var document = JsonDocument.Parse("""

@@ -19,6 +19,7 @@ import { FindGamesFilterComponent } from '../../shared/find-games-filter/find-ga
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
 import { LeagueSectionToggleComponent } from '../../shared/league-section-toggle/league-section-toggle.component';
+import { PlayoffStatusIconComponent } from '../../shared/playoff-status-icon/playoff-status-icon.component';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
 import { defaultScheduleWeek } from './schedule-week-selection';
@@ -54,6 +55,7 @@ function rangeLabel(first: Date, last: Date): string {
     GameRowComponent,
     ImportantGamesTickerComponent,
     LeagueSectionToggleComponent,
+    PlayoffStatusIconComponent,
     TeamBadgeComponent,
     WeekStripComponent,
   ],
@@ -179,9 +181,18 @@ export class SeasonScheduleComponent {
     return buildPlayoffPicture(entries, this.nflSeasonGames());
   });
 
+  /** Real separation between NFL records generally doesn't show up until
+   * roughly the season's halfway point -- analytics trackers (Football
+   * Outsiders and similar) point to around Week 8-9 as where point
+   * differential/record starts meaningfully predicting team strength rather
+   * than one-score-game noise. Before that, most teams are bunched close
+   * enough that seeding is mostly a tiebreaker coin flip. */
+  private static readonly PLAYOFF_SEEDING_MATURE_AT_GAMES = 8;
+
   /** How far into the season the standings actually are, so the rail can
-   * flag itself as not-yet-meaningful instead of silently looking like a
-   * confident, settled seeding while most teams are still 0-0 or 1-0. */
+   * visually fade itself in as it goes from "mostly noise" to "meaningful",
+   * instead of silently looking like a confident, settled seeding while most
+   * teams are still 0-0 or 1-0. */
   readonly playoffSeedingMaturity = computed(() => {
     const teams = this.nflTeams();
     if (teams.length === 0) return null;
@@ -189,7 +200,14 @@ export class SeasonScheduleComponent {
       const record = this.records.record(team.id);
       return record ? record.wins + record.losses + record.ties : 0;
     });
-    return { gamesPlayed: Math.max(...gamesPlayed) };
+    const played = Math.max(...gamesPlayed);
+    const matureAt = SeasonScheduleComponent.PLAYOFF_SEEDING_MATURE_AT_GAMES;
+    return {
+      gamesPlayed: played,
+      matureAt,
+      // Fades from 55% at kickoff up to 100% once records mean something.
+      opacity: 0.55 + 0.45 * Math.min(1, played / matureAt),
+    };
   });
 
   private readonly rankingSelection = computed(() => {

@@ -492,7 +492,11 @@ app-conference-alignment {
     }
 
     .record-column {
-      width: 2rem;
+      width: 1.55rem;
+    }
+
+    .division-record-column {
+      width: 2.85rem;
     }
 
     th,
@@ -543,15 +547,16 @@ app-conference-alignment {
     .club {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
+      gap: 0.25rem;
       min-width: 0;
-      padding-left: 0.6rem;
+      padding-left: 0.35rem;
       color: var(--text, #e7ebf2);
       font-weight: 600;
       text-align: left;
     }
 
     .team-name {
+      flex: 1 1 auto;
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -611,7 +616,11 @@ app-conference-alignment {
 
     .division-ledger {
       .record-column {
-        width: 1.7rem;
+        width: 1.5rem;
+      }
+
+      .division-record-column {
+        width: 2.75rem;
       }
 
       th,
@@ -621,8 +630,8 @@ app-conference-alignment {
       }
 
       .club {
-        gap: 0.4rem;
-        padding-left: 0.4rem;
+        gap: 0.2rem;
+        padding-left: 0.3rem;
       }
     }
   }
@@ -704,9 +713,18 @@ app-conference-alignment {
         width: 2.25rem;
       }
 
+      .division-record-column {
+        width: 3.4rem;
+      }
+
       th,
       td {
         font-size: 0.8rem;
+      }
+
+      .club {
+        gap: 0.45rem;
+        padding-left: 0.45rem;
       }
     }
   }
@@ -779,5 +797,27 @@ app-conference-alignment {
 
   @media (pointer: coarse) {
     .find-teams-trigger { min-height: 44px; }
+  }
+}
+
+app-conference-alignment .playoff-status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.9rem;
+  margin-bottom: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border, #262c38);
+  border-radius: 8px;
+  background: var(--surface, #161a22);
+
+  .row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    color: var(--muted, #8b93a1);
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
   }
 }

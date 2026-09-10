@@ -76,6 +76,7 @@
 }
 
 .wipe-btn,
+.wake-btn,
 .my-games-btn {
   flex: none;
   display: inline-flex;
@@ -102,8 +103,22 @@
   &:active { background: color-mix(in srgb, var(--accent-gold, #c9a227) 16%, transparent); }
 }
 
-.wipe-btn {
+.wake-btn {
   margin-left: auto;
+  border-color: #677181;
+  border-radius: 9px;
+  color: var(--muted-strong, #aab2c0);
+
+  &.active {
+    border-color: #62f59a;
+    background: rgb(98 245 154 / 10%);
+    color: #62f59a;
+  }
+
+  &.off { opacity: 0.62; }
+}
+
+.wipe-btn {
   border-color: #677181;
   color: var(--text, #e7ebf2);
   border-radius: 9px;

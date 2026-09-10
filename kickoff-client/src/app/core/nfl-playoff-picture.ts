@@ -10,6 +10,20 @@ export interface PlayoffTeamEntry {
   record: TeamRecord;
 }
 
+/** Clinch status shown as an icon next to the team badge. Real clinch
+ * detection (ruling out every OTHER team's path, not just this team's own
+ * ceiling) isn't built yet -- ranking/eliminated logic is real, but every
+ * seeded/next-in team defaults to 'hunt' until that follow-up lands. */
+export type PlayoffStatus = 'hunt' | 'clinched-berth' | 'clinched-division' | 'clinched-bye' | 'eliminated';
+
+export const PLAYOFF_STATUS_LABEL: Record<PlayoffStatus, string> = {
+  hunt: 'In the hunt',
+  'clinched-berth': 'Clinched a playoff spot',
+  'clinched-division': 'Clinched the division',
+  'clinched-bye': 'Clinched the #1 seed and first-round bye',
+  eliminated: 'Eliminated from playoff contention',
+};
+
 export interface PlayoffSeed {
   seed: number;
   teamId: number;
@@ -19,6 +33,7 @@ export interface PlayoffSeed {
   recordLabel: string;
   isBye: boolean;
   isDivisionWinner: boolean;
+  status: PlayoffStatus;
 }
 
 export interface ConferencePlayoffPicture {
@@ -29,6 +44,9 @@ export interface ConferencePlayoffPicture {
   /** The next couple of teams outside the field -- "on the bubble" today, not
    * a claim that anyone ahead of them is mathematically safe yet. */
   nextIn: PlayoffSeed[];
+  /** Teams whose remaining games can't mathematically close the gap -- see
+   * `isEliminated`'s doc comment for exactly what this does and doesn't prove. */
+  eliminated: PlayoffSeed[];
 }
 
 function winPct(record: TeamRecord): number {
@@ -79,7 +97,43 @@ function compareEntries(a: PlayoffTeamEntry, b: PlayoffTeamEntry, games: Game[])
   return a.displayName.localeCompare(b.displayName);
 }
 
-function toSeed(entry: PlayoffTeamEntry, seed: number, isDivisionWinner: boolean): PlayoffSeed {
+function remainingGames(teamId: number, games: Game[]): number {
+  return games.filter((g) => g.status !== 'Final' && (g.home.id === teamId || g.away.id === teamId)).length;
+}
+
+/** The best case for a team: every remaining game is a win. A real (if
+ * generous) upper bound, since a team's win total can only go up from here. */
+function maxPossibleWins(entry: PlayoffTeamEntry, games: Game[]): number {
+  return entry.record.wins + remainingGames(entry.teamId, games);
+}
+
+/**
+ * A CONSERVATIVE elimination check, not the full official math. Real NFL
+ * elimination scenarios (the kind ESPN/the league publish) require solving
+ * for every team's remaining schedule and how division races interact --
+ * genuinely a combinatorial problem, not something to approximate lightly for
+ * a claim this concrete. This check only rules a team out when BOTH:
+ *   1. Their max possible wins can't catch every rival's CURRENT win total in
+ *      their own division (so they can't win the division outright), AND
+ *   2. Their max possible wins falls short of the conference's 7th-highest
+ *      CURRENT win total (so they can't reach a wild card either).
+ * Both bars use opponents' *current* wins, never projecting opponents to win
+ * more games than they already have -- so this can call a team eliminated
+ * later than the real math would (a team could be gone in reality before
+ * this agrees), but should never call a team eliminated while a real path
+ * still exists. One known gap even within that guarantee: it doesn't model
+ * a division winner vacating a wild card slot, which in rare cluster
+ * scenarios could open a path this check doesn't see.
+ */
+function isEliminated(entry: PlayoffTeamEntry, divisionRivals: PlayoffTeamEntry[], conferenceWinsDesc: number[], games: Game[]): boolean {
+  const ceiling = maxPossibleWins(entry, games);
+  const divisionAlive = divisionRivals.every((rival) => rival.teamId === entry.teamId || rival.record.wins <= ceiling);
+  const wildcardBar = conferenceWinsDesc[6] ?? 0;
+  const wildcardAlive = ceiling >= wildcardBar;
+  return !divisionAlive && !wildcardAlive;
+}
+
+function toSeed(entry: PlayoffTeamEntry, seed: number, isDivisionWinner: boolean, status: PlayoffStatus): PlayoffSeed {
   return {
     seed,
     teamId: entry.teamId,
@@ -89,6 +143,7 @@ function toSeed(entry: PlayoffTeamEntry, seed: number, isDivisionWinner: boolean
     recordLabel: recordLabel(entry.record),
     isBye: seed === 1,
     isDivisionWinner,
+    status,
   };
 }
 
@@ -117,11 +172,18 @@ export function buildPlayoffPicture(entries: PlayoffTeamEntry[], games: Game[]):
       .sort((a, b) => compareEntries(a, b, games));
 
     const seeds = [
-      ...winners.map((w, i) => toSeed(w, i + 1, true)),
-      ...wildcardPool.slice(0, 3).map((w, i) => toSeed(w, i + 5, false)),
+      ...winners.map((w, i) => toSeed(w, i + 1, true, 'hunt')),
+      ...wildcardPool.slice(0, 3).map((w, i) => toSeed(w, i + 5, false, 'hunt')),
     ];
-    const nextIn = wildcardPool.slice(3, 5).map((w, i) => toSeed(w, i + 8, false));
+    const nextIn = wildcardPool.slice(3, 5).map((w, i) => toSeed(w, i + 8, false, 'hunt'));
 
-    return { name, seeds, nextIn };
+    const conferenceWinsDesc = inConference.map((e) => e.record.wins).sort((a, b) => b - a);
+    const eliminated = wildcardPool
+      .slice(5)
+      .filter((entry) => isEliminated(entry, byDivision.get(entry.division) ?? [], conferenceWinsDesc, games))
+      .sort((a, b) => compareEntries(a, b, games))
+      .map((entry) => toSeed(entry, 0, false, 'eliminated'));
+
+    return { name, seeds, nextIn, eliminated };
   });
 }

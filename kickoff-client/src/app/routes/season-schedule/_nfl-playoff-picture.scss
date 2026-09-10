@@ -77,10 +77,32 @@ app-season-schedule {
     }
   }
 
+  .playoff-status-legend {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.55rem;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--border, #262c38);
+    background: color-mix(in srgb, var(--surface-2, #1c212b) 60%, transparent);
+
+    .row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: var(--muted, #8b93a1);
+      font-size: 0.56rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+  }
+
   .playoff-picture-body {
     min-height: 0;
     padding: 0.25rem 0;
     overflow-y: auto;
+    transition: opacity 0.4s ease;
     overscroll-behavior-y: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
@@ -131,9 +153,9 @@ app-season-schedule {
     li,
     .playoff-bubble-team {
       display: grid;
-      grid-template-columns: 1.15rem 25px minmax(0, 1fr) auto;
+      grid-template-columns: 1.15rem 15px 25px minmax(0, 1fr) auto;
       align-items: center;
-      gap: 0.32rem;
+      gap: 0.28rem;
       min-height: 38px;
       padding: 0.2rem 0.28rem;
       border-bottom: 1px solid color-mix(in srgb, var(--border, #262c38) 64%, transparent);
@@ -143,6 +165,22 @@ app-season-schedule {
       border: 1px solid rgb(210 167 95 / 26%);
       border-radius: 6px;
       background: rgb(210 167 95 / 5%);
+    }
+
+    .playoff-eliminated-head {
+      color: var(--muted, #8b93a1);
+    }
+
+    .playoff-eliminated-team {
+      border-color: color-mix(in srgb, var(--border, #262c38) 82%, transparent);
+      background: none;
+      opacity: 0.6;
+
+      .playoff-team small,
+      .playoff-team strong,
+      .playoff-record {
+        color: var(--muted, #8b93a1);
+      }
     }
   }
 

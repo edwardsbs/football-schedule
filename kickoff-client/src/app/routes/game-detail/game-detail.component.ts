@@ -10,6 +10,7 @@ import { TeamRecordStore } from '../../core/services/team-record-store';
 import { Game, Score, TeamSummary } from '../../core/models/game.model';
 import { GameSummary } from '../../core/models/game-summary.model';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
+import { winProbabilityChartPoints, winProbabilityDisplay } from './win-probability';
 
 type ViewModel =
   | { status: 'loading'; game: null }
@@ -164,23 +165,17 @@ export class GameDetailComponent {
     return side === 'home' ? s.homeScore > s.awayScore : s.awayScore > s.homeScore;
   }
 
-  protected homeWinPct(): number | null {
+  protected readonly liveWinProbability = computed(() => {
     const p = this.summary()?.homeWinProbability ?? this.shownScore()?.homeWinProbability;
-    return p == null ? null : Math.round(p * 100);
+    return winProbabilityDisplay(p);
+  });
+
+  protected homeWinPct(): number | null {
+    return this.liveWinProbability()?.home ?? null;
   }
 
   protected winProbabilityPoints(): string {
-    const points = this.summary()?.winProbability ?? [];
-    if (points.length === 0) return '';
-    if (points.length === 1) {
-      const y = 28 - points[0].homeWinPercentage * 28;
-      return `0,${y} 100,${y}`;
-    }
-    return points.map((point, index) => {
-      const x = index / (points.length - 1) * 100;
-      const y = 28 - point.homeWinPercentage * 28;
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    }).join(' ');
+    return winProbabilityChartPoints(this.summary()?.winProbability ?? []);
   }
 
   back(): void {

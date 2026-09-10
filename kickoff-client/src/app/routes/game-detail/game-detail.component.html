@@ -156,17 +156,35 @@
       @if (g.status === 'Live' && (detail.lastPlay || detail.currentDrive || homeWinPct() !== null)) {
         <section class="game-pulse" aria-label="Live game pulse">
           <div class="pulse-head">
-            <h2>Game pulse</h2>
-            @if (homeWinPct() !== null) {
-              <span>{{ g.home.abbreviation }} {{ homeWinPct() }}%</span>
-            }
+            <h2>Live game pulse</h2>
+            <span>Updates every 10 seconds</span>
           </div>
+          @if (liveWinProbability(); as probability) {
+            <div
+              class="win-probability"
+              role="img"
+              [attr.aria-label]="g.away.displayName + ' ' + probability.away + ' percent, ' + g.home.displayName + ' ' + probability.home + ' percent win probability'"
+            >
+              <div class="probability-team away">
+                <span>{{ g.away.abbreviation }}</span>
+                <strong>{{ probability.away }}%</strong>
+              </div>
+              <div class="probability-meter" aria-hidden="true">
+                <span class="away-fill" [style.width.%]="probability.away"></span>
+                <span class="home-fill" [style.width.%]="probability.home"></span>
+              </div>
+              <div class="probability-team home">
+                <strong>{{ probability.home }}%</strong>
+                <span>{{ g.home.abbreviation }}</span>
+              </div>
+            </div>
+          }
           @if (detail.winProbability.length) {
             <svg class="win-chart" viewBox="0 0 100 28" preserveAspectRatio="none" role="img" [attr.aria-label]="g.home.displayName + ' win probability ' + homeWinPct() + ' percent'">
               <line x1="0" y1="14" x2="100" y2="14"></line>
               <polyline [attr.points]="winProbabilityPoints()"></polyline>
             </svg>
-            <div class="chart-labels"><span>{{ g.away.abbreviation }}</span><span>Win probability</span><span>{{ g.home.abbreviation }}</span></div>
+            <div class="chart-labels"><span>Opening</span><span>Win-probability history</span><span>Now</span></div>
           }
           @if (detail.currentDrive; as drive) {
             <div class="pulse-line">

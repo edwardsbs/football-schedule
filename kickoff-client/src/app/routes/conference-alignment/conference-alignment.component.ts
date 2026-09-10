@@ -3,8 +3,10 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { catchError, of, switchMap } from 'rxjs';
 import { getAlignment } from '../../core/data/alignment-lookup';
+import { conferenceRecord, conferenceRecordLabel, divisionRecord, divisionRecordLabel } from '../../core/division-record';
 import { AlignmentConference, AlignmentDivision, AlignmentTeam } from '../../core/models/alignment.model';
-import { TeamRecord, TeamSummary } from '../../core/models/game.model';
+import { Game, TeamRecord, TeamSummary } from '../../core/models/game.model';
+import { PlayoffStatus, PlayoffTeamEntry, buildPlayoffPicture } from '../../core/nfl-playoff-picture';
 import { NcaaRankings, RankingRow } from '../../core/models/ranking.model';
 import { mergeRankingPolls, rankingPoll } from '../../core/ranking-comparison';
 import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
@@ -12,10 +14,23 @@ import { ncaaEspnId } from '../../core/team-key';
 import { TeamFilterEntry, TeamFilters, countActiveTeamFilters, defaultTeamFilters, matchesTeamFilters } from '../../core/team-filters';
 import { FanStore } from '../../core/services/fan-store';
 import { KickoffApi } from '../../core/services/kickoff-api';
+import { TeamConferenceStore } from '../../core/services/team-conference-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { FindTeamsFilterComponent } from '../../shared/find-teams-filter/find-teams-filter.component';
 import { LeagueSectionToggleComponent } from '../../shared/league-section-toggle/league-section-toggle.component';
+import { PlayoffStatusIconComponent } from '../../shared/playoff-status-icon/playoff-status-icon.component';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
+
+/** Aug 1 of the season's start year through Feb 15 of the following year --
+ * wide enough to cover the full NFL regular season plus a little slack. */
+function footballSeasonRange(): { from: string; to: string } {
+  const now = new Date();
+  const startYear = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+  return {
+    from: new Date(startYear, 7, 1).toISOString(),
+    to: new Date(startYear + 1, 1, 15).toISOString(),
+  };
+}
 
 /**
  * Conference & division breakdown for a league. `league` is bound from the
@@ -23,7 +38,7 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
  */
 @Component({
   selector: 'app-conference-alignment',
-  imports: [RouterLink, FindTeamsFilterComponent, LeagueSectionToggleComponent, TeamBadgeComponent],
+  imports: [RouterLink, FindTeamsFilterComponent, LeagueSectionToggleComponent, PlayoffStatusIconComponent, TeamBadgeComponent],
   templateUrl: './conference-alignment.component.html',
   styleUrl: './conference-alignment.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,11 +46,25 @@ import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component
 export class ConferenceAlignmentComponent {
   private readonly api = inject(KickoffApi);
   private readonly records = inject(TeamRecordStore);
+  private readonly conferences = inject(TeamConferenceStore);
   readonly fan = inject(FanStore);
 
   readonly league = input.required<string>();
   readonly palette = signal<'original' | 'muted' | 'mono'>('mono');
   readonly rankingRailOpen = signal(true);
+
+  /** Completed-game source for the current league's division/conference split. */
+  private readonly seasonGames = toSignal(
+    toObservable(this.league).pipe(
+      switchMap((l) => {
+        const apiLeague = l === 'nfl' ? 'Nfl' : l === 'ncaa' ? 'Ncaa' : null;
+        if (!apiLeague) return of<Game[]>([]);
+        const { from, to } = footballSeasonRange();
+        return this.api.getRange(from, to, apiLeague).pipe(catchError(() => of<Game[]>([])));
+      }),
+    ),
+    { initialValue: [] as Game[] },
+  );
 
   readonly alignment = computed(() => getAlignment(this.league()));
 
@@ -140,6 +169,61 @@ export class ConferenceAlignmentComponent {
     const id = this.teamId(team);
     if (id === null) return null;
     return this.records.record(id) ?? { teamId: id, wins: 0, losses: 0, ties: 0 };
+  }
+
+  /** NFL only: this team's W-L-T restricted to games against its own division
+   * rivals, shown alongside the overall record on the NFL Divisions page. */
+  divisionRecordLabelFor(team: AlignmentTeam): string {
+    const id = this.teamId(team);
+    if (id === null) return '—';
+    const division = this.conferences.groupOf(id);
+    if (!division) return '—';
+    return divisionRecordLabel(divisionRecord(id, division, this.seasonGames(), (teamId) => this.conferences.groupOf(teamId)));
+  }
+
+  /** NCAA only: W-L-T against opponents in the same real conference. */
+  conferenceRecordLabelFor(team: AlignmentTeam): string {
+    const id = this.teamId(team);
+    if (id === null) return '—';
+    const conference = this.conferences.groupOf(id);
+    if (!conference || conference === 'Independents') return '—';
+    return conferenceRecordLabel(conferenceRecord(id, conference, this.seasonGames(), (teamId) => this.conferences.groupOf(teamId)));
+  }
+
+  /** NFL only: the same playoff picture the Season Schedule rail computes,
+   * over every real NFL team rather than just the top of each conference --
+   * used here only to know who's Eliminated (the one real, computed status);
+   * everyone else defaults to "In The Hunt" until real clinch detection exists. */
+  private readonly nflPlayoffPicture = computed(() => {
+    if (this.league() !== 'nfl') return [];
+    const entries: PlayoffTeamEntry[] = [];
+    for (const team of this.backendTeams()) {
+      const division = this.conferences.groupOf(team.id);
+      if (!division) continue;
+      entries.push({
+        teamId: team.id,
+        displayName: team.displayName,
+        abbreviation: team.abbreviation,
+        logoUrl: team.logoUrl,
+        division,
+        record: this.records.record(team.id) ?? { teamId: team.id, wins: 0, losses: 0, ties: 0 },
+      });
+    }
+    return buildPlayoffPicture(entries, this.seasonGames());
+  });
+
+  private readonly eliminatedTeamIds = computed(() => {
+    const ids = new Set<number>();
+    for (const conference of this.nflPlayoffPicture()) {
+      for (const seed of conference.eliminated) ids.add(seed.teamId);
+    }
+    return ids;
+  });
+
+  playoffStatusFor(team: AlignmentTeam): PlayoffStatus {
+    const id = this.teamId(team);
+    if (id === null) return 'hunt';
+    return this.eliminatedTeamIds().has(id) ? 'eliminated' : 'hunt';
   }
 
   teamRank(team: AlignmentTeam): number | null {

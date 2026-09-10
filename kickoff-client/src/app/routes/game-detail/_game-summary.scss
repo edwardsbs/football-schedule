@@ -27,6 +27,30 @@ app-game-detail {
   .pulse-head h2 { margin: 0; font-size: inherit; }
   .pulse-head span { color: var(--text, #e7ebf2); }
 
+  .win-probability {
+    display: grid;
+    grid-template-columns: auto minmax(100px, 1fr) auto;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 0.7rem;
+  }
+
+  .probability-team { display: flex; align-items: baseline; gap: 0.35rem; }
+  .probability-team span { color: var(--muted-strong, #aab2c0); font-size: 0.68rem; font-weight: 800; }
+  .probability-team strong { font-size: 1rem; font-variant-numeric: tabular-nums; }
+
+  .probability-meter {
+    display: flex;
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #303744;
+  }
+
+  .probability-meter span { display: block; min-width: 2px; transition: width 0.35s ease; }
+  .away-fill { background: #cf6e5e; }
+  .home-fill { background: #4c8dff; }
+
   .win-chart {
     display: block;
     width: 100%;
@@ -44,6 +68,10 @@ app-game-detail {
     color: var(--muted, #8b93a1);
     font-size: 0.58rem;
     font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .probability-meter span { transition: none; }
   }
 
   .pulse-line {

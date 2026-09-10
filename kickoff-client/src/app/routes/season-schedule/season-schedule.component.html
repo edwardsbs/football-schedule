@@ -10,7 +10,15 @@
         <button type="button" (click)="playoffRailOpen.set(false)">Hide</button>
       </header>
 
-      <div class="playoff-picture-body">
+      <div class="playoff-status-legend">
+        <span class="row"><app-playoff-status-icon status="hunt" /> In the hunt</span>
+        <span class="row"><app-playoff-status-icon status="clinched-berth" /> Clinched a spot</span>
+        <span class="row"><app-playoff-status-icon status="clinched-division" /> Clinched division</span>
+        <span class="row"><app-playoff-status-icon status="clinched-bye" /> Clinched the bye</span>
+        <span class="row"><app-playoff-status-icon status="eliminated" /> Eliminated</span>
+      </div>
+
+      <div class="playoff-picture-body" [style.opacity]="playoffSeedingMaturity()?.opacity ?? 1">
         @for (conference of playoffPicture(); track conference.name) {
           <section class="playoff-conference" [attr.aria-labelledby]="'playoff-' + conference.name">
             <h2 [id]="'playoff-' + conference.name">
@@ -21,6 +29,7 @@
               @for (team of conference.seeds; track team.teamId) {
                 <li>
                   <span class="playoff-seed">{{ team.seed }}</span>
+                  <app-playoff-status-icon [status]="team.status" />
                   <app-team-badge
                     [name]="team.displayName"
                     [logoUrl]="team.logoUrl"
@@ -40,6 +49,7 @@
             @for (team of conference.nextIn; track team.teamId) {
               <div class="playoff-bubble-team">
                 <span class="playoff-seed">{{ team.seed }}</span>
+                <app-playoff-status-icon [status]="team.status" />
                 <app-team-badge
                   [name]="team.displayName"
                   [logoUrl]="team.logoUrl"
@@ -53,20 +63,42 @@
                 <span class="playoff-record">{{ team.recordLabel }}</span>
               </div>
             }
+
+            @if (conference.eliminated.length) {
+              <h3 class="playoff-eliminated-head">Eliminated</h3>
+              @for (team of conference.eliminated; track team.teamId) {
+                <div class="playoff-bubble-team playoff-eliminated-team">
+                  <span class="playoff-seed">—</span>
+                  <app-playoff-status-icon status="eliminated" />
+                  <app-team-badge
+                    [name]="team.displayName"
+                    [logoUrl]="team.logoUrl"
+                    [abbreviation]="team.abbreviation"
+                    [size]="25"
+                  />
+                  <span class="playoff-team">
+                    <strong>{{ team.abbreviation }}</strong>
+                    <small>{{ team.displayName }}</small>
+                  </span>
+                  <span class="playoff-record">{{ team.recordLabel }}</span>
+                </div>
+              }
+            }
           </section>
         }
       </div>
 
       <footer>
         @if (playoffSeedingMaturity(); as maturity) {
-          @if (maturity.gamesPlayed < 3) {
+          @if (maturity.gamesPlayed < maturity.matureAt) {
             <p class="playoff-early-note">
-              * Most teams have played {{ maturity.gamesPlayed }} game{{ maturity.gamesPlayed === 1 ? '' : 's' }} or fewer this season —
-              seeding is mostly a coin flip between tied 0–0/1–0 teams right now and will mean more as records build.
+              * Faded out early in the season on purpose: most teams have played {{ maturity.gamesPlayed }} game{{ maturity.gamesPlayed === 1 ? '' : 's' }} or fewer,
+              and NFL records don't really separate from noise until around Week {{ maturity.matureAt }} or so — it'll fade in as the season goes on.
             </p>
           }
         }
         <p>Standings computed from the same live ESPN-sourced game data used throughout the app. Seeded by win% · ties broken by this season's head-to-head only, not the full official NFL tiebreaker procedure.</p>
+        <p>"Eliminated" is a conservative estimate from remaining games only (can't catch the current field or its own division leader even by winning out) — real elimination can happen sooner once actual NFL tiebreakers are considered.</p>
       </footer>
     </aside>
   } @else {

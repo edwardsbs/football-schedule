@@ -1,0 +1,92 @@
+:host {
+  display: contents;
+}
+
+.playoff-status-icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+
+  .lock-shackle {
+    fill: none;
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
+
+  .lock-body {
+    stroke: none;
+  }
+
+  .lock-hole {
+    fill: #12151b;
+  }
+
+  .badge-chip {
+    fill: #241b04;
+    font-size: 6.5px;
+    font-weight: 900;
+  }
+
+  &.hunt {
+    .lock-shackle {
+      stroke: var(--muted, #8b93a1);
+      stroke-dasharray: 2.4 2.2;
+    }
+
+    .lock-body {
+      fill: none;
+      stroke: var(--muted, #8b93a1);
+      stroke-width: 1.6;
+      stroke-dasharray: 2.6 2;
+    }
+
+    .lock-hole {
+      fill: var(--muted, #8b93a1);
+    }
+  }
+
+  &.clinched-berth,
+  &.clinched-division,
+  &.clinched-bye {
+    .lock-shackle,
+    .lock-body {
+      stroke: var(--accent-gold, #c9a227);
+    }
+
+    .lock-body {
+      fill: var(--accent-gold, #c9a227);
+    }
+  }
+
+  &.clinched-division .badge-dot {
+    fill: #eec24c;
+  }
+
+  &.clinched-bye {
+    .badge-dot {
+      fill: #6fb3ff;
+    }
+
+    .badge-chip {
+      fill: #03141f;
+    }
+  }
+
+  &.eliminated {
+    .lock-shackle,
+    .lock-body {
+      stroke: #ff5a5a;
+    }
+
+    .lock-body {
+      fill: none;
+      stroke-width: 1.6;
+    }
+
+    .strike {
+      stroke: #ff5a5a;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+  }
+}
