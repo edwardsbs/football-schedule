@@ -1,5 +1,5 @@
 import { Game } from '../../core/models/game.model';
-import { formatKickoffCountdown, selectUpcomingSlate } from './live-dashboard.component';
+import { formatKickoffCountdown, selectBestGameId, selectUpcomingSlate } from './live-dashboard.component';
 
 describe('LiveDashboardComponent upcoming fallback', () => {
   const now = new Date(2026, 8, 4, 10, 0, 0);
@@ -31,6 +31,18 @@ describe('LiveDashboardComponent upcoming fallback', () => {
   });
 });
 
+describe('LiveDashboardComponent best game', () => {
+  it('does not call the only live game the best game', () => {
+    expect(selectBestGameId([liveGame(1, 21, 17)])).toBeNull();
+  });
+
+  it('selects the tightest game when multiple games are live', () => {
+    const games = [liveGame(1, 28, 14), liveGame(2, 24, 21), liveGame(3, 10, 3)];
+
+    expect(selectBestGameId(games)).toBe(2);
+  });
+});
+
 function game(id: number, kickoff: Date): Game {
   return {
     id,
@@ -49,5 +61,21 @@ function game(id: number, kickoff: Date): Game {
     isCircled: false,
     weekNumber: 1,
     weekLabel: 'Week 1',
+  };
+}
+
+function liveGame(id: number, homeScore: number, awayScore: number): Game {
+  return {
+    ...game(id, new Date(2026, 8, 4, 18, 0, 0)),
+    status: 'Live',
+    score: {
+      homeScore,
+      awayScore,
+      period: 4,
+      clock: '08:15',
+      possessionTeamId: null,
+      downDistance: null,
+      homeWinProbability: null,
+    },
   };
 }

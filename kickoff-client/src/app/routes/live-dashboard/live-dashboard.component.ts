@@ -80,13 +80,7 @@ export class LiveDashboardComponent {
   });
 
   /** "Best game right now": the tightest live, unmuted game. */
-  readonly bestGameId = computed(() => {
-    const contenders = this.liveGames().filter((g) => g.status === 'Live' && !g.isMuted && g.score);
-    if (contenders.length === 0) return null;
-    return contenders.reduce((best, g) =>
-      margin(g) < margin(best) ? g : best,
-    ).id;
-  });
+  readonly bestGameId = computed(() => selectBestGameId(this.liveGames()));
 
   trackById = (_: number, g: Game) => g.id;
 
@@ -255,6 +249,20 @@ export class LiveDashboardComponent {
       }, SCORE_HIGHLIGHT_MS));
     }
   }
+}
+
+/** Pick the closest visible live game only when there is another live game to
+ * compare it with. A lone game is live by default, not the "best" of a slate. */
+export function selectBestGameId(games: readonly Game[]): number | null {
+  const liveGames = games.filter((game) => game.status === 'Live');
+  if (liveGames.length <= 1) return null;
+
+  const contenders = liveGames.filter((game) => !game.isMuted && game.score);
+  if (contenders.length === 0) return null;
+
+  return contenders.reduce((best, game) =>
+    margin(game) < margin(best) ? game : best,
+  ).id;
 }
 
 export function selectUpcomingSlate(games: readonly Game[], now: Date): Game[] {
