@@ -20,3 +20,10 @@ Thumbs.db
 appsettings.*.local.json
 *.env
 .env.local
+
+# Personal-use ROM files (e.g. the Tecmo Super Bowl cartridge dump for the Retro Football
+# mini-game) — this repo is public on GitHub, so a committed ROM would be public
+# distribution of copyrighted material, not just personal use. Never commit these.
+/ROMs/
+*.nes
+

@@ -1,0 +1,184 @@
+app-kickoff-drive {
+  display: block;
+  height: 100%;
+  min-height: 100%;
+
+  button { font: inherit; }
+  .drive-page { height: 100%; min-height: 0; padding: clamp(0.45rem, 1.2vw, 1rem); background: #090e15; }
+  .drive-game { width: min(100%, 1680px); height: 100%; min-height: 0; max-height: 100%; margin: 0 auto; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; border: 1px solid #283446; border-radius: 16px; background: #0a0f17; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .drive-topbar { min-height: 72px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; padding: .55rem .85rem; background: #111824; border-bottom: 1px solid #2a3546; }
+  .drive-brand { display: flex; align-items: center; gap: .65rem; min-width: 0; }
+  .drive-back { width: 40px; height: 44px; display: grid; place-items: center; color: #aebdcd; border: 1px solid #344258; border-radius: 9px; font-size: 1.7rem; line-height: 1; text-decoration: none; }
+  .drive-mark { width: 42px; height: 42px; display: grid; place-items: center; flex: none; border-radius: 11px; background: #f4c430; color: #15110a; font-weight: 950; letter-spacing: -.08em; box-shadow: 0 0 0 3px rgba(244,196,48,.13); }
+  .drive-brand div { display: grid; line-height: 1; }
+  .drive-brand strong { font-size: .95rem; letter-spacing: .055em; }
+  .drive-brand small { margin-top: .3rem; color: #8fa1b7; font-size: .52rem; font-weight: 800; letter-spacing: .2em; }
+  .drive-scoreboard { min-width: 310px; display: grid; grid-template-columns: 1fr 108px 1fr; overflow: hidden; background: #080c13; border: 1px solid #344258; border-radius: 11px; }
+  .drive-team { display: flex; align-items: center; justify-content: center; gap: .65rem; padding: .5rem .75rem; border-right: 1px solid #273247; }
+  .drive-team.home { border: 0; border-left: 1px solid #273247; }
+  .drive-team span { color: #a9b7c8; font-size: .6rem; font-weight: 900; letter-spacing: .11em; }
+  .drive-team strong { font: 900 1.5rem/1 ui-monospace, monospace; }
+  .drive-clock { padding: .45rem; display: grid; place-items: center; background: #151d2a; }
+  .drive-clock strong { color: #f4c430; font: 900 1.1rem/1 ui-monospace, monospace; }
+  .drive-clock span { color: #b8c4d2; font-size: .48rem; font-weight: 900; white-space: nowrap; }
+  .drive-demo { justify-self: end; min-height: 44px; padding: 0 1rem; color: #fff; background: #1c2736; border: 1px solid #51647c; border-radius: 9px; font-size: .75rem; font-weight: 850; cursor: pointer; }
+  .drive-demo:disabled { opacity: .7; }
+  .drive-body { min-height: 0; display: grid; grid-template-columns: clamp(220px, 18vw, 286px) minmax(0, 1fr); }
+  .drive-playbook { min-height: 0; padding: .9rem .75rem; background: #0e151f; border-right: 1px solid #273346; }
+  .drive-play-heading { display: flex; align-items: end; justify-content: space-between; margin: 0 .15rem .7rem; }
+  .drive-play-heading div { display: grid; }
+  .drive-play-heading span { color: #7f91a8; font-size: .52rem; font-weight: 900; letter-spacing: .12em; }
+  .drive-play-heading strong { margin-top: .2rem; font-size: 1rem; }
+  .drive-play-heading > b { padding: .3rem .42rem; color: #9eb0c3; background: #172231; border-radius: 5px; font-size: .52rem; letter-spacing: .1em; }
+  .drive-play-list { display: grid; gap: .48rem; }
+  .drive-play { position: relative; width: 100%; min-height: 68px; display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: .6rem; padding: .5rem .55rem; overflow: hidden; text-align: left; color: #dce5ee; background: #151e2a; border: 1px solid #2b384b; border-radius: 10px; cursor: pointer; touch-action: manipulation; }
+  .drive-play.selected { border-color: #f4c430; background: #1b2430; box-shadow: inset 3px 0 0 #f4c430; }
+  .drive-play:disabled { cursor: default; }
+  .drive-play > span:nth-child(2) { min-width: 0; display: grid; }
+  .drive-play strong { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
+  .drive-play small { margin-top: .2rem; color: #8799af; font-size: .54rem; }
+  .drive-play > b { position: absolute; top: .35rem; right: .4rem; color: #6f8095; font-size: .42rem; letter-spacing: .12em; text-transform: uppercase; }
+  .drive-play-art { position: relative; width: 42px; height: 40px; display: block; background: #0c131d; border-radius: 7px; }
+  .drive-play-art i:not(:only-child) { position: absolute; left: 7px; width: 27px; height: 13px; border-top: 2px solid #f4c430; transform-origin: left center; }
+  .drive-play-art i:nth-child(1) { top: 7px; transform: rotate(24deg); }
+  .drive-play-art i:nth-child(2) { top: 20px; border-radius: 50%; transform: rotate(-7deg); }
+  .drive-play-art i:nth-child(3) { top: 31px; width: 22px; transform: rotate(-28deg); }
+  .drive-play-art.run i:nth-child(1) { left: 11px; top: 28px; width: 24px; transform: rotate(-62deg); }
+  .drive-play-art.run i:nth-child(2) { left: 21px; top: 8px; width: 13px; transform: rotate(36deg); }
+  .drive-play-art.run i:nth-child(3) { display: none; }
+  .drive-play-art.kick { display: grid; place-items: center; color: #f4c430; font: 900 1.7rem/1 Georgia, serif; }
+  .drive-series-card { margin-top: .8rem; padding: .7rem; background: #0a1018; border: 1px solid #263246; border-radius: 10px; }
+  .drive-series-card > span { color: #7e91a8; font-size: .48rem; font-weight: 900; letter-spacing: .14em; }
+  .drive-series-card > div:nth-child(2) { display: flex; justify-content: space-between; margin-top: .5rem; font-size: .52rem; }
+  .drive-series-card b { color: #f4c430; }
+  .drive-series-track { height: 5px; margin: .6rem 0 .45rem; overflow: hidden; background: #263246; border-radius: 4px; }
+  .drive-series-track i { display: block; height: 100%; background: #f4c430; transition: width .3s ease; }
+  .drive-series-card small { display: block; overflow: hidden; color: #687a90; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }
+  .drive-stage { min-width: 0; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: .8rem; background: #0a0f17; }
+  .drive-instruction { display: flex; justify-content: space-between; align-items: end; margin: 0 .15rem .5rem; }
+  .drive-instruction div { display: grid; }
+  .drive-instruction span { color: #f4c430; font-size: .52rem; font-weight: 900; letter-spacing: .13em; }
+  .drive-instruction strong { margin-top: .18rem; font-size: clamp(.85rem, 1.3vw, 1.05rem); }
+  .drive-instruction > span { color: #8799ad; }
+  .drive-field-wrap { position: relative; min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; border-radius: 16px; background: #082f28; }
+  .drive-field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .drive-yard-lines { stroke: #d9eee5; stroke-width: 1; stroke-opacity: .44; }
+  .drive-yard-lines line:nth-child(n+11) { stroke-width: 3; }
+  .drive-yard-numbers { fill: #e9f7f1; fill-opacity: .42; font: 800 22px Arial, sans-serif; text-anchor: middle; }
+  .drive-uprights { fill: none; stroke: #f5f7f7; stroke-width: 6; opacity: .8; }
+  .drive-los { stroke: #65c9ff; stroke-width: 4; opacity: .85; }
+  .drive-first-down { stroke: #ffdf45; stroke-width: 3; stroke-dasharray: 8 7; opacity: .8; }
+  .drive-routes { fill: none; stroke: #f4c430; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 9 8; animation: kickoff-drive-route-dash 1.1s linear infinite; }
+  .drive-routes.hidden { opacity: .22; }
+  .drive-kick-aim { fill: none; stroke: #f4c430; stroke-width: 4; stroke-dasharray: 8 8; animation: kickoff-drive-route-dash 1.1s linear infinite; }
+  @keyframes kickoff-drive-route-dash { to { stroke-dashoffset: -34; } }
+  .drive-offense > g > circle:first-child, .drive-lineman circle { fill: #f8fafc; stroke: #17335e; stroke-width: 5; }
+  .drive-offense text, .drive-defense text { fill: #0c1b30; font: 900 8px Arial, sans-serif; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+  .drive-lineman circle { fill: #dce9f5; }
+  .drive-defense circle { fill: #bd3041; stroke: #fff1f3; stroke-width: 3; }
+  .drive-defense text { fill: #fff; }
+  .drive-receiver, .drive-quarterback { cursor: pointer; }
+  .target-ring, .qb-ring { fill: none; stroke: #f4c430; stroke-width: 3; opacity: 0; }
+  .drive-quarterback .qb-ring { opacity: .85; animation: kickoff-drive-pulse 1.3s ease-out infinite; }
+  .drive-receiver.open .target-ring { opacity: 1; animation: kickoff-drive-pulse .8s ease-out infinite; }
+  @keyframes kickoff-drive-pulse { from { transform: scale(.75); opacity: 1; } to { transform: scale(1.22); opacity: 0; } }
+  .drive-football ellipse { fill: #d8843f; stroke: #ffe1bd; stroke-width: 1.5; }
+  .drive-football path { stroke: #fff2dc; stroke-width: 1; }
+  .drive-result-burst circle { fill: rgba(6,27,23,.86); stroke: #f4c430; stroke-width: 4; }
+  .drive-result-burst text { fill: #fff; font: 950 15px Arial, sans-serif; text-anchor: middle; letter-spacing: .05em; }
+  .drive-result-burst text:last-child { fill: #f4c430; font-size: 9px; letter-spacing: 0; }
+  .drive-snap { position: absolute; left: 17%; top: 49%; min-width: 68px; min-height: 54px; transform: translate(-50%,-50%); display: grid; place-items: center; padding: .4rem .7rem; color: #161006; background: #f4c430; border: 0; border-radius: 999px; box-shadow: 0 0 0 7px rgba(244,196,48,.18), 0 8px 24px rgba(0,0,0,.4); cursor: pointer; animation: kickoff-drive-snap 1.5s ease-in-out infinite; }
+  .drive-snap span { font-size: .68rem; font-weight: 950; }
+  .drive-snap small { font-size: .48rem; font-weight: 800; opacity: .7; }
+  @keyframes kickoff-drive-snap { 50% { transform: translate(-50%,-50%) scale(1.06); } }
+  .drive-field-status { position: absolute; left: 50%; bottom: .65rem; max-width: calc(100% - 1.5rem); transform: translateX(-50%); padding: .4rem .7rem; color: #f4f7f9; background: rgba(5,12,17,.8); border: 1px solid rgba(255,255,255,.16); border-radius: 7px; font-size: .58rem; font-weight: 750; white-space: nowrap; }
+  .drive-controls { min-height: 112px; display: grid; grid-template-columns: 116px minmax(0,1fr) 150px; align-items: center; gap: .8rem; margin-top: .55rem; padding: .5rem .7rem; background: #111925; border: 1px solid #263348; border-radius: 13px; }
+  .drive-stick-wrap { display: flex; align-items: center; gap: .45rem; color: #778ba3; font-size: .46rem; font-weight: 950; letter-spacing: .12em; }
+  .drive-stick { position: relative; width: 82px; height: 82px; flex: 0 0 82px; touch-action: none; background: radial-gradient(circle,#253246 0 14%,#182232 15% 48%,#0e151f 49%); border: 1px solid #40516a; border-radius: 50%; }
+  .drive-stick::before, .drive-stick::after { content: ''; position: absolute; background: #34445a; opacity: .65; }
+  .drive-stick::before { left: 50%; top: 9px; bottom: 9px; width: 1px; }
+  .drive-stick::after { top: 50%; left: 9px; right: 9px; height: 1px; }
+  .drive-stick i { position: absolute; left: 50%; top: 50%; z-index: 1; width: 31px; height: 31px; border: 2px solid #7e92ab; border-radius: 50%; background: #2b3a50; box-shadow: 0 4px 9px rgba(0,0,0,.4); }
+  .drive-control-readout { min-width: 0; display: grid; gap: .5rem; }
+  .drive-control-readout > span { color: #aebccb; font-size: .65rem; text-align: center; }
+  .drive-progress { height: 7px; overflow: hidden; background: #273449; border-radius: 6px; }
+  .drive-progress i { display: block; height: 100%; background: #f4c430; transition: width .1s linear; }
+  .drive-control-readout small { display: flex; justify-content: space-between; color: #75889e; font-size: .48rem; letter-spacing: .09em; }
+  .drive-control-readout b { color: #f4c430; }
+  .drive-action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+  .drive-action-buttons button { min-height: 62px; display: grid; place-items: center; color: #e9f0f6; background: #1b2737; border: 1px solid #3c4d64; border-radius: 50%; font-size: .48rem; font-weight: 900; cursor: pointer; touch-action: manipulation; }
+  .drive-action-buttons button span { color: #f4c430; font-size: 1.35rem; line-height: .7; }
+  .drive-action-buttons button.active, .drive-action-buttons button:active { background: #31445d; transform: scale(.95); }
+  .drive-kick-pad { position: relative; min-height: 88px; display: grid; place-items: center; overflow: hidden; touch-action: none; background: #1e211c; border: 1px solid #806c23; border-radius: 11px; cursor: ns-resize; }
+  .drive-kick-pad span { color: #f4c430; font-size: 1.5rem; animation: kickoff-drive-kick .8s ease-in-out infinite alternate; }
+  .drive-kick-pad strong { font-size: .52rem; letter-spacing: .1em; }
+  .drive-kick-pad i { position: absolute; left: 0; bottom: 0; height: 4px; background: #f4c430; }
+  @keyframes kickoff-drive-kick { to { transform: translateY(-5px); } }
+  .drive-footer { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .4rem .85rem; color: #8294a9; background: #0d141e; border-top: 1px solid #263246; font-size: .54rem; }
+  .drive-footer b { margin-right: .35rem; color: #f4c430; }
+  .drive-footer button { min-height: 34px; padding: 0 .75rem; color: #d8e1eb; background: #172230; border: 1px solid #34445b; border-radius: 7px; cursor: pointer; }
+
+  @media (min-width: 2100px) {
+    .drive-game { width: min(100%, 1940px); }
+    .drive-body { grid-template-columns: 310px minmax(0,1fr); }
+    .drive-play { min-height: 78px; }
+    .drive-controls { min-height: 132px; grid-template-columns: 145px minmax(0,1fr) 180px; }
+    .drive-stick { width: 96px; height: 96px; flex-basis: 96px; }
+    .drive-action-buttons button { min-height: 74px; }
+  }
+
+  @media (orientation: portrait), (max-width: 900px) {
+    .drive-game { height: 100%; min-height: 0; max-height: 100%; }
+    .drive-body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0,1fr); }
+    .drive-playbook { padding: .7rem; border: 0; border-bottom: 1px solid #273346; }
+    .drive-play-heading { margin-bottom: .5rem; }
+    .drive-play-list { grid-template-columns: repeat(4,minmax(0,1fr)); gap: .4rem; }
+    .drive-play { min-height: 62px; grid-template-columns: 36px 1fr; padding: .35rem; }
+    .drive-play-art { width: 35px; height: 36px; transform: scale(.82); transform-origin: center; }
+    .drive-play small { white-space: normal; }
+    .drive-series-card { display: none; }
+    .drive-stage { min-height: 0; }
+  }
+
+  @media (orientation: landscape) and (max-height: 900px) {
+    .drive-page { padding: .35rem; }
+    .drive-game { height: 100%; min-height: 0; }
+    .drive-topbar { min-height: 60px; }
+    .drive-play { min-height: 56px; }
+    .drive-series-card { margin-top: .5rem; }
+    .drive-controls { min-height: 96px; }
+    .drive-stick { width: 70px; height: 70px; flex-basis: 70px; }
+    .drive-action-buttons button { min-height: 52px; }
+  }
+
+  @media (max-width: 620px) {
+    .drive-page { padding: 0; }
+    .drive-game { min-height: 0; border-inline: 0; border-radius: 0; }
+    .drive-topbar { grid-template-columns: 1fr auto; gap: .45rem; padding: .45rem; }
+    .drive-scoreboard { grid-column: 1/-1; grid-row: 2; width: 100%; min-width: 0; }
+    .drive-demo { grid-column: 2; grid-row: 1; padding-inline: .7rem; font-size: .62rem; }
+    .drive-back { width: 36px; height: 40px; }
+    .drive-mark { width: 36px; height: 36px; }
+    .drive-brand strong { font-size: .78rem; }
+    .drive-brand small { display: none; }
+    .drive-play-list { grid-template-columns: 1fr 1fr; }
+    .drive-play { min-height: 60px; }
+    .drive-stage { padding: .55rem .4rem; }
+    .drive-instruction > span { display: none; }
+    .drive-field-status { font-size: .48rem; }
+    .drive-snap { min-width: 56px; min-height: 46px; padding: .3rem; }
+    .drive-controls { grid-template-columns: 78px minmax(0,1fr) 90px; gap: .35rem; min-height: 96px; padding: .4rem; }
+    .drive-stick-wrap > span { display: none; }
+    .drive-stick { width: 68px; height: 68px; flex-basis: 68px; }
+    .drive-control-readout > span { font-size: .52rem; }
+    .drive-action-buttons { gap: .2rem; }
+    .drive-action-buttons button { min-height: 48px; font-size: .42rem; }
+    .drive-action-buttons button span { font-size: 1.05rem; }
+    .drive-kick-pad { min-height: 72px; }
+    .drive-footer span:nth-child(2) { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drive-routes, .drive-kick-aim, .drive-quarterback .qb-ring, .drive-receiver.open .target-ring, .drive-snap, .drive-kick-pad span { animation: none; }
+  }
+}

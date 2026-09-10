@@ -6,6 +6,7 @@ h1 { margin: 0.25rem 0; font-size: clamp(1.45rem, 3vw, 2rem); }
 .game-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .game-card { position: relative; min-height: 240px; display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem; border: 1px solid var(--border, #262c38); border-radius: 16px; background: linear-gradient(145deg, var(--surface, #161a22), var(--surface-2, #1c212b)); }
 .game-card.featured { border-color: rgba(201, 162, 39, 0.5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035); }
+.game-card.kickoff-drive-card { background: linear-gradient(145deg, rgba(13, 90, 67, 0.34), var(--surface-2, #1c212b)); box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 10px 28px rgba(0,0,0,.16); }
 .game-icon { font-size: 2rem; }
 .new-tag { position: absolute; top: 1rem; right: 1rem; padding: 0.18rem 0.5rem; border-radius: 999px; background: var(--accent-gold, #c9a227); color: #12151b; font-size: 0.65rem; font-weight: 850; text-transform: uppercase; }
 h2 { margin: 0 0 0.3rem; font-size: 1.08rem; }

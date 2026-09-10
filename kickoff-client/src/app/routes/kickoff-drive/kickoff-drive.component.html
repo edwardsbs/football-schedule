@@ -1,0 +1,202 @@
+<div class="drive-page">
+  <section class="drive-game" aria-label="Kickoff Drive arcade football">
+    <header class="drive-topbar">
+      <div class="drive-brand">
+        <a routerLink="/games" class="drive-back" aria-label="Back to Mini-Games">‹</a>
+        <span class="drive-mark">KD</span>
+        <div><strong>KICKOFF DRIVE</strong><small>ARCADE FOOTBALL</small></div>
+      </div>
+
+      <div class="drive-scoreboard" aria-label="Game scoreboard">
+        <div class="drive-team"><span>AWAY</span><strong>0</strong></div>
+        <div class="drive-clock"><strong>{{ clockLabel() }}</strong><span>Q1 · {{ downLabel() }}</span></div>
+        <div class="drive-team home"><strong>{{ score() }}</strong><span>HOME</span></div>
+      </div>
+
+      <button type="button" class="drive-demo" (click)="runDemo()" [disabled]="demoRunning()">
+        {{ demoRunning() ? '■ Demo running' : '▶ Demo drive' }}
+      </button>
+    </header>
+
+    <div class="drive-body">
+      <aside class="drive-playbook" aria-label="Offensive play call">
+        <div class="drive-play-heading">
+          <div><span>OFFENSE</span><strong>Pick a play</strong></div>
+          <b>SHOTGUN</b>
+        </div>
+        <div class="drive-play-list" role="radiogroup" aria-label="Available plays">
+          @for (play of plays; track play.id) {
+            <button
+              type="button"
+              class="drive-play"
+              [class.selected]="selectedPlayId() === play.id"
+              [disabled]="isLive()"
+              [attr.aria-checked]="selectedPlayId() === play.id"
+              role="radio"
+              (click)="selectPlay(play.id)"
+            >
+              <span class="drive-play-art" [class.run]="play.kind === 'run'" [class.kick]="play.kind === 'kick'">
+                @if (play.kind === 'kick') { <i>Y</i> } @else { <i></i><i></i><i></i> }
+              </span>
+              <span><strong>{{ play.name }}</strong><small>{{ play.note }}</small></span>
+              <b>{{ play.kind }}</b>
+            </button>
+          }
+        </div>
+        <div class="drive-series-card">
+          <span>CURRENT DRIVE</span>
+          <div><strong>BALL · {{ fieldPositionLabel() }}</strong><b>{{ 100 - ballOn() }} YDS TO GO</b></div>
+          <div class="drive-series-track"><i [style.width.%]="ballOn()"></i></div>
+          <small>{{ downLabel() }} · {{ resultDetail() || 'Choose a play and tap the quarterback' }}</small>
+        </div>
+      </aside>
+
+      <main class="drive-stage">
+        <div class="drive-instruction">
+          <div><span>{{ instruction() }}</span><strong>{{ prompt() }}</strong></div>
+          <span>DEFENSE · BALANCED</span>
+        </div>
+
+        <div class="drive-field-wrap">
+          <svg class="drive-field" viewBox="0 0 760 420" role="img" aria-label="Top-down football field with animated players">
+            <defs>
+              <linearGradient id="kickoffDriveTurf" x1="0" x2="1">
+                <stop offset="0" stop-color="#0d5a43" />
+                <stop offset=".5" stop-color="#11694f" />
+                <stop offset="1" stop-color="#0b523d" />
+              </linearGradient>
+              <filter id="kickoffDriveShadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#001e16" flood-opacity=".65" />
+              </filter>
+            </defs>
+            <rect width="760" height="420" rx="18" fill="#082f28" />
+            <rect x="18" y="18" width="724" height="384" rx="10" fill="url(#kickoffDriveTurf)" stroke="#d8efe4" stroke-width="3" />
+            <rect x="18" y="18" width="74" height="384" fill="#16375f" opacity=".75" />
+            <rect x="668" y="18" width="74" height="384" fill="#7b1826" opacity=".74" />
+            <g class="drive-yard-lines">
+              @for (x of yardLines; track x) { <line [attr.x1]="x" [attr.x2]="x" y1="18" y2="402" /> }
+              @for (x of hashMarks; track x) {
+                <line [attr.x1]="x" [attr.x2]="x" y1="40" y2="53" />
+                <line [attr.x1]="x" [attr.x2]="x" y1="367" y2="380" />
+              }
+            </g>
+            <g class="drive-yard-numbers">
+              <text x="156" y="220" transform="rotate(90 156 220)">20</text>
+              <text x="284" y="220" transform="rotate(90 284 220)">40</text>
+              <text x="412" y="220" transform="rotate(90 412 220)">40</text>
+              <text x="540" y="220" transform="rotate(90 540 220)">20</text>
+            </g>
+            <g class="drive-uprights"><path d="M707 166V254M686 178H728M686 242H728" /></g>
+            <line class="drive-los" x1="220" x2="220" y1="20" y2="400" />
+            <line class="drive-first-down" x1="284" x2="284" y1="20" y2="400" />
+
+            <g class="drive-routes" [class.hidden]="phase() !== 'ready' && selectedPlay().kind === 'run'">
+              <path [attr.d]="routePath('x')" /><path [attr.d]="routePath('y')" /><path [attr.d]="routePath('r')" />
+            </g>
+            @if (selectedPlay().kind === 'kick' && (phase() === 'ready' || phase() === 'kick-ready')) {
+              <g class="drive-kick-aim"><path d="M187 210 C370 150 548 162 704 210" /><circle cx="704" cy="210" r="22" /></g>
+            }
+
+            <g class="drive-defense" filter="url(#kickoffDriveShadow)">
+              @for (defender of defense(); track defender.number) {
+                <g [attr.transform]="defenderTransform(defender)"><circle r="13" /><text>{{ defender.number }}</text></g>
+              }
+            </g>
+
+            <g class="drive-offense" filter="url(#kickoffDriveShadow)">
+              <g class="drive-receiver" [class.open]="isReceiverOpen('x')" [attr.transform]="playerTransform('x')" role="button" tabindex="0" aria-label="Throw to X receiver" (click)="throwTo('x')" (keydown.enter)="throwTo('x')" (keydown.space)="throwTo('x'); $event.preventDefault()">
+                <circle r="15" /><text>X</text><circle class="target-ring" r="23" />
+              </g>
+              <g class="drive-receiver" [class.open]="isReceiverOpen('y')" [attr.transform]="playerTransform('y')" role="button" tabindex="0" aria-label="Throw to Y receiver" (click)="throwTo('y')" (keydown.enter)="throwTo('y')" (keydown.space)="throwTo('y'); $event.preventDefault()">
+                <circle r="15" /><text>Y</text><circle class="target-ring" r="23" />
+              </g>
+              <g class="drive-lineman" transform="translate(205 185)"><circle r="12" /></g>
+              <g class="drive-lineman" transform="translate(205 210)"><circle r="12" /></g>
+              <g class="drive-lineman" transform="translate(205 235)"><circle r="12" /></g>
+              <g class="drive-receiver" [class.open]="isReceiverOpen('r')" [attr.transform]="playerTransform('r')" role="button" tabindex="0" aria-label="Throw to running back" (click)="throwTo('r')" (keydown.enter)="throwTo('r')" (keydown.space)="throwTo('r'); $event.preventDefault()">
+                <circle r="15" /><text>R</text><circle class="target-ring" r="23" />
+              </g>
+              <g class="drive-quarterback" [attr.transform]="playerTransform('qb')" role="button" tabindex="0" aria-label="Tap quarterback to snap" (click)="snap()" (keydown.enter)="snap()" (keydown.space)="snap(); $event.preventDefault()">
+                <circle r="18" /><text>QB</text><circle class="qb-ring" r="27" />
+              </g>
+            </g>
+
+            <g class="drive-football" [attr.transform]="ballTransform()" [attr.opacity]="ball().visible ? 1 : 0">
+              <ellipse rx="9" ry="5" /><path d="M-3 0H3M0-2V2" />
+            </g>
+
+            @if (phase() === 'complete') {
+              <g class="drive-result-burst" transform="translate(510 210)">
+                <circle r="67" /><text y="-5">{{ result() }}</text><text y="24">{{ resultDetail() }}</text>
+              </g>
+            }
+          </svg>
+
+          @if (phase() === 'ready') {
+            <button type="button" class="drive-snap" (click)="snap()"><span>SNAP</span><small>tap QB</small></button>
+          }
+          <div class="drive-field-status" aria-live="polite">
+            @if (phase() === 'ready') { Routes are hot. Read the defense. }
+            @else if (phase() === 'routes') { Tap X, Y, or R when the target ring opens. }
+            @else if (phase() === 'running') { Hold SPRINT for speed. Tap JUKE to evade. }
+            @else if (phase() === 'yac') { Catch secured—make a move. }
+            @else { {{ prompt() }} }
+          </div>
+        </div>
+
+        <div class="drive-controls" aria-label="Touch controls">
+          <div class="drive-stick-wrap">
+            <span>MOVE</span>
+            <div
+              class="drive-stick"
+              role="application"
+              aria-label="Ball carrier movement pad"
+              (pointerdown)="startStick($event)"
+              (pointermove)="moveStick($event)"
+              (pointerup)="releaseStick()"
+              (pointercancel)="releaseStick()"
+            ><i [style.transform]="stickTransform()"></i></div>
+          </div>
+
+          <div class="drive-control-readout">
+            <span>
+              @if (selectedPlay().kind === 'kick') { Snap, then swipe upward to set kick power }
+              @else if (selectedPlay().kind === 'run') { Use the left pad to steer through the crease }
+              @else { After the snap, tap a receiver to pass }
+            </span>
+            <div class="drive-progress"><i [style.width.%]="playProgress() * 100"></i></div>
+            <small><b>{{ phase().toUpperCase() }}</b><span>BALL · {{ fieldPositionLabel() }}</span></small>
+          </div>
+
+          @if (phase() === 'kick-ready') {
+            <div
+              class="drive-kick-pad"
+              tabindex="0"
+              role="button"
+              aria-label="Swipe upward to kick"
+              (pointerdown)="startKick($event)"
+              (pointermove)="moveKick($event)"
+              (pointerup)="releaseKick($event)"
+              (keydown.enter)="keyboardKick()"
+              (keydown.space)="keyboardKick(); $event.preventDefault()"
+            >
+              <span>↑</span><strong>SWIPE TO KICK</strong><i [style.width.%]="kickPower() * 100"></i>
+            </div>
+          } @else {
+            <div class="drive-action-buttons">
+              <button type="button" (click)="pressJuke()"><span>↯</span>JUKE</button>
+              <button type="button" (pointerdown)="setSprint(true)" (pointerup)="setSprint(false)" (pointercancel)="setSprint(false)" (pointerleave)="setSprint(false)" [class.active]="sprinting()"><span>»</span>SPRINT</button>
+            </div>
+          }
+        </div>
+      </main>
+    </div>
+
+    <footer class="drive-footer">
+      <span><b>EARLY ACCESS</b> Offense prototype</span>
+      <span>Touch-first · responsive field · assisted catches</span>
+      <button type="button" (click)="newGame()">↻ New game</button>
+    </footer>
+  </section>
+</div>
+

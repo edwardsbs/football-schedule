@@ -112,6 +112,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'games/kickoff-drive',
+        title: 'Kickoff Drive · Kickoff',
+        loadComponent: () =>
+          import('./routes/kickoff-drive/kickoff-drive.component').then((m) => m.KickoffDriveComponent),
+      },
+      {
         path: 'playoffs/:league',
         title: 'Playoff Bracket · Kickoff',
         loadComponent: () =>

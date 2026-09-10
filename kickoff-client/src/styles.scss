@@ -12,6 +12,7 @@
 @use './app/routes/game-day-central/game-day-focus-rail';
 @use './app/routes/mini-games/quiz-games';
 @use './app/layout/demo-game-control';
+@use './app/routes/kickoff-drive/kickoff-drive';
 
 :root {
   --bg: #0f1218;
