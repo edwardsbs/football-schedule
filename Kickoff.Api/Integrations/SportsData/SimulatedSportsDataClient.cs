@@ -136,6 +136,8 @@ public class SimulatedSportsDataClient : ISportsDataClient
         public int AwayScore { get; private set; }
         public int Period { get; private set; }
         public int SecondsLeftInPeriod { get; private set; }
+        public bool PossessionHome { get; private set; } = true;
+        public string? LastHighlight { get; private set; }
 
         public static SimGame Create(
             League league, string externalId, FeedTeam home, FeedTeam away,
@@ -186,10 +188,42 @@ public class SimulatedSportsDataClient : ISportsDataClient
                     SecondsLeftInPeriod = QuarterSeconds;
                 }
 
-                if (Random.Shared.NextDouble() < 0.18)
+                LastHighlight = null;
+                if (Random.Shared.NextDouble() < 0.08)
+                {
+                    var defenseHome = !PossessionHome;
+                    switch (Random.Shared.Next(4))
+                    {
+                        case 0:
+                            LastHighlight = "Sack";
+                            break;
+                        case 1:
+                            LastHighlight = "Interception";
+                            PossessionHome = defenseHome;
+                            break;
+                        case 2:
+                            LastHighlight = "Safety";
+                            if (defenseHome) HomeScore += 2; else AwayScore += 2;
+                            PossessionHome = defenseHome;
+                            break;
+                        default:
+                            LastHighlight = "4th Down Stop";
+                            PossessionHome = defenseHome;
+                            break;
+                    }
+                }
+                else if (Random.Shared.NextDouble() < 0.18)
                 {
                     var points = Random.Shared.NextDouble() < 0.6 ? 7 : 3;
-                    if (Random.Shared.Next(2) == 0) HomeScore += points; else AwayScore += points;
+                    if (PossessionHome) HomeScore += points; else AwayScore += points;
+                    LastHighlight = points == 7 ? "Touchdown" : "Field Goal";
+                    PossessionHome = !PossessionHome;
+                }
+                else if (Random.Shared.NextDouble() < 0.12)
+                {
+                    // A punt or ordinary drive ending changes possession without
+                    // promoting a routine play into the big-play treatment.
+                    PossessionHome = !PossessionHome;
                 }
                 changed = true;
             }
@@ -210,9 +244,12 @@ public class SimulatedSportsDataClient : ISportsDataClient
             AwayScore,
             Period,
             Status == GameStatus.Final ? null : $"{SecondsLeftInPeriod / 60:00}:{SecondsLeftInPeriod % 60:00}",
-            PossessionTeamExternalId: Status == GameStatus.Final ? null : Home.ExternalId,
-            DownDistance: Status == GameStatus.Final ? null : "1st & 10",
-            HomeWinProbability: EstimateHomeWinProbability());
+            PossessionTeamExternalId: Status == GameStatus.Final
+                ? null
+                : PossessionHome ? Home.ExternalId : Away.ExternalId,
+            DownDistance: Status == GameStatus.Final ? null : LastHighlight ?? "1st & 10",
+            HomeWinProbability: EstimateHomeWinProbability(),
+            LastScoringPlay: Status == GameStatus.Final ? null : LastHighlight);
 
         public FeedGame ToFeedGame() => new(
             ExternalId,

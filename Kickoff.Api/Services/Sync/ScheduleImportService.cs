@@ -171,9 +171,12 @@ public class ScheduleImportService(IKickoffContext db, TimeProvider? timeProvide
                 : null;
         if (game.Status is GameStatus.InProgress or GameStatus.Halftime)
         {
-            if (scoringSituation is not null && scoringTeamId is not null)
+            if (scoringSituation is not null)
             {
-                game.PossessionTeamId = scoringTeamId;
+                if (scoringTeamId is not null)
+                    game.PossessionTeamId = scoringTeamId;
+                else if (resolvedPossessionTeamId is not null)
+                    game.PossessionTeamId = resolvedPossessionTeamId;
                 game.DownDistance = scoringSituation;
             }
             else

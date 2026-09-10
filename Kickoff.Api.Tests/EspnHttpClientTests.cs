@@ -73,6 +73,56 @@ public class EspnHttpClientTests
         Assert.Equal("3rd & 7 at GT 42", update.Score.DownDistance);
     }
 
+    [Theory]
+    [InlineData("Sack", "Quarterback sacked for a loss", "Sack")]
+    [InlineData("Pass Interception Return", "Pass intercepted at the 35", "Interception")]
+    [InlineData("Safety", "Runner tackled in the end zone for a safety", "Safety")]
+    [InlineData("Turnover on Downs", "Pass incomplete, turnover on downs", "4th Down Stop")]
+    public async Task Live_poll_maps_defensive_highlights(
+        string playType,
+        string playText,
+        string expectedLabel)
+    {
+        var json = $$"""
+            {
+              "events": [{
+                "id": "defensive-play",
+                "date": "2026-09-04T00:00:00Z",
+                "competitions": [{
+                  "status": {
+                    "period": 3,
+                    "displayClock": "8:14",
+                    "type": { "name": "STATUS_IN_PROGRESS", "state": "in", "completed": false }
+                  },
+                  "situation": {
+                    "possession": "59",
+                    "downDistanceText": "1st & 10 at GT 35",
+                    "lastPlay": {
+                      "type": { "text": "{{playType}}" },
+                      "text": "{{playText}}",
+                      "team": { "id": "38" },
+                      "start": { "down": 4 }
+                    }
+                  },
+                  "competitors": [
+                    { "homeAway": "home", "score": "10", "team": { "id": "59" } },
+                    { "homeAway": "away", "score": "7", "team": { "id": "38" } }
+                  ]
+                }]
+              }]
+            }
+            """;
+        var handler = new RecordingHandler(json);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var update = Assert.Single(await sut.GetLiveScoresAsync(League.Ncaa));
+
+        Assert.Equal(expectedLabel, update.Score.LastScoringPlay);
+    }
+
     [Fact]
     public async Task Rankings_map_current_and_previous_ap_poll_positions()
     {

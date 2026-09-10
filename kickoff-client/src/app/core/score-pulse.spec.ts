@@ -43,6 +43,10 @@ describe('score pulse classification', () => {
     expect(scoreEventLabel(null, 'Extra Point No Good')).toBe('PAT No Good');
     expect(scoreEventLabel('other', 'Two-Point Conversion Successful')).toBe('2-PT Conv. Good');
     expect(scoreEventLabel(null, '2-PT Conversion Failed')).toBe('2-PT Conv. Failed');
+    expect(scoreEventLabel(null, 'Sack')).toBe('Sack');
+    expect(scoreEventLabel(null, 'Interception')).toBe('Interception');
+    expect(scoreEventLabel('other', 'Safety')).toBe('Safety');
+    expect(scoreEventLabel(null, 'Turnover on Downs')).toBe('4th Down Stop');
     expect(scoreEventLabel(null)).toBeNull();
   });
 });

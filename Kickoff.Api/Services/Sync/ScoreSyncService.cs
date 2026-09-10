@@ -93,9 +93,12 @@ public class ScoreSyncService(IKickoffContext db, TimeProvider? timeProvider = n
             // final game can never retain a stale possession marker.
             if (u.Status is GameStatus.InProgress or GameStatus.Halftime)
             {
-                if (scoringSituation is not null && scoringTeamId is not null)
+                if (scoringSituation is not null)
                 {
-                    game.PossessionTeamId = scoringTeamId;
+                    if (scoringTeamId is not null)
+                        game.PossessionTeamId = scoringTeamId;
+                    else if (resolvedPossessionTeamId is not null)
+                        game.PossessionTeamId = resolvedPossessionTeamId;
                     game.DownDistance = scoringSituation;
                 }
                 else

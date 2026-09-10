@@ -15,6 +15,16 @@ describe('mock game simulator', () => {
     expect(isInRedZone(inTheRedZone)).toBeTrue();
   });
 
+  it('previews defensive plays early in the opening simulator cycle', () => {
+    const [nfl] = buildDemoGames(day, 7);
+    const [, ncaa] = buildDemoGames(day, 14);
+
+    expect(nfl.score?.downDistance).toBe('Sack');
+    expect(nfl.score?.possessionTeamId).toBe(nfl.away.id);
+    expect(ncaa.score?.downDistance).toBe('Interception');
+    expect(ncaa.score?.possessionTeamId).toBe(ncaa.away.id);
+  });
+
   it('runs a touchdown, extra point, kickoff, and field goal sequence', () => {
     const beforeTouchdown = buildDemoGames(day, 9)[0].score!;
     const touchdown = buildDemoGames(day, 10)[0].score!;
@@ -66,6 +76,28 @@ describe('mock game simulator', () => {
     expect(ncaaGood.homeScore).toBe(8);
     expect(ncaaFailed.downDistance).toBe('2-PT Conv. Failed');
     expect(ncaaFailed.homeScore).toBe(ncaaBeforeFailed.homeScore);
+  });
+
+  it('occasionally produces each defensive big play with coherent possession and scoring', () => {
+    const labels = [1, 2, 3, 4].map((cycle) =>
+      buildDemoGames(day, cycle * 47 + 37)[0].score!.downDistance
+    );
+
+    expect(labels).toEqual(['Sack', 'Interception', 'Safety', '4th Down Stop']);
+
+    const sack = buildDemoGames(day, 47 + 37)[0];
+    expect(sack.score!.possessionTeamId).toBe(sack.home.id);
+
+    const interception = buildDemoGames(day, 2 * 47 + 37)[0];
+    expect(interception.score!.possessionTeamId).toBe(interception.away.id);
+
+    const beforeSafety = buildDemoGames(day, 3 * 47 + 36)[0];
+    const safety = buildDemoGames(day, 3 * 47 + 37)[0];
+    expect(safety.score!.awayScore - beforeSafety.score!.awayScore).toBe(2);
+    expect(safety.score!.possessionTeamId).toBe(safety.away.id);
+
+    const fourthDownStop = buildDemoGames(day, 4 * 47 + 37)[0];
+    expect(fourthDownStop.score!.possessionTeamId).toBe(fourthDownStop.away.id);
   });
 
   it('runs the NCAA game in the opposite possession direction', () => {

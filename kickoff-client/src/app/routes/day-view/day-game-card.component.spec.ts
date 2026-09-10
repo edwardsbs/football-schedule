@@ -130,6 +130,26 @@ describe('DayGameCardComponent Game Day gesture', () => {
     expect(fixture.nativeElement.querySelector('.situation-text').textContent.trim()).toBe('Kickoff');
     expect(fixture.nativeElement.querySelectorAll('.score')[1].classList).not.toContain('score-changed');
   }));
+
+  it('shows a sack on the defense row while retaining offensive possession', () => {
+    const fixture = createFixture('available', liveGame('Sack', 1));
+    const rows = fixture.nativeElement.querySelectorAll('.team-row');
+
+    expect(rows[0].querySelector('.team-event')).toBeNull();
+    expect(rows[0].querySelector('.possession')).not.toBeNull();
+    expect(rows[1].querySelector('.team-event').textContent.trim()).toBe('Sack');
+  });
+
+  it('shows turnovers and safeties on the defense row after possession changes', () => {
+    for (const label of ['Interception', 'Safety', '4th Down Stop']) {
+      const fixture = createFixture('available', liveGame(label, 2));
+      const rows = fixture.nativeElement.querySelectorAll('.team-row');
+
+      expect(rows[0].querySelector('.team-event')).toBeNull();
+      expect(rows[1].querySelector('.team-event').textContent.trim()).toBe(label);
+      fixture.destroy();
+    }
+  });
 });
 
 function createFixture(state: 'available' | 'selected', selectedGame: Game = game()) {
@@ -169,5 +189,21 @@ function game(): Game {
     isCircled: false,
     weekNumber: 1,
     weekLabel: 'Week 1',
+  };
+}
+
+function liveGame(downDistance: string, possessionTeamId: number): Game {
+  return {
+    ...game(),
+    status: 'Live',
+    score: {
+      homeScore: 10,
+      awayScore: 7,
+      period: 3,
+      clock: '8:14',
+      possessionTeamId,
+      downDistance,
+      homeWinProbability: 0.61,
+    },
   };
 }

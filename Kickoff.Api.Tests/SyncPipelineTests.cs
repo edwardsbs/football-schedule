@@ -95,6 +95,38 @@ public class SyncPipelineTests
     }
 
     [Fact]
+    public async Task Live_score_sync_persists_a_defensive_highlight_without_a_score_change()
+    {
+        using var ctx = TestDb.NewContext();
+        var client = new SimulatedSportsDataClient(new FakeTimeProvider(T0));
+        var import = new ScheduleImportService(ctx);
+        var scores = new ScoreSyncService(ctx);
+
+        await import.ImportAsync(await client.GetWeekScheduleAsync(League.Nfl, 2026, 1));
+        var game = await ctx.Games
+            .Include(g => g.HomeTeam)
+            .FirstAsync();
+        var homeScore = game.HomeScore ?? 0;
+        var awayScore = game.AwayScore ?? 0;
+
+        await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.InProgress,
+            new ScoreSnapshot(
+                homeScore,
+                awayScore,
+                3,
+                "8:14",
+                game.HomeTeam.ExternalId,
+                "1st & 10 at HOM 35",
+                null,
+                "Interception"))]);
+
+        Assert.Equal(game.HomeTeamId, game.PossessionTeamId);
+        Assert.Equal("Interception", game.DownDistance);
+    }
+
+    [Fact]
     public async Task Live_score_sync_retains_situation_during_a_transient_feed_gap_and_clears_it_at_final()
     {
         using var ctx = TestDb.NewContext();
@@ -104,6 +136,10 @@ public class SyncPipelineTests
 
         await import.ImportAsync(await client.GetWeekScheduleAsync(League.Nfl, 2026, 1));
         var game = await ctx.Games.Include(g => g.HomeTeam).FirstAsync();
+        game.HomeScore = 10;
+        game.AwayScore = 7;
+        game.DownDistance = null;
+        await ctx.SaveChangesAsync();
 
         await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
             game.ExternalId!,

@@ -15,7 +15,7 @@ export interface ReceiverRoutePath {
   startX: number;
   startY?: number;
   pathData: string;
-  tone?: 'primary' | 'secondary' | 'tertiary';
+  tone?: 'primary' | 'secondary' | 'tertiary' | 'quaternary';
 }
 
 /** Classic 1–9 receiver route tree plus common advanced routes. Terminology can vary by playbook. */
@@ -308,6 +308,51 @@ export const RECEIVER_ROUTES: ReceiverRoute[] = [
     diagramPaths: [
       { label: 'X', startX: 116, pathData: 'M116 310 L116 154 Q116 138 134 138 L360 138' },
       { label: 'Y', startX: 232, pathData: 'M232 310 L232 174 Q232 154 250 138 L350 42', tone: 'secondary' },
+    ],
+  },
+  {
+    number: 'C8',
+    name: 'Four Verticals',
+    aliases: 'Four Verts · 999',
+    group: 'Combination concepts',
+    depth: 'Deep',
+    summary: 'All four eligible receivers release vertically, with the two inside seams bending off the hash to stress a single-high safety and hold both hash defenders.',
+    coachingPoint: 'Keep the outside verticals tight to the numbers and have the inside seams adjust off the safety so no defender can rob two routes at once.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'W', startX: 64, pathData: 'M64 310 C62 250 62 140 64 42' },
+      { label: 'X', startX: 182, pathData: 'M182 310 C176 250 150 150 118 42', tone: 'secondary' },
+      { label: 'Y', startX: 258, pathData: 'M258 310 C264 250 290 150 322 42', tone: 'tertiary' },
+      { label: 'Z', startX: 376, pathData: 'M376 310 C378 250 378 140 376 42', tone: 'quaternary' },
+    ],
+  },
+  {
+    number: 'C9',
+    name: 'Snag',
+    aliases: 'Spot',
+    group: 'Combination concepts',
+    depth: 'Short + intermediate + deep',
+    summary: 'An outside corner route, an inside snag that pivots and settles underneath, and a flat route stretch the same defender across three levels.',
+    coachingPoint: 'Time the snag receiver’s sit-down before the corner route clears, and keep the flat route wide enough to hold the flat defender honest.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 340, pathData: 'M340 310 L340 160 Q340 142 324 126 L216 42' },
+      { label: 'Y', startX: 240, pathData: 'M240 310 L240 270 Q240 254 224 250 L200 258', tone: 'secondary' },
+      { label: 'Z', startX: 180, pathData: 'M180 310 Q180 288 155 280 L60 280', tone: 'tertiary' },
+    ],
+  },
+  {
+    number: 'C10',
+    name: 'Curl-Flat',
+    aliases: 'China',
+    group: 'Combination concepts',
+    depth: 'Short + intermediate',
+    summary: 'A flat route occupies the underneath defender while a curl sits down behind it, a simple two-level high-low stretch on one man.',
+    coachingPoint: 'Sell the flat release wide and let the curl settle into the window it opens; both routes must win off the same defender’s leverage.',
+    pathData: '',
+    diagramPaths: [
+      { label: 'X', startX: 300, pathData: 'M300 310 L300 158 Q300 140 284 152 L262 178' },
+      { label: 'Y', startX: 220, pathData: 'M220 310 L220 286 Q220 264 195 256 L90 256', tone: 'secondary' },
     ],
   },
 ];

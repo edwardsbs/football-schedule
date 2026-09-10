@@ -16,6 +16,13 @@ const FIELD_GOAL_SECOND = 37;
 const SECOND_KICKOFF_SECOND = 42;
 
 type Side = 'home' | 'away';
+type DefensiveEventLabel = 'Sack' | 'Interception' | 'Safety' | '4th Down Stop';
+
+interface DefensiveEvent {
+  label: DefensiveEventLabel;
+  isTurnover: boolean;
+  scoreValue: 0 | 2;
+}
 
 interface DemoGameConfig {
   id: number;
@@ -178,6 +185,8 @@ function buildScore(config: DemoGameConfig, elapsedSeconds: number): Score {
   const first = config.firstDrive;
   const second: Side = first === 'away' ? 'home' : 'away';
   const conversion = conversionOutcome(config, cycle);
+  const defensiveEvent = defensiveEventFor(config, cycle);
+  const openingDefensiveEvent = openingDefensiveEventFor(config, cycle, phase);
   const completed = completedCycleScores(config, cycle);
   let awayScore = completed.away;
   let homeScore = completed.home;
@@ -191,12 +200,23 @@ function buildScore(config: DemoGameConfig, elapsedSeconds: number): Score {
     else homeScore += conversion.value;
   }
   if (phase >= FIELD_GOAL_SECOND) {
-    if (second === 'away') awayScore += 3;
-    else homeScore += 3;
+    if (defensiveEvent?.scoreValue === 2) {
+      if (first === 'away') awayScore += 2;
+      else homeScore += 2;
+    } else if (!defensiveEvent) {
+      if (second === 'away') awayScore += 3;
+      else homeScore += 3;
+    }
   }
 
   let drive: { possessionTeamId: number | null; downDistance: string };
-  if (phase < TOUCHDOWN_SECOND) {
+  if (openingDefensiveEvent) {
+    const possessionSide = openingDefensiveEvent.label === 'Sack' ? first : second;
+    drive = {
+      possessionTeamId: config[possessionSide].id,
+      downDistance: openingDefensiveEvent.label,
+    };
+  } else if (phase < TOUCHDOWN_SECOND) {
     drive = driveSituation(config, first, phase);
   } else if (phase < CONVERSION_ATTEMPT_SECOND) {
     drive = { possessionTeamId: config[first].id, downDistance: 'Touchdown' };
@@ -211,6 +231,12 @@ function buildScore(config: DemoGameConfig, elapsedSeconds: number): Score {
     drive = { possessionTeamId: config[first].id, downDistance: 'Kickoff' };
   } else if (phase < FIELD_GOAL_SECOND) {
     drive = driveSituation(config, second, phase - SECOND_DRIVE_SECOND);
+  } else if (defensiveEvent) {
+    const possessionSide = defensiveEvent.label === 'Sack' ? second : first;
+    drive = {
+      possessionTeamId: config[possessionSide].id,
+      downDistance: defensiveEvent.label,
+    };
   } else if (phase < SECOND_KICKOFF_SECOND) {
     drive = { possessionTeamId: config[second].id, downDistance: 'Field Goal' };
   } else {
@@ -267,10 +293,18 @@ function buildDemoSummary(config: DemoGameConfig, game: Game, elapsedSeconds: nu
   const cycle = Math.floor(elapsedSeconds / DRIVE_SECONDS);
   const phase = elapsedSeconds % DRIVE_SECONDS;
   const conversion = conversionOutcome(config, cycle);
+  const defensiveEvent = defensiveEventFor(config, cycle);
+  const openingDefensiveEvent = openingDefensiveEventFor(config, cycle, phase);
   const second: Side = config.firstDrive === 'away' ? 'home' : 'away';
-  const currentSide: Side = phase < SECOND_DRIVE_SECOND || phase >= SECOND_KICKOFF_SECOND
+  const currentSide: Side = openingDefensiveEvent?.label === 'Interception'
+    ? second
+    : phase < SECOND_DRIVE_SECOND
     ? config.firstDrive
-    : second;
+    : defensiveEvent && phase >= FIELD_GOAL_SECOND && defensiveEvent.label !== 'Sack'
+      ? config.firstDrive
+      : phase >= SECOND_KICKOFF_SECOND && !defensiveEvent
+        ? config.firstDrive
+        : second;
   const offense = config[currentSide];
   const driveSecond = phase < SECOND_DRIVE_SECOND ? phase : phase - SECOND_DRIVE_SECOND;
   const yards = phase >= TOUCHDOWN_SECOND && phase < SECOND_DRIVE_SECOND
@@ -285,7 +319,9 @@ function buildDemoSummary(config: DemoGameConfig, game: Game, elapsedSeconds: nu
   if (phase >= CONVERSION_RESULT_SECOND && conversion.value > 0) {
     scoringPlays.push(scoringPlay(config.firstDrive, config, conversion.result, conversion.value, score));
   }
-  if (phase >= FIELD_GOAL_SECOND) {
+  if (phase >= FIELD_GOAL_SECOND && defensiveEvent?.scoreValue === 2) {
+    scoringPlays.push(scoringPlay(config.firstDrive, config, defensiveEvent.label, 2, score));
+  } else if (phase >= FIELD_GOAL_SECOND && !defensiveEvent) {
     scoringPlays.push(scoringPlay(second, config, 'Field Goal', 3, score));
   }
   const lastPlay = demoLastPlay(config, currentSide, phase, cycle, score);
@@ -302,7 +338,7 @@ function buildDemoSummary(config: DemoGameConfig, game: Game, elapsedSeconds: nu
       yards,
       isScore: phase === TOUCHDOWN_SECOND
         || (phase === CONVERSION_RESULT_SECOND && conversion.value > 0)
-        || phase === FIELD_GOAL_SECOND,
+        || (phase === FIELD_GOAL_SECOND && (!defensiveEvent || defensiveEvent.scoreValue === 2)),
       start: null,
       end: null,
     },
@@ -331,7 +367,9 @@ function completedCycleScores(config: DemoGameConfig, completedCycles: number): 
   const second: Side = config.firstDrive === 'away' ? 'home' : 'away';
   for (let cycle = 0; cycle < completedCycles; cycle += 1) {
     result[config.firstDrive] += 6 + conversionOutcome(config, cycle).value;
-    result[second] += 3;
+    const defensiveEvent = defensiveEventFor(config, cycle);
+    if (defensiveEvent?.scoreValue === 2) result[config.firstDrive] += 2;
+    else if (!defensiveEvent) result[second] += 3;
   }
   return result;
 }
@@ -346,13 +384,41 @@ function conversionOutcome(config: DemoGameConfig, cycle: number): ConversionOut
   }
 }
 
+function defensiveEventFor(config: DemoGameConfig, cycle: number): DefensiveEvent | null {
+  if (cycle === 0) return null;
+  const leagueOffset = config.league === 'Ncaa' ? 2 : 0;
+  const events: readonly (DefensiveEvent | null)[] = [
+    { label: 'Sack', isTurnover: false, scoreValue: 0 },
+    { label: 'Interception', isTurnover: true, scoreValue: 0 },
+    { label: 'Safety', isTurnover: false, scoreValue: 2 },
+    { label: '4th Down Stop', isTurnover: true, scoreValue: 0 },
+    null,
+  ];
+  return events[(cycle - 1 + leagueOffset) % events.length];
+}
+
+function openingDefensiveEventFor(
+  config: DemoGameConfig,
+  cycle: number,
+  phase: number,
+): DefensiveEvent | null {
+  if (cycle !== 0 || phase < 7 || phase >= 9) return null;
+  return config.league === 'Nfl'
+    ? { label: 'Sack', isTurnover: false, scoreValue: 0 }
+    : { label: 'Interception', isTurnover: true, scoreValue: 0 };
+}
+
 function scoringResult(config: DemoGameConfig, phase: number, cycle: number): string | null {
   const conversion = conversionOutcome(config, cycle);
+  const defensiveEvent = defensiveEventFor(config, cycle);
+  const openingDefensiveEvent = openingDefensiveEventFor(config, cycle, phase);
+  if (openingDefensiveEvent) return openingDefensiveEvent.label;
   if (phase >= TOUCHDOWN_SECOND && phase < CONVERSION_ATTEMPT_SECOND) return 'Touchdown';
   if (phase >= CONVERSION_ATTEMPT_SECOND && phase < CONVERSION_RESULT_SECOND) return conversion.attempt;
   if (phase >= CONVERSION_RESULT_SECOND && phase < FIRST_KICKOFF_SECOND) {
     return conversion.result;
   }
+  if (phase >= FIELD_GOAL_SECOND && defensiveEvent) return defensiveEvent.label;
   if (phase >= FIELD_GOAL_SECOND && phase < SECOND_KICKOFF_SECOND) return 'Field Goal';
   if ((phase >= FIRST_KICKOFF_SECOND && phase < SECOND_DRIVE_SECOND) || phase >= SECOND_KICKOFF_SECOND) {
     return 'Kickoff';
@@ -368,6 +434,20 @@ function demoLastPlay(
   score: Score,
 ): SummaryPlay {
   const conversion = conversionOutcome(config, cycle);
+  const defensiveEvent = defensiveEventFor(config, cycle);
+  const openingDefensiveEvent = openingDefensiveEventFor(config, cycle, phase);
+  if (openingDefensiveEvent) {
+    const defensiveSide: Side = config.firstDrive === 'away' ? 'home' : 'away';
+    return play(
+      defensiveSide,
+      config,
+      openingDefensiveEvent.label,
+      false,
+      0,
+      score,
+      openingDefensiveEvent.isTurnover,
+    );
+  }
   if (phase >= TOUCHDOWN_SECOND && phase < CONVERSION_ATTEMPT_SECOND) {
     return scoringPlay(config.firstDrive, config, 'Touchdown', 6, score);
   }
@@ -379,6 +459,17 @@ function demoLastPlay(
   }
   if (phase >= FIRST_KICKOFF_SECOND && phase < SECOND_DRIVE_SECOND) {
     return play(config.firstDrive, config, 'Kickoff', false, 0, score);
+  }
+  if (phase >= FIELD_GOAL_SECOND && defensiveEvent) {
+    return play(
+      config.firstDrive,
+      config,
+      defensiveEvent.label,
+      defensiveEvent.scoreValue > 0,
+      defensiveEvent.scoreValue,
+      score,
+      defensiveEvent.isTurnover,
+    );
   }
   if (phase >= FIELD_GOAL_SECOND && phase < SECOND_KICKOFF_SECOND) {
     return scoringPlay(side, config, 'Field Goal', 3, score);
@@ -420,6 +511,7 @@ function play(
   isScoringPlay: boolean,
   value: number,
   score: Score,
+  isTurnover = false,
 ): SummaryPlay {
   const team = config[side];
   return {
@@ -430,7 +522,7 @@ function play(
     period: score.period,
     clock: score.clock,
     isScoringPlay,
-    isTurnover: false,
+    isTurnover,
     isPenalty: false,
     scoreValue: value,
     homeScore: score.homeScore,

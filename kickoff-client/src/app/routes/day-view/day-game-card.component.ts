@@ -180,7 +180,16 @@ export class DayGameCardComponent {
 
     const game = this.game();
     const teamId = side === 'home' ? game.home.id : game.away.id;
-    return game.score?.possessionTeamId === teamId ? label : null;
+    const possessionTeamId = game.score?.possessionTeamId;
+    if (this.isSack(label)) {
+      const defensiveTeamId = possessionTeamId === game.home.id
+        ? game.away.id
+        : possessionTeamId === game.away.id
+          ? game.home.id
+          : null;
+      return defensiveTeamId === teamId ? label : null;
+    }
+    return possessionTeamId === teamId ? label : null;
   }
 
   protected fieldSituationLabel(): string | null {
@@ -189,7 +198,11 @@ export class DayGameCardComponent {
   }
 
   private isTeamLineSituation(label: string): boolean {
-    return /^(?:TOUCHDOWN|FIELD GOAL|PAT(?: Good| No Good)?|2-PT Conv\.(?: Good| Failed)?)$/i.test(label);
+    return /^(?:TOUCHDOWN|FIELD GOAL|PAT(?: Good| No Good)?|2-PT Conv\.(?: Good| Failed)?|SACK|INTERCEPTION|SAFETY|4TH DOWN STOP)$/i.test(label);
+  }
+
+  private isSack(label: string): boolean {
+    return /^SACK$/i.test(label);
   }
 
   protected isWinner(side: 'home' | 'away'): boolean {

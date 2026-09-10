@@ -89,6 +89,8 @@ export function trackScorePulse(game: Signal<Game>): ScorePulseTracker {
 
 export function scoreEventLabel(kind: ScorePulseKind, situation?: string | null): string | null {
   const normalizedSituation = situation?.trim().toLowerCase() ?? '';
+  const defensiveHighlight = defensiveEventLabel(normalizedSituation);
+  if (defensiveHighlight) return defensiveHighlight;
   if (isTwoPointConversion(normalizedSituation)) {
     if (/failed|no good|unsuccessful/.test(normalizedSituation)) return '2-PT Conv. Failed';
     if (/good|successful|succeeds|converted/.test(normalizedSituation)) return '2-PT Conv. Good';
@@ -102,6 +104,14 @@ export function scoreEventLabel(kind: ScorePulseKind, situation?: string | null)
   if (kind === 'touchdown') return 'TOUCHDOWN';
   if (kind === 'field-goal') return 'FIELD GOAL';
   if (kind === 'other') return 'SCORING PLAY';
+  return null;
+}
+
+function defensiveEventLabel(situation: string): string | null {
+  if (situation === 'sack') return 'Sack';
+  if (situation === 'interception') return 'Interception';
+  if (situation === 'safety') return 'Safety';
+  if (situation === '4th down stop' || situation === 'turnover on downs') return '4th Down Stop';
   return null;
 }
 

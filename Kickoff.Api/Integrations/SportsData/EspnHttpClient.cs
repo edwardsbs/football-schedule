@@ -651,7 +651,22 @@ public class EspnHttpClient(
                 var playText = lastPlay.TryGetProperty("text", out var text)
                     ? text.GetString()
                     : null;
-                lastScoringPlay = ScoringSituationLabel(playType, playText);
+                var playTeamExternalId = lastPlay.TryGetProperty("team", out var playTeam)
+                    && playTeam.TryGetProperty("id", out var playTeamId)
+                        ? playTeamId.GetString()
+                        : null;
+                var startingDown = lastPlay.TryGetProperty("start", out var start)
+                    && start.TryGetProperty("down", out var down)
+                    && down.TryGetInt32(out var parsedDown)
+                        ? parsedDown
+                        : (int?)null;
+                lastScoringPlay = HighlightSituationLabel(
+                    playType,
+                    playText,
+                    startingDown,
+                    playTeamExternalId is not null
+                        && possessionTeamExternalId is not null
+                        && playTeamExternalId != possessionTeamExternalId);
             }
         }
 
@@ -668,11 +683,22 @@ public class EspnHttpClient(
             LastScoringPlay: lastScoringPlay);
     }
 
-    private static string? ScoringSituationLabel(string? playType, string? playText)
+    private static string? HighlightSituationLabel(
+        string? playType,
+        string? playText,
+        int? startingDown,
+        bool possessionChanged)
     {
         var description = $"{playType} {playText}";
+        if (description.Contains("safety", StringComparison.OrdinalIgnoreCase)) return "Safety";
         if (description.Contains("touchdown", StringComparison.OrdinalIgnoreCase)) return "Touchdown";
         if (description.Contains("field goal", StringComparison.OrdinalIgnoreCase)) return "Field Goal";
+        if (description.Contains("intercept", StringComparison.OrdinalIgnoreCase)) return "Interception";
+        if (description.Contains("sack", StringComparison.OrdinalIgnoreCase)) return "Sack";
+        if (description.Contains("turnover on downs", StringComparison.OrdinalIgnoreCase)
+            || description.Contains("4th down stop", StringComparison.OrdinalIgnoreCase)
+            || (startingDown == 4 && possessionChanged))
+            return "4th Down Stop";
         return null;
     }
 
