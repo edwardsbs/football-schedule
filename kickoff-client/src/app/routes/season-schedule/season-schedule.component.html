@@ -36,7 +36,7 @@
               }
             </ol>
 
-            <h3>Next in</h3>
+            <h3>In The Hunt</h3>
             @for (team of conference.nextIn; track team.teamId) {
               <div class="playoff-bubble-team">
                 <span class="playoff-seed">{{ team.seed }}</span>
@@ -57,7 +57,17 @@
         }
       </div>
 
-      <footer>Seeded by win% · ties broken by this season's head-to-head only, not full NFL tiebreaker rules</footer>
+      <footer>
+        @if (playoffSeedingMaturity(); as maturity) {
+          @if (maturity.gamesPlayed < 3) {
+            <p class="playoff-early-note">
+              * Most teams have played {{ maturity.gamesPlayed }} game{{ maturity.gamesPlayed === 1 ? '' : 's' }} or fewer this season —
+              seeding is mostly a coin flip between tied 0–0/1–0 teams right now and will mean more as records build.
+            </p>
+          }
+        }
+        <p>Standings computed from the same live ESPN-sourced game data used throughout the app. Seeded by win% · ties broken by this season's head-to-head only, not the full official NFL tiebreaker procedure.</p>
+      </footer>
     </aside>
   } @else {
     <button

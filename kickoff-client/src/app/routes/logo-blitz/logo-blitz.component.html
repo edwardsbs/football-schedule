@@ -1,0 +1,55 @@
+<main class="quiz-page">
+  <header class="quiz-head">
+    <div>
+      <a class="quiz-back" routerLink="/games">← Mini-Games</a>
+      <span class="quiz-eyebrow">Logo Blitz · {{ leagueLabel() }}</span>
+      <h1>Name that team</h1>
+      <p>Ten logos. Four choices. Answer fast and build your streak.</p>
+    </div>
+    <nav class="quiz-game-nav" aria-label="Choose a mini-game">
+      <a [routerLink]="['/games/whos-missing', matchLeague()]">Who’s Missing?</a>
+      <a class="active" [routerLink]="['/games/logo-blitz', matchLeague()]">Logo Blitz</a>
+      <a routerLink="/games/route-recognition">Route Recognition</a>
+    </nav>
+  </header>
+
+  <div class="quiz-toolbar">
+    <nav class="quiz-league-switch" aria-label="Switch league">
+      <a routerLink="/games/logo-blitz/nfl" [class.active]="matchLeague() === 'nfl'">NFL</a>
+      <a routerLink="/games/logo-blitz/ncaa" [class.active]="matchLeague() === 'ncaa'">NCAA</a>
+    </nav>
+    <div class="quiz-stats">
+      <span><strong>{{ score() }}</strong> correct</span>
+      <span><strong>{{ streak() }}</strong> streak</span>
+      <span><strong>{{ elapsedLabel() }}s</strong></span>
+    </div>
+    <button type="button" class="quiz-reset" (click)="newRound()">Restart</button>
+  </div>
+
+  @if (isComplete()) {
+    <section class="quiz-finish" aria-live="polite">
+      <span class="finish-icon" aria-hidden="true">⚡</span>
+      <h2>{{ score() }} / {{ roundLength }} in {{ elapsedLabel() }} seconds</h2>
+      <p>Best streak: {{ bestStreak() }}.</p>
+      <button type="button" (click)="newRound()">Run It Again</button>
+    </section>
+  } @else if (question(); as current) {
+    <section class="quiz-card logo-quiz">
+      <div class="quiz-progress"><span [style.width.%]="questionNumber() * 10"></span></div>
+      <div class="quiz-prompt centered">
+        <span>Logo {{ questionNumber() }} of {{ roundLength }}</span>
+        <h2>Which team uses this logo?</h2>
+      </div>
+      <div class="hero-logo" aria-label="Mystery team logo">
+        <app-team-badge [name]="'Mystery team'" [logoUrl]="current.correct.logoUrl" [abbreviation]="'?'" [size]="150" />
+      </div>
+      <div class="quiz-choices compact" aria-label="Answer choices">
+        @for (team of current.choices; track team.key) {
+          <button type="button" [class]="choiceClass(team)" [disabled]="selectedKey() !== null" (click)="answer(team)">
+            <span>{{ team.name }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+</main>

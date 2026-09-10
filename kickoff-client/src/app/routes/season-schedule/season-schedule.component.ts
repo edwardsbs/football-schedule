@@ -179,6 +179,19 @@ export class SeasonScheduleComponent {
     return buildPlayoffPicture(entries, this.nflSeasonGames());
   });
 
+  /** How far into the season the standings actually are, so the rail can
+   * flag itself as not-yet-meaningful instead of silently looking like a
+   * confident, settled seeding while most teams are still 0-0 or 1-0. */
+  readonly playoffSeedingMaturity = computed(() => {
+    const teams = this.nflTeams();
+    if (teams.length === 0) return null;
+    const gamesPlayed = teams.map((team) => {
+      const record = this.records.record(team.id);
+      return record ? record.wins + record.losses + record.ties : 0;
+    });
+    return { gamesPlayed: Math.max(...gamesPlayed) };
+  });
+
   private readonly rankingSelection = computed(() => {
     const week = this.weekNumber();
     return this.league() === 'ncaa' && this.viewMode() === 'byWeek' && week !== null

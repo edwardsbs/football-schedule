@@ -86,6 +86,24 @@ export const routes: Routes = [
           import('./routes/match-location/match-location.component').then((m) => m.MatchLocationComponent),
       },
       {
+        path: 'games/whos-missing/:league',
+        title: 'Who’s Missing? · Kickoff',
+        loadComponent: () =>
+          import('./routes/whos-missing/whos-missing.component').then((m) => m.WhosMissingComponent),
+      },
+      {
+        path: 'games/logo-blitz/:league',
+        title: 'Logo Blitz · Kickoff',
+        loadComponent: () =>
+          import('./routes/logo-blitz/logo-blitz.component').then((m) => m.LogoBlitzComponent),
+      },
+      {
+        path: 'games/route-recognition',
+        title: 'Route Recognition · Kickoff',
+        loadComponent: () =>
+          import('./routes/route-recognition/route-recognition.component').then((m) => m.RouteRecognitionComponent),
+      },
+      {
         path: 'playoffs/:league',
         title: 'Playoff Bracket · Kickoff',
         loadComponent: () =>

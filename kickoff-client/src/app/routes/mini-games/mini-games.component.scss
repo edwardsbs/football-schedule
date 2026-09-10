@@ -3,7 +3,7 @@
 .eyebrow { color: var(--accent-gold, #c9a227); font-size: 0.72rem; font-weight: 850; letter-spacing: 0.1em; text-transform: uppercase; }
 h1 { margin: 0.25rem 0; font-size: clamp(1.45rem, 3vw, 2rem); }
 .games-head p, .game-card p { margin: 0; color: var(--muted-strong, #aab2c0); font-size: 0.88rem; }
-.game-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.game-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .game-card { position: relative; min-height: 240px; display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem; border: 1px solid var(--border, #262c38); border-radius: 16px; background: linear-gradient(145deg, var(--surface, #161a22), var(--surface-2, #1c212b)); }
 .game-card.featured { border-color: rgba(201, 162, 39, 0.5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035); }
 .game-icon { font-size: 2rem; }
@@ -12,4 +12,5 @@ h2 { margin: 0 0 0.3rem; font-size: 1.08rem; }
 .game-actions { display: flex; gap: 0.55rem; margin-top: auto; }
 .game-actions a { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--accent-gold, #c9a227); border-radius: 9px; color: var(--accent-gold, #c9a227); font-size: 0.82rem; font-weight: 800; text-decoration: none; touch-action: manipulation; }
 .game-actions a:active { background: rgba(201, 162, 39, 0.12); }
+@media (max-width: 980px) { .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) { .game-grid { grid-template-columns: 1fr; } }

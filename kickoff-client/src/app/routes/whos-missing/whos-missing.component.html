@@ -1,0 +1,75 @@
+<main class="quiz-page">
+  <header class="quiz-head">
+    <div>
+      <a class="quiz-back" routerLink="/games">← Mini-Games</a>
+      <span class="quiz-eyebrow">Who’s Missing? · {{ leagueLabel() }}</span>
+      <h1>Complete the roster</h1>
+      <p>One team has vanished. Pick the club that belongs in the group.</p>
+    </div>
+    <nav class="quiz-game-nav" aria-label="Choose a mini-game">
+      <a class="active" [routerLink]="['/games/whos-missing', matchLeague()]">Who’s Missing?</a>
+      <a [routerLink]="['/games/logo-blitz', matchLeague()]">Logo Blitz</a>
+      <a routerLink="/games/route-recognition">Route Recognition</a>
+    </nav>
+  </header>
+
+  <div class="quiz-toolbar">
+    <nav class="quiz-league-switch" aria-label="Switch league">
+      <a routerLink="/games/whos-missing/nfl" [class.active]="matchLeague() === 'nfl'">NFL</a>
+      <a routerLink="/games/whos-missing/ncaa" [class.active]="matchLeague() === 'ncaa'">NCAA</a>
+    </nav>
+    <div class="quiz-stats">
+      <span><strong>{{ score() }}</strong> correct</span>
+      <span><strong>{{ streak() }}</strong> streak</span>
+      <span>{{ questionNumber() }} / {{ roundLength }}</span>
+    </div>
+    <button type="button" class="quiz-reset" (click)="newRound()">New Round</button>
+  </div>
+
+  @if (isComplete()) {
+    <section class="quiz-finish" aria-live="polite">
+      <span class="finish-icon" aria-hidden="true">🏆</span>
+      <h2>{{ score() }} out of {{ roundLength }}</h2>
+      <p>Best streak: {{ bestStreak() }}. Ready to run the roster again?</p>
+      <button type="button" (click)="newRound()">Play Again</button>
+    </section>
+  } @else if (question(); as current) {
+    <section class="quiz-card roster-quiz">
+      <div class="quiz-prompt">
+        <span>Roster {{ questionNumber() }} of {{ roundLength }}</span>
+        <h2>{{ current.group.label }}</h2>
+        <p>Who’s missing from this {{ matchLeague() === 'nfl' ? 'division' : 'conference' }}?</p>
+      </div>
+
+      <div class="roster-grid" aria-label="Visible roster">
+        @for (team of current.visibleTeams; track team.key) {
+          <div class="roster-team">
+            <app-team-badge [name]="team.name" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [size]="34" />
+            <span>{{ team.name }}</span>
+          </div>
+        }
+        <div class="roster-team missing-slot" aria-label="Missing team">
+          <span class="missing-mark">?</span>
+          <span>Who belongs here?</span>
+        </div>
+      </div>
+
+      <div class="quiz-choices" aria-label="Answer choices">
+        @for (team of current.choices; track team.key) {
+          <button type="button" [class]="choiceClass(team)" [disabled]="selectedKey() !== null" (click)="answer(team)">
+            <app-team-badge [name]="team.name" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [size]="34" />
+            <span>{{ team.name }}</span>
+          </button>
+        }
+      </div>
+
+      @if (selectedKey()) {
+        <div class="quiz-feedback" [class.success]="selectedKey() === current.missing.key" aria-live="polite">
+          <strong>{{ selectedKey() === current.missing.key ? 'That’s it!' : 'Not quite.' }}</strong>
+          <span>{{ current.missing.name }} completes the {{ current.group.label }}.</span>
+          <button type="button" (click)="next()">{{ questionNumber() === roundLength ? 'See Results' : 'Next Roster' }} →</button>
+        </div>
+      }
+    </section>
+  }
+</main>
