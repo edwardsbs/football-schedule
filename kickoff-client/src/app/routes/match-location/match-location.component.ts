@@ -1,22 +1,14 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
-import {
-  MatchLeague,
-  MatchTarget,
-  MatchTile,
-  matchTargets,
-  matchTilePool,
-  pickRound,
-} from './division-match-data';
+import { MatchLeague, MatchTile, pickRound } from '../division-match/division-match-data';
+import { locationTilePool, StateTarget, US_STATE_TARGETS } from './match-location-data';
 
-export type RoundSize = 'quick' | 'standard' | 'full';
+export type LocationRoundSize = 'quick' | 'standard' | 'full';
 
-/** NCAA's much larger pool (dozens of conferences worth of teams vs. the
- * NFL's fixed 32) earns its own, bigger fixed round sizes. */
 const FIXED_ROUND_SIZES: Record<MatchLeague, Record<'quick' | 'standard', number>> = {
-  nfl: { quick: 8, standard: 12 },
-  ncaa: { quick: 32, standard: 64 },
+  nfl: { quick: 8, standard: 16 },
+  ncaa: { quick: 16, standard: 32 },
 };
 const DRAG_THRESHOLD_PX = 6;
 const FLASH_MS = 550;
@@ -30,53 +22,41 @@ interface DragStart {
   el: HTMLElement;
 }
 
-/** A touch-first drag-and-drop mini-game: place each team into its real
- * conference or division. Built entirely from the same static alignment data
- * the Conferences page uses -- no backend calls, so it's playable offline. */
+/** Touch-first geography game using the same team pool as Division Match. */
 @Component({
-  selector: 'app-division-match',
+  selector: 'app-match-location',
   imports: [RouterLink, TeamBadgeComponent],
-  templateUrl: './division-match.component.html',
-  styleUrl: './division-match.component.scss',
+  templateUrl: './match-location.component.html',
+  styleUrl: './match-location.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DivisionMatchComponent {
+export class MatchLocationComponent {
   readonly league = input.required<string>();
   readonly matchLeague = computed<MatchLeague>(() => (this.league() === 'nfl' ? 'nfl' : 'ncaa'));
   readonly leagueLabel = computed(() => (this.matchLeague() === 'nfl' ? 'NFL' : 'NCAA'));
-  readonly groupWord = computed(() => (this.matchLeague() === 'nfl' ? 'division' : 'conference'));
-
-  readonly targets = computed(() => matchTargets(this.matchLeague()));
-  private readonly pool = computed(() => matchTilePool(this.matchLeague()));
+  readonly states = US_STATE_TARGETS;
+  private readonly pool = computed(() => locationTilePool(this.matchLeague()));
   readonly poolSize = computed(() => this.pool().length);
   readonly quickSize = computed(() => Math.min(FIXED_ROUND_SIZES[this.matchLeague()].quick, this.poolSize()));
   readonly standardSize = computed(() => Math.min(FIXED_ROUND_SIZES[this.matchLeague()].standard, this.poolSize()));
 
-  readonly roundSize = signal<RoundSize>('standard');
+  readonly roundSize = signal<LocationRoundSize>('standard');
   readonly round = signal<MatchTile[]>([]);
-  /** A target can rightfully hold several teams (e.g. 4 per NFL division), so
-   * this holds every correctly-placed tile per target, not just the latest. */
   readonly placed = signal<Map<string, MatchTile[]>>(new Map());
   readonly mistakes = signal(0);
   readonly totalTiles = signal(0);
-
   readonly selectedTileKey = signal<string | null>(null);
-  readonly flashTargetKey = signal<string | null>(null);
+  readonly flashStateCode = signal<string | null>(null);
   readonly dragTileKey = signal<string | null>(null);
   private readonly dragDx = signal(0);
   private readonly dragDy = signal(0);
   readonly dragTransform = computed(() => `translate(${this.dragDx()}px, ${this.dragDy()}px)`);
 
-  /** "Hold to peek" (same convention as the live dashboard's muted-score
-   * reveal): holding a tile builds a progress glow, and past HINT_HOLD_MS
-   * reveals its correct target by highlighting that target box. Releasing
-   * hides it again immediately, same as the existing peek pattern. */
   readonly hintArmedTileKey = signal<string | null>(null);
   readonly hintTileKey = signal<string | null>(null);
-  readonly hintTargetKey = computed(() => {
+  readonly hintStateCode = computed(() => {
     const key = this.hintTileKey();
-    if (!key) return null;
-    return this.round().find((t) => t.key === key)?.targetKey ?? null;
+    return key ? this.round().find((tile) => tile.key === key)?.targetKey ?? null : null;
   });
 
   readonly placedCount = computed(() => {
@@ -92,10 +72,6 @@ export class DivisionMatchComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
-    // Reruns whenever the :league route param changes -- the router reuses
-    // this component instance when only the param changes (e.g. switching
-    // leagues via the in-page nav), so without this the board would keep
-    // showing the previous league's tiles under the new one's targets.
     effect(() => {
       this.matchLeague();
       untracked(() => this.newRound(this.roundSize()));
@@ -103,7 +79,7 @@ export class DivisionMatchComponent {
     this.destroyRef.onDestroy(() => this.clearHintTimer());
   }
 
-  newRound(size: RoundSize = this.roundSize()): void {
+  newRound(size: LocationRoundSize = this.roundSize()): void {
     this.roundSize.set(size);
     const pool = this.pool();
     const count = size === 'full' ? pool.length : FIXED_ROUND_SIZES[this.matchLeague()][size];
@@ -126,7 +102,6 @@ export class DivisionMatchComponent {
     this.dragStart = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, tile, el };
     this.dragDx.set(0);
     this.dragDy.set(0);
-
     this.hintArmedTileKey.set(tile.key);
     this.clearHintTimer();
     this.hintTimer = setTimeout(() => {
@@ -143,16 +118,10 @@ export class DivisionMatchComponent {
     const dy = event.clientY - start.y;
     this.dragDx.set(dx);
     this.dragDy.set(dy);
-
     if (this.dragTileKey() !== start.tile.key && Math.hypot(dx, dy) > DRAG_THRESHOLD_PX) {
       this.dragTileKey.set(start.tile.key);
       this.selectedTileKey.set(null);
-      this.clearHint(); // A real drag isn't a hold -- don't also reveal the hint.
-      // Set synchronously via the DOM, not just the [class.dragging] binding:
-      // Angular applies class bindings on its own change-detection schedule,
-      // and elementFromPoint() at drop time needs this to already be in
-      // effect the instant it runs, or it hits the dragged tile (now sitting
-      // right under the pointer) instead of the target underneath it.
+      this.clearHint();
       start.el.style.pointerEvents = 'none';
     }
   }
@@ -168,15 +137,12 @@ export class DivisionMatchComponent {
     this.dragDx.set(0);
     this.dragDy.set(0);
     this.dragStart = null;
-
-    if (!wasDragging) return; // A plain tap falls through to the (click) handler.
+    if (!wasDragging) return;
 
     this.suppressNextTileClick = true;
-    // Hit-test BEFORE restoring pointer-events, or elementFromPoint hits the
-    // tile itself again instead of whatever is underneath it.
-    const targetKey = this.targetKeyAtPoint(event.clientX, event.clientY);
+    const stateCode = this.stateCodeAtPoint(event.clientX, event.clientY);
     start.el.style.pointerEvents = '';
-    if (targetKey) this.attemptMatch(start.tile, targetKey);
+    if (stateCode) this.attemptMatch(start.tile, stateCode);
   }
 
   onTilePointerCancel(event: PointerEvent): void {
@@ -190,6 +156,48 @@ export class DivisionMatchComponent {
     this.clearHint();
   }
 
+  onTileClick(tile: MatchTile): void {
+    if (this.suppressNextTileClick) {
+      this.suppressNextTileClick = false;
+      return;
+    }
+    this.selectedTileKey.set(this.selectedTileKey() === tile.key ? null : tile.key);
+  }
+
+  onStateTap(target: StateTarget): void {
+    const key = this.selectedTileKey();
+    if (!key) return;
+    const tile = this.round().find((candidate) => candidate.key === key);
+    if (tile) this.attemptMatch(tile, target.code);
+  }
+
+  stateName(code: string): string {
+    return this.states.find((state) => state.code === code)?.name ?? code;
+  }
+
+  private stateCodeAtPoint(x: number, y: number): string | null {
+    return document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-state-code]')?.dataset['stateCode'] ?? null;
+  }
+
+  private attemptMatch(tile: MatchTile, stateCode: string): void {
+    this.selectedTileKey.set(null);
+    if (tile.targetKey === stateCode) {
+      this.round.update((tiles) => tiles.filter((candidate) => candidate.key !== tile.key));
+      this.placed.update((map) => {
+        const next = new Map(map);
+        next.set(stateCode, [...(next.get(stateCode) ?? []), tile]);
+        return next;
+      });
+      return;
+    }
+
+    this.mistakes.update((count) => count + 1);
+    this.flashStateCode.set(stateCode);
+    setTimeout(() => {
+      if (this.flashStateCode() === stateCode) this.flashStateCode.set(null);
+    }, FLASH_MS);
+  }
+
   private clearHint(): void {
     this.clearHintTimer();
     this.hintArmedTileKey.set(null);
@@ -199,54 +207,5 @@ export class DivisionMatchComponent {
   private clearHintTimer(): void {
     if (this.hintTimer) clearTimeout(this.hintTimer);
     this.hintTimer = null;
-  }
-
-  /** Tap-to-select fallback (and free keyboard support, since it fires on
-   * Enter/Space too) -- ignored right after a real drag-release so a drag
-   * doesn't also toggle selection via its trailing synthetic click. */
-  onTileClick(tile: MatchTile): void {
-    if (this.suppressNextTileClick) {
-      this.suppressNextTileClick = false;
-      return;
-    }
-    this.selectedTileKey.set(this.selectedTileKey() === tile.key ? null : tile.key);
-  }
-
-  onTargetTap(target: MatchTarget): void {
-    const key = this.selectedTileKey();
-    if (!key) return;
-    const tile = this.round().find((t) => t.key === key);
-    if (tile) this.attemptMatch(tile, target.key);
-  }
-
-  targetGridArea(target: MatchTarget): string | null {
-    if (this.matchLeague() !== 'nfl') return null;
-    return target.key.toLowerCase().replace(/\s+/g, '-');
-  }
-
-  private targetKeyAtPoint(x: number, y: number): string | null {
-    const el = document.elementFromPoint(x, y);
-    const target = el?.closest<HTMLElement>('[data-target-key]');
-    return target?.dataset['targetKey'] ?? null;
-  }
-
-  private attemptMatch(tile: MatchTile, targetKey: string): void {
-    this.selectedTileKey.set(null);
-
-    if (tile.targetKey === targetKey) {
-      this.round.update((tiles) => tiles.filter((t) => t.key !== tile.key));
-      this.placed.update((map) => {
-        const next = new Map(map);
-        next.set(targetKey, [...(next.get(targetKey) ?? []), tile]);
-        return next;
-      });
-      return;
-    }
-
-    this.mistakes.update((n) => n + 1);
-    this.flashTargetKey.set(targetKey);
-    setTimeout(() => {
-      if (this.flashTargetKey() === targetKey) this.flashTargetKey.set(null);
-    }, FLASH_MS);
   }
 }

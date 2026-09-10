@@ -59,6 +59,11 @@ export const routes: Routes = [
         loadComponent: () => import('./routes/game-detail/game-detail.component').then((m) => m.GameDetailComponent),
       },
       {
+        path: 'games',
+        title: 'Mini-Games · Kickoff',
+        loadComponent: () => import('./routes/mini-games/mini-games.component').then((m) => m.MiniGamesComponent),
+      },
+      {
         path: 'formations/:side',
         title: 'Formations · Kickoff',
         loadComponent: () => import('./routes/formations/formations.component').then((m) => m.FormationsComponent),
@@ -73,6 +78,12 @@ export const routes: Routes = [
         title: 'Division Match · Kickoff',
         loadComponent: () =>
           import('./routes/division-match/division-match.component').then((m) => m.DivisionMatchComponent),
+      },
+      {
+        path: 'games/match-location/:league',
+        title: 'Match Location · Kickoff',
+        loadComponent: () =>
+          import('./routes/match-location/match-location.component').then((m) => m.MatchLocationComponent),
       },
       {
         path: 'playoffs/:league',

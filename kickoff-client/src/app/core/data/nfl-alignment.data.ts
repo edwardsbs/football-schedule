@@ -1,10 +1,18 @@
 import { AlignmentTeam, LeagueAlignment } from '../models/alignment.model';
 
 // name + ESPN abbreviation → AlignmentTeam with a real logo URL.
+const NFL_STATE_BY_ABBR: Readonly<Record<string, string>> = {
+  ari: 'AZ', atl: 'GA', bal: 'MD', buf: 'NY', car: 'NC', chi: 'IL', cin: 'OH', cle: 'OH',
+  dal: 'TX', den: 'CO', det: 'MI', gb: 'WI', hou: 'TX', ind: 'IN', jax: 'FL', kc: 'MO',
+  lv: 'NV', lac: 'CA', lar: 'CA', mia: 'FL', min: 'MN', ne: 'MA', no: 'LA', nyg: 'NJ',
+  nyj: 'NJ', phi: 'PA', pit: 'PA', sea: 'WA', sf: 'CA', tb: 'FL', ten: 'TN', wsh: 'MD',
+};
+
 const t = (name: string, abbr: string): AlignmentTeam => ({
   name,
   abbreviation: abbr,
   logoUrl: `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png`,
+  stateCode: NFL_STATE_BY_ABBR[abbr],
 });
 
 /**

@@ -1,9 +1,15 @@
 <header class="match-head">
   <div class="match-title">
-    <span class="eyebrow">Division Match · {{ leagueLabel() }}</span>
+    <a class="back-link" routerLink="/games">← Mini-Games</a>
+    <span class="eyebrow">Conference / Division Match · {{ leagueLabel() }}</span>
     <h1>Where does each team play?</h1>
     <p>Drag a team onto its real {{ groupWord() }}, or tap a team then tap its home. Hold a team for 3 seconds for a hint.</p>
   </div>
+
+  <nav class="game-switch" aria-label="Choose a mini-game">
+    <a class="active" [routerLink]="['/games/division-match', matchLeague()]">Conference / Division Match</a>
+    <a [routerLink]="['/games/match-location', matchLeague()]">Match Location</a>
+  </nav>
 
   <div class="match-controls">
     <div class="seg" role="group" aria-label="Round size">
@@ -34,10 +40,11 @@
   </div>
 }
 
-<div class="match-targets">
+<div class="match-targets" [class.nfl-layout]="matchLeague() === 'nfl'">
   @for (target of targets(); track target.key) {
     <div
       class="match-target"
+      [style.grid-area]="targetGridArea(target)"
       [attr.data-target-key]="target.key"
       [class.filled]="placed().has(target.key)"
       [class.flash]="flashTargetKey() === target.key"
@@ -79,6 +86,7 @@
       (pointermove)="onTilePointerMove($event)"
       (pointerup)="onTilePointerUp($event)"
       (pointercancel)="onTilePointerCancel($event)"
+      (contextmenu)="$event.preventDefault()"
       (click)="onTileClick(tile)"
     >
       <span class="hint-progress"></span>

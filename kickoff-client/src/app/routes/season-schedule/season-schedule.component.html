@@ -1,24 +1,24 @@
 @if (league() === 'nfl' && viewMode() === 'byWeek') {
   @if (playoffRailOpen()) {
-    <aside class="playoff-picture-rail season-playoff-rail" aria-label="Mock 2025 NFL playoff picture">
+    <aside class="playoff-picture-rail season-playoff-rail" aria-label="Live NFL playoff picture">
       <header class="playoff-picture-head">
         <div>
-          <span>2025 reference</span>
+          <span>Live standings</span>
           <strong>Playoff Picture</strong>
-          <small>Temporary layout data</small>
+          <small>Provisional seeding</small>
         </div>
         <button type="button" (click)="playoffRailOpen.set(false)">Hide</button>
       </header>
 
       <div class="playoff-picture-body">
-        @for (conference of mockPlayoffConferences; track conference.name) {
+        @for (conference of playoffPicture(); track conference.name) {
           <section class="playoff-conference" [attr.aria-labelledby]="'playoff-' + conference.name">
             <h2 [id]="'playoff-' + conference.name">
               <span>{{ conference.name }}</span>
-              <small>2025 final field</small>
+              <small>If the season ended today</small>
             </h2>
             <ol>
-              @for (team of conference.teams; track team.abbreviation) {
+              @for (team of conference.seeds; track team.teamId) {
                 <li>
                   <span class="playoff-seed">{{ team.seed }}</span>
                   <app-team-badge
@@ -28,18 +28,18 @@
                     [size]="25"
                   />
                   <span class="playoff-team">
-                    <strong>{{ team.abbreviation }}</strong>
+                    <strong>{{ team.abbreviation }} @if (team.isBye) { <span class="playoff-bye">BYE</span> }</strong>
                     <small>{{ team.displayName }}</small>
                   </span>
-                  <span class="playoff-record">{{ team.record }}</span>
+                  <span class="playoff-record">{{ team.recordLabel }}</span>
                 </li>
               }
             </ol>
 
-            <h3>Last team out</h3>
-            @for (team of conference.bubble; track team.abbreviation) {
+            <h3>Next in</h3>
+            @for (team of conference.nextIn; track team.teamId) {
               <div class="playoff-bubble-team">
-                <span class="playoff-seed">—</span>
+                <span class="playoff-seed">{{ team.seed }}</span>
                 <app-team-badge
                   [name]="team.displayName"
                   [logoUrl]="team.logoUrl"
@@ -50,20 +50,20 @@
                   <strong>{{ team.abbreviation }}</strong>
                   <small>{{ team.displayName }}</small>
                 </span>
-                <span class="playoff-record">{{ team.record }}</span>
+                <span class="playoff-record">{{ team.recordLabel }}</span>
               </div>
             }
           </section>
         }
       </div>
 
-      <footer>Mock only · not a 2026 projection</footer>
+      <footer>Seeded by win% · ties broken by this season's head-to-head only, not full NFL tiebreaker rules</footer>
     </aside>
   } @else {
     <button
       type="button"
       class="show-playoff-rail season-show-playoff-rail"
-      aria-label="Show mock NFL playoff picture"
+      aria-label="Show live NFL playoff picture"
       (click)="playoffRailOpen.set(true)"
     >
       <img src="/nfl-logo.png" alt="" aria-hidden="true" />

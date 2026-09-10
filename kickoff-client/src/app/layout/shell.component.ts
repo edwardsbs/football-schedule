@@ -244,6 +244,7 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
     { path: '/my-teams', label: 'My Teams' },
     { path: '/playoffs/nfl', label: 'Super Bowl' },
     { path: '/playoffs/ncaa', label: 'CFP Bracket' },
+    { path: '/games', label: '🎮 Mini-Games' },
     { path: '/formations/offense', label: 'Formations' },
     { path: '/routes', label: 'Route Tree' },
   ];

@@ -139,6 +139,19 @@ app-season-schedule {
     }
   }
 
+  .playoff-bye {
+    display: inline-block;
+    margin-left: 0.3rem;
+    padding: 0.04rem 0.3rem;
+    border-radius: 4px;
+    background: rgba(201, 162, 39, 0.22);
+    color: var(--accent-gold, #c9a227);
+    font-size: 0.52rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+  }
+
   .playoff-seed,
   .playoff-record {
     color: var(--muted-strong, #aab2c0);

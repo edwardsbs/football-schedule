@@ -27,6 +27,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
         [alt]="name()"
         [style.width.px]="size()"
         [style.height.px]="size()"
+        draggable="false"
         crossorigin="anonymous"
         loading="lazy"
         (load)="inspectLogo($event)"
@@ -59,6 +60,9 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
       }
       .logo {
         object-fit: contain;
+        -webkit-user-drag: none;
+        -webkit-user-select: none;
+        user-select: none;
         &.needs-contrast {
           filter: drop-shadow(0 0 0.65px rgb(218 223 232 / 88%));
         }

@@ -6,6 +6,8 @@ export interface AlignmentTeam {
   abbreviation?: string;
   /** Real logo URL when available; otherwise a monogram badge is rendered. */
   logoUrl?: string;
+  /** Two-letter home-state code used by geography-based mini-games. */
+  stateCode?: string;
 }
 
 export interface AlignmentDivision {

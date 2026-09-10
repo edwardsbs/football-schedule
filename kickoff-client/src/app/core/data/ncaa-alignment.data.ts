@@ -134,11 +134,41 @@ const NCAA_MASCOTS: Readonly<Record<string, string>> = {
   'Notre Dame': 'Fighting Irish',
 };
 
+const NCAA_STATE_BY_SCHOOL: Readonly<Record<string, string>> = {
+  Alabama: 'AL', Florida: 'FL', Georgia: 'GA', Kentucky: 'KY', 'Mississippi State': 'MS',
+  Missouri: 'MO', 'South Carolina': 'SC', Tennessee: 'TN', Arkansas: 'AR', Auburn: 'AL',
+  LSU: 'LA', Oklahoma: 'OK', 'Ole Miss': 'MS', 'Texas A&M': 'TX', Vanderbilt: 'TN', Texas: 'TX',
+  Illinois: 'IL', Indiana: 'IN', Michigan: 'MI', 'Michigan State': 'MI', 'Ohio State': 'OH',
+  'Penn State': 'PA', Rutgers: 'NJ', Wisconsin: 'WI', Iowa: 'IA', Maryland: 'MD', Minnesota: 'MN',
+  Nebraska: 'NE', Northwestern: 'IL', Oregon: 'OR', Purdue: 'IN', UCLA: 'CA', USC: 'CA',
+  Washington: 'WA', Arizona: 'AZ', 'Arizona State': 'AZ', BYU: 'UT', Colorado: 'CO', Kansas: 'KS',
+  'Kansas State': 'KS', Utah: 'UT', Baylor: 'TX', Cincinnati: 'OH', Houston: 'TX', 'Iowa State': 'IA',
+  'Oklahoma State': 'OK', TCU: 'TX', 'Texas Tech': 'TX', 'West Virginia': 'WV',
+  'Boston College': 'MA', Clemson: 'SC', 'Florida State': 'FL', Louisville: 'KY', 'NC State': 'NC',
+  Syracuse: 'NY', 'Wake Forest': 'NC', Cal: 'CA', Duke: 'NC', 'Georgia Tech': 'GA', Miami: 'FL',
+  'North Carolina': 'NC', Pittsburgh: 'PA', Virginia: 'VA', 'Virginia Tech': 'VA', SMU: 'TX',
+  'Boise State': 'ID', 'Oregon State': 'OR', 'Washington State': 'WA', Stanford: 'CA',
+  'Colorado State': 'CO', 'San Diego State': 'CA', Charlotte: 'NC', 'East Carolina': 'NC',
+  'Florida Atlantic': 'FL', Memphis: 'TN', Navy: 'MD', Rice: 'TX', Temple: 'PA', Tulane: 'LA',
+  'North Texas': 'TX', 'South Florida': 'FL', Tulsa: 'OK', UTSA: 'TX', UAB: 'AL', UConn: 'CT',
+  'Air Force': 'CO', Hawaii: 'HI', 'New Mexico': 'NM', 'Utah State': 'UT', Wyoming: 'WY', Idaho: 'ID',
+  Nevada: 'NV', 'New Mexico State': 'NM', UNLV: 'NV', 'North Dakota State': 'ND',
+  'Appalachian State': 'NC', 'Coastal Carolina': 'SC', 'Georgia Southern': 'GA', 'James Madison': 'VA',
+  Marshall: 'WV', 'Old Dominion': 'VA', 'Southern Miss': 'MS', Louisiana: 'LA', 'Louisiana Tech': 'LA',
+  'South Alabama': 'AL', Troy: 'AL', 'Texas State': 'TX', 'UL Monroe': 'LA', Akron: 'OH',
+  'Ball State': 'IN', 'Bowling Green': 'OH', Buffalo: 'NY', 'Central Michigan': 'MI',
+  'Eastern Michigan': 'MI', 'Kent State': 'OH', 'Miami (OH)': 'OH', 'Northern Illinois': 'IL',
+  Ohio: 'OH', Toledo: 'OH', 'Western Michigan': 'MI', Delaware: 'DE', FIU: 'FL',
+  'Kennesaw State': 'GA', Liberty: 'VA', 'Middle Tennessee': 'TN', 'Sam Houston': 'TX', UTEP: 'TX',
+  'Western Kentucky': 'KY', 'Notre Dame': 'IN',
+};
+
 // Team-name list → AlignmentTeam[], adding the mascot while preserving the base name for logo lookup.
 const t = (...names: string[]) =>
   names.map((name) => ({
     name: NCAA_MASCOTS[name] ? `${name} ${NCAA_MASCOTS[name]}` : name,
     logoUrl: ncaaLogoUrl(name),
+    stateCode: NCAA_STATE_BY_SCHOOL[name],
   }));
 
 /**

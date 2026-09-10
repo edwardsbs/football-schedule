@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { Game, TeamSummary } from '../../core/models/game.model';
+import { PlayoffTeamEntry, buildPlayoffPicture } from '../../core/nfl-playoff-picture';
 import { NcaaRankings, RankingPoll, RankingRow } from '../../core/models/ranking.model';
 import { mergeRankingPolls, rankingPoll } from '../../core/ranking-comparison';
 import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
@@ -20,7 +21,6 @@ import { ImportantGamesTickerComponent } from '../../shared/important-games-tick
 import { LeagueSectionToggleComponent } from '../../shared/league-section-toggle/league-section-toggle.component';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { WeekStripComponent, WeekStripItem } from '../../shared/week-strip/week-strip.component';
-import { MOCK_2025_PLAYOFF_PICTURE } from './nfl-playoff-picture.mock';
 import { defaultScheduleWeek } from './schedule-week-selection';
 import { pollWeekForScheduleWeek } from './season-ranking-week';
 
@@ -144,8 +144,40 @@ export class SeasonScheduleComponent {
 
   readonly rankingRailOpen = signal(true);
   readonly playoffRailOpen = signal(true);
-  readonly mockPlayoffConferences = MOCK_2025_PLAYOFF_PICTURE;
   readonly seasonYear = new Date(this.scheduleRange.from).getFullYear();
+
+  /** Real teams (all 32, independent of whichever league route is active --
+   * the rail only renders under the NFL route, but this is cheap to fetch
+   * either way and keeps the computation self-contained). */
+  private readonly nflTeams = toSignal(
+    this.api.getTeams('Nfl').pipe(catchError(() => of([] as TeamSummary[]))),
+    { initialValue: [] as TeamSummary[] },
+  );
+
+  /** Every NFL game across the full season, regardless of the active league
+   * route or any "My games"/Find Games filtering -- head-to-head tiebreaking
+   * needs the complete real schedule, not whatever's currently visible. */
+  private readonly nflSeasonGames = toSignal(
+    this.api.getRange(seasonRange().from, seasonRange().to, 'Nfl').pipe(catchError(() => of([] as Game[]))),
+    { initialValue: [] as Game[] },
+  );
+
+  readonly playoffPicture = computed(() => {
+    const entries: PlayoffTeamEntry[] = [];
+    for (const team of this.nflTeams()) {
+      const division = this.conferences.groupOf(team.id);
+      if (!division) continue;
+      entries.push({
+        teamId: team.id,
+        displayName: team.displayName,
+        abbreviation: team.abbreviation,
+        logoUrl: team.logoUrl,
+        division,
+        record: this.records.record(team.id) ?? { teamId: team.id, wins: 0, losses: 0, ties: 0 },
+      });
+    }
+    return buildPlayoffPicture(entries, this.nflSeasonGames());
+  });
 
   private readonly rankingSelection = computed(() => {
     const week = this.weekNumber();

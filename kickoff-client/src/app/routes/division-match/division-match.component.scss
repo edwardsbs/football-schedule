@@ -35,6 +35,38 @@
   }
 }
 
+.back-link {
+  display: block;
+  width: max-content;
+  margin-bottom: 0.45rem;
+  color: var(--muted-strong, #aab2c0);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.game-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+
+  a {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 999px;
+    color: var(--muted-strong, #aab2c0);
+    font-size: 0.76rem;
+    font-weight: 750;
+    text-decoration: none;
+    touch-action: manipulation;
+
+    &.active { border-color: var(--accent-gold, #c9a227); color: var(--accent-gold, #c9a227); }
+  }
+}
+
 .match-controls {
   display: flex;
   flex-wrap: wrap;
@@ -147,6 +179,13 @@
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 0.6rem;
   margin-bottom: 1.5rem;
+
+  &.nfl-layout {
+    grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) minmax(160px, 1.8fr) minmax(150px, 1fr) minmax(150px, 1fr);
+    grid-template-areas:
+      "nfc-east nfc-north . afc-east afc-north"
+      "nfc-south nfc-west . afc-south afc-west";
+  }
 }
 
 .match-target {
@@ -245,6 +284,9 @@
   touch-action: none;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.15s ease;
 
   &.selected {
@@ -271,6 +313,13 @@
     border-color: #6fb3ff;
     box-shadow: 0 0 0 1px #6fb3ff;
   }
+}
+
+.match-tile app-team-badge,
+.match-tile > span {
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Same "hold to peek" visual language as the live dashboard's muted-score
@@ -324,6 +373,17 @@
   .new-round-btn,
   .seg button {
     min-height: 48px;
+  }
+}
+
+@media (max-width: 760px) {
+  .match-targets.nfl-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "nfc-east nfc-north"
+      "nfc-south nfc-west"
+      "afc-east afc-north"
+      "afc-south afc-west";
   }
 }
 

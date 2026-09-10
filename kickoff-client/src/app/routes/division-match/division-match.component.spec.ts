@@ -24,6 +24,17 @@ describe('DivisionMatchComponent', () => {
     expect(component.placedCount()).toBe(0);
   });
 
+  it('places the NFC quadrants on the left and AFC quadrants on the right', () => {
+    const areas = [...fixture.nativeElement.querySelectorAll('.match-target')]
+      .map((target: HTMLElement) => target.style.gridArea);
+
+    expect(areas).toEqual([
+      'afc-east', 'afc-north', 'afc-south', 'afc-west',
+      'nfc-east', 'nfc-north', 'nfc-south', 'nfc-west',
+    ]);
+    expect(fixture.nativeElement.querySelector('.match-targets').classList).toContain('nfl-layout');
+  });
+
   it('places a tile correctly via tap-select then tap-target', () => {
     const tile = component.round()[0];
     component.onTileClick(tile);

@@ -1,0 +1,111 @@
+<header class="location-head">
+  <div class="title-row">
+    <div>
+      <a class="back-link" routerLink="/games">← Mini-Games</a>
+      <span class="eyebrow">Match Location · {{ leagueLabel() }}</span>
+      <h1>Put every team on the map</h1>
+      <p>Drag a team onto its home state, or tap a team then tap the state. Hold a team for 3 seconds for a hint.</p>
+    </div>
+    <nav class="game-switch" aria-label="Choose a mini-game">
+      <a [routerLink]="['/games/division-match', matchLeague()]">Conference / Division Match</a>
+      <a class="active" [routerLink]="['/games/match-location', matchLeague()]">Match Location</a>
+    </nav>
+  </div>
+
+  <div class="location-controls">
+    <div class="seg" role="group" aria-label="Round size">
+      <button type="button" [class.active]="roundSize() === 'quick'" (click)="newRound('quick')">Quick · {{ quickSize() }}</button>
+      <button type="button" [class.active]="roundSize() === 'standard'" (click)="newRound('standard')">Standard · {{ standardSize() }}</button>
+      <button type="button" [class.active]="roundSize() === 'full'" (click)="newRound('full')">Full Board · {{ poolSize() }}</button>
+    </div>
+    <div class="location-stats">
+      <span><strong>{{ placedCount() }}</strong> / {{ totalTiles() }} placed</span>
+      <span [class.has-misses]="mistakes() > 0"><strong>{{ mistakes() }}</strong> miss{{ mistakes() === 1 ? '' : 'es' }}</span>
+    </div>
+    <button type="button" class="new-round-btn" (click)="newRound(roundSize())">New Round</button>
+  </div>
+
+  <nav class="league-switch" aria-label="Switch league">
+    <a routerLink="/games/match-location/nfl" [class.active]="matchLeague() === 'nfl'">NFL</a>
+    <a routerLink="/games/match-location/ncaa" [class.active]="matchLeague() === 'ncaa'">NCAA</a>
+  </nav>
+</header>
+
+@if (isComplete()) {
+  <div class="location-complete" role="status">
+    <strong>Map complete!</strong>
+    <span>{{ mistakes() === 0 ? 'Perfect round, zero misses.' : (mistakes() + ' miss' + (mistakes() === 1 ? '' : 'es') + ' this round.') }}</span>
+    <button type="button" (click)="newRound(roundSize())">Play Again</button>
+  </div>
+}
+
+<div class="location-board">
+  <section class="map-panel" aria-label="United States state map">
+    <div class="map-caption"><strong>United States</strong><span>Select or drop on a state</span></div>
+    <div class="map-scroll">
+      <div class="us-state-map">
+        @for (state of states; track state.code) {
+          <button
+            type="button"
+            class="state-target"
+            [style.grid-row]="state.row"
+            [style.grid-column]="state.column"
+            [attr.data-state-code]="state.code"
+            [attr.title]="state.name"
+            [attr.aria-label]="state.name + ((placed().get(state.code)?.length ?? 0) ? ', ' + placed().get(state.code)!.length + ' placed' : '')"
+            [class.filled]="placed().has(state.code)"
+            [class.selectable]="selectedTileKey() !== null"
+            [class.flash]="flashStateCode() === state.code"
+            [class.hint-target]="hintStateCode() === state.code"
+            (click)="onStateTap(state)"
+          >
+            <span class="state-code">{{ state.code }}</span>
+            @if (placed().get(state.code); as tiles) {
+              <span class="placed-logos">
+                @for (tile of tiles.slice(0, 3); track tile.key) {
+                  <app-team-badge [name]="tile.name" [logoUrl]="tile.logoUrl" [abbreviation]="tile.abbreviation" [size]="16" />
+                }
+                @if (tiles.length > 3) { <small>+{{ tiles.length - 3 }}</small> }
+              </span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <aside class="team-tray" aria-label="Teams to place">
+    <div class="tray-head">
+      <strong>Teams</strong>
+      <span>{{ round().length }} left</span>
+    </div>
+    <div class="tray-tiles">
+      @for (tile of round(); track tile.key) {
+        <button
+          type="button"
+          class="location-tile"
+          [class.selected]="selectedTileKey() === tile.key"
+          [class.dragging]="dragTileKey() === tile.key"
+          [class.hint-armed]="hintArmedTileKey() === tile.key && hintTileKey() !== tile.key"
+          [class.hint-revealed]="hintTileKey() === tile.key"
+          [style.transform]="dragTileKey() === tile.key ? dragTransform() : null"
+          [attr.aria-pressed]="selectedTileKey() === tile.key"
+          [attr.title]="'Hold 3 seconds to reveal the home state for ' + tile.name"
+          (pointerdown)="onTilePointerDown(tile, $event)"
+          (pointermove)="onTilePointerMove($event)"
+          (pointerup)="onTilePointerUp($event)"
+          (pointercancel)="onTilePointerCancel($event)"
+          (contextmenu)="$event.preventDefault()"
+          (click)="onTileClick(tile)"
+        >
+          <span class="hint-progress"></span>
+          <app-team-badge [name]="tile.name" [logoUrl]="tile.logoUrl" [abbreviation]="tile.abbreviation" [size]="28" />
+          <span class="team-name">{{ tile.name }}</span>
+          @if (hintTileKey() === tile.key) {
+            <span class="hint-label">{{ stateName(tile.targetKey) }}</span>
+          }
+        </button>
+      }
+    </div>
+  </aside>
+</div>
