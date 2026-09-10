@@ -1,0 +1,92 @@
+<header class="match-head">
+  <div class="match-title">
+    <span class="eyebrow">Division Match · {{ leagueLabel() }}</span>
+    <h1>Where does each team play?</h1>
+    <p>Drag a team onto its real {{ groupWord() }}, or tap a team then tap its home. Hold a team for 3 seconds for a hint.</p>
+  </div>
+
+  <div class="match-controls">
+    <div class="seg" role="group" aria-label="Round size">
+      <button type="button" [class.active]="roundSize() === 'quick'" (click)="newRound('quick')">Quick · {{ quickSize() }}</button>
+      <button type="button" [class.active]="roundSize() === 'standard'" (click)="newRound('standard')">Standard · {{ standardSize() }}</button>
+      <button type="button" [class.active]="roundSize() === 'full'" (click)="newRound('full')">Full Board · {{ poolSize() }}</button>
+    </div>
+
+    <div class="match-stats">
+      <span class="stat"><strong>{{ placedCount() }}</strong> / {{ totalTiles() }} placed</span>
+      <span class="stat" [class.has-misses]="mistakes() > 0"><strong>{{ mistakes() }}</strong> miss{{ mistakes() === 1 ? '' : 'es' }}</span>
+    </div>
+
+    <button type="button" class="new-round-btn" (click)="newRound(roundSize())">New Round</button>
+  </div>
+
+  <nav class="match-league-switch" aria-label="Switch league">
+    <a routerLink="/games/division-match/nfl" [class.active]="matchLeague() === 'nfl'">NFL Divisions</a>
+    <a routerLink="/games/division-match/ncaa" [class.active]="matchLeague() === 'ncaa'">NCAA Conferences</a>
+  </nav>
+</header>
+
+@if (isComplete()) {
+  <div class="match-complete" role="status">
+    <strong>Board complete!</strong>
+    <span>{{ mistakes() === 0 ? 'Perfect round, zero misses.' : (mistakes() + ' miss' + (mistakes() === 1 ? '' : 'es') + ' this round.') }}</span>
+    <button type="button" (click)="newRound(roundSize())">Play Again</button>
+  </div>
+}
+
+<div class="match-targets">
+  @for (target of targets(); track target.key) {
+    <div
+      class="match-target"
+      [attr.data-target-key]="target.key"
+      [class.filled]="placed().has(target.key)"
+      [class.flash]="flashTargetKey() === target.key"
+      [class.selectable]="selectedTileKey() !== null && !placed().has(target.key)"
+      [class.hint-target]="hintTargetKey() === target.key"
+      (click)="onTargetTap(target)"
+    >
+      <span class="target-label">{{ target.label }}</span>
+      @if (placed().get(target.key); as tiles) {
+        @for (tile of tiles; track tile.key) {
+          <span class="target-team">
+            <app-team-badge [name]="tile.name" [logoUrl]="tile.logoUrl" [abbreviation]="tile.abbreviation" [size]="24" />
+            {{ tile.name }}
+          </span>
+        }
+      } @else {
+        <span class="target-empty">Drop here</span>
+      }
+    </div>
+  }
+</div>
+
+<div class="match-tray" aria-label="Teams to place" role="group">
+  @if (round().length === 0 && !isComplete()) {
+    <p class="tray-empty">No teams left to sort into this pool — start a new round above.</p>
+  }
+  @for (tile of round(); track tile.key) {
+    <button
+      type="button"
+      class="match-tile"
+      [class.selected]="selectedTileKey() === tile.key"
+      [class.dragging]="dragTileKey() === tile.key"
+      [class.hint-armed]="hintArmedTileKey() === tile.key && hintTileKey() !== tile.key"
+      [class.hint-revealed]="hintTileKey() === tile.key"
+      [style.transform]="dragTileKey() === tile.key ? dragTransform() : null"
+      [attr.aria-pressed]="selectedTileKey() === tile.key"
+      [attr.title]="'Hold 3 seconds to reveal where ' + tile.name + ' plays'"
+      (pointerdown)="onTilePointerDown(tile, $event)"
+      (pointermove)="onTilePointerMove($event)"
+      (pointerup)="onTilePointerUp($event)"
+      (pointercancel)="onTilePointerCancel($event)"
+      (click)="onTileClick(tile)"
+    >
+      <span class="hint-progress"></span>
+      <app-team-badge [name]="tile.name" [logoUrl]="tile.logoUrl" [abbreviation]="tile.abbreviation" [size]="26" />
+      <span>{{ tile.name }}</span>
+      @if (hintTileKey() === tile.key) {
+        <span class="hint-label">{{ tile.targetKey }}</span>
+      }
+    </button>
+  }
+</div>

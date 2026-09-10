@@ -9,6 +9,7 @@
 @use './app/routes/game-detail/game-summary';
 @use './app/routes/season-schedule/nfl-playoff-picture';
 @use './app/routes/game-day-central/game-day-board';
+@use './app/routes/game-day-central/game-day-focus-rail';
 @use './app/layout/demo-game-control';
 
 :root {

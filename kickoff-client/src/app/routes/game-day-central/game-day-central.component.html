@@ -26,6 +26,10 @@
 
 <app-important-games-ticker [games]="games()" />
 
+@if (watching().length > 0) {
+  <app-game-day-focus-rail [games]="watching()" [(selectedGameId)]="focusedGameId" />
+}
+
 @if (calendarOpen()) {
   <div class="calendar-backdrop" (click)="closeCalendar()">
     <section class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="central-calendar-title" (click)="$event.stopPropagation()">
@@ -80,12 +84,14 @@
   } @else {
     <div class="control-board-grid" [class.panels-medium]="watchingSize() === 'medium'" [class.panels-live]="watchingSize() === 'live'">
       @for (game of watching(); track game.id) {
-        <div class="game-board-card watching">
+        <div class="game-board-card watching" [class.focus-selected]="game.id === focusedGameId()">
           <app-day-game-card
             [game]="game"
             [panelSize]="watchingSize()"
             gameDayState="selected"
+            detailAction="select"
             (gameDayToggle)="removeFromGameDay(game)"
+            (gameSelected)="focusGame(game)"
           />
         </div>
       }

@@ -71,6 +71,24 @@ export interface TeamLeaders {
   leaders: TeamLeader[];
 }
 
+export interface Injury {
+  athlete: string;
+  position: string | null;
+  status: string;
+  type: string | null;
+  detail: string | null;
+  side: string | null;
+  updatedUtc: string | null;
+  returnDate: string | null;
+  headshotUrl: string | null;
+}
+
+export interface TeamInjuries {
+  teamExternalId: string;
+  teamAbbreviation: string;
+  injuries: Injury[];
+}
+
 export interface GameContext {
   venue: string | null;
   city: string | null;
@@ -118,6 +136,7 @@ export interface GameSummary {
   winProbability: WinProbabilityPoint[];
   teamStatistics: TeamStatistics[];
   leaders: TeamLeaders[];
+  injuries: TeamInjuries[];
   context: GameContext | null;
   market: MarketContext | null;
   standings: StandingsGroup[];

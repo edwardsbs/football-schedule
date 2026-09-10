@@ -112,6 +112,7 @@ public class SimulatedSportsDataClient : ISportsDataClient
                 : [],
             TeamStatistics: [],
             Leaders: [],
+            Injuries: [],
             Context: null,
             Market: null,
             Standings: [],

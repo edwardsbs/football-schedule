@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
-import { Game } from '../../core/models/game.model';
+import { Game, TeamSummary } from '../../core/models/game.model';
 import { NcaaRankings, RankingPoll, RankingRow } from '../../core/models/ranking.model';
 import { mergeRankingPolls, rankingPoll } from '../../core/ranking-comparison';
 import { RankingMovement, rankingMovement } from '../../core/ranking-movement';
@@ -13,6 +13,7 @@ import { TeamConferenceStore } from '../../core/services/team-conference-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { GameFilterContext, GameFilters, countActiveGameFilters, defaultGameFilters, matchesGameFilters } from '../../core/game-filters';
 import { filterFollowed, groupByWeek } from '../../core/timeline';
+import { byeTeamsForWeek, rosterFromGames } from './bye-teams';
 import { FindGamesFilterComponent } from '../../shared/find-games-filter/find-games-filter.component';
 import { GameRowComponent } from '../../shared/game-row/game-row.component';
 import { ImportantGamesTickerComponent } from '../../shared/important-games-ticker/important-games-ticker.component';
@@ -132,6 +133,14 @@ export class SeasonScheduleComponent {
     const weekNumber = this.weekNumber();
     return this.games().filter((game) => game.weekNumber === weekNumber);
   });
+
+  /** Deliberately built from the unfiltered games list so "My games"/Find
+   * Games never change who's on bye. */
+  private readonly leagueRosterTeams = computed(() => rosterFromGames(this.games()));
+
+  byeTeams(weekNumber: number): TeamSummary[] {
+    return byeTeamsForWeek(this.games(), weekNumber, this.leagueRosterTeams());
+  }
 
   readonly rankingRailOpen = signal(true);
   readonly playoffRailOpen = signal(true);

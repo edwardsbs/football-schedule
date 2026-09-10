@@ -1,0 +1,334 @@
+:host {
+  display: block;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.match-head {
+  margin-bottom: 1.25rem;
+}
+
+.match-title {
+  margin-bottom: 0.85rem;
+
+  .eyebrow {
+    display: block;
+    color: var(--accent-gold, #c9a227);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  h1 {
+    margin: 0 0 0.3rem;
+    font-size: clamp(1.3rem, 3.2vw, 1.8rem);
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: var(--muted-strong, #aab2c0);
+    font-size: 0.88rem;
+  }
+}
+
+.match-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--border, #262c38);
+  border-radius: 10px;
+  overflow: hidden;
+
+  button {
+    border: 0;
+    border-right: 1px solid var(--border, #262c38);
+    background: var(--surface-2, #1c212b);
+    color: var(--muted-strong, #aab2c0);
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.55rem 0.8rem;
+    min-height: 44px;
+    cursor: pointer;
+    touch-action: manipulation;
+
+    &:last-child { border-right: 0; }
+    &.active { background: var(--accent-gold, #c9a227); color: #12151b; }
+  }
+}
+
+.match-stats {
+  display: flex;
+  gap: 0.75rem;
+  color: var(--muted-strong, #aab2c0);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+
+  .stat strong { color: var(--text, #e7ebf2); }
+  .stat.has-misses strong { color: #ff8a80; }
+}
+
+.new-round-btn {
+  margin-left: auto;
+  min-height: 44px;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--border, #262c38);
+  border-radius: 8px;
+  background: var(--surface, #161a22);
+  color: var(--text, #e7ebf2);
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  &:active { background: var(--surface-2, #1c212b); }
+}
+
+.match-league-switch {
+  display: flex;
+  gap: 0.5rem;
+
+  a {
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--border, #262c38);
+    color: var(--muted, #8b93a1);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+
+    &.active { border-color: var(--accent-gold, #c9a227); color: var(--accent-gold, #c9a227); }
+  }
+}
+
+.match-complete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--accent-gold, #c9a227);
+  border-radius: 12px;
+  background: rgba(201, 162, 39, 0.1);
+
+  strong { font-size: 1rem; }
+  span { color: var(--muted-strong, #aab2c0); font-size: 0.85rem; }
+
+  button {
+    margin-left: auto;
+    min-height: 40px;
+    padding: 0.45rem 1rem;
+    border: 0;
+    border-radius: 8px;
+    background: var(--accent-gold, #c9a227);
+    color: #12151b;
+    font: inherit;
+    font-weight: 800;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+}
+
+.match-targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.match-target {
+  min-height: 84px;
+  padding: 0.6rem 0.7rem;
+  border: 1.5px dashed var(--border, #262c38);
+  border-radius: 12px;
+  background: var(--surface, #161a22);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  .target-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted-strong, #aab2c0);
+  }
+
+  .target-empty {
+    color: var(--muted, #8b93a1);
+    font-size: 0.75rem;
+  }
+
+  .target-team {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 650;
+    color: var(--text, #e7ebf2);
+  }
+
+  &.filled {
+    border-style: solid;
+    border-color: rgba(98, 245, 154, 0.55);
+    background: rgba(98, 245, 154, 0.06);
+  }
+
+  &.selectable {
+    border-color: var(--accent-gold, #c9a227);
+    cursor: pointer;
+  }
+
+  &.flash {
+    animation: division-match-miss 0.55s ease;
+  }
+
+  &.hint-target {
+    border-style: solid;
+    border-color: #6fb3ff;
+    background: rgba(111, 179, 255, 0.1);
+    box-shadow: 0 0 12px rgba(111, 179, 255, 0.35);
+  }
+}
+
+@keyframes division-match-miss {
+  0%, 100% { border-color: rgba(255, 90, 90, 0.65); background: var(--surface, #161a22); }
+  40% { border-color: #ff5a5a; background: rgba(255, 90, 90, 0.14); }
+}
+
+.match-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border, #262c38);
+  border-radius: 12px;
+  background: var(--surface, #161a22);
+  min-height: 72px;
+}
+
+.tray-empty {
+  margin: 0;
+  color: var(--muted, #8b93a1);
+  font-size: 0.85rem;
+}
+
+.match-tile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.4rem 0.9rem 0.4rem 0.5rem;
+  border: 1px solid var(--border, #262c38);
+  border-radius: 999px;
+  background: var(--surface-2, #1c212b);
+  color: var(--text, #e7ebf2);
+  font: inherit;
+  font-weight: 650;
+  font-size: 0.82rem;
+  cursor: grab;
+  touch-action: none;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.15s ease;
+
+  &.selected {
+    border-color: var(--accent-gold, #c9a227);
+    box-shadow: 0 0 0 1px var(--accent-gold, #c9a227);
+  }
+
+  &.dragging {
+    position: relative;
+    z-index: 5;
+    cursor: grabbing;
+    transition: none;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+    /* The tile is transformed to sit right under the pointer, so without this
+       it's the topmost element at the release point and elementFromPoint()
+       hits the tile instead of the drop target underneath it. Pointer capture
+       (set on pointerdown) keeps this element's own move/up events firing
+       regardless -- pointer-events:none here only affects hit-testing done
+       by other code, which is exactly what we want it to skip. */
+    pointer-events: none;
+  }
+
+  &.hint-revealed {
+    border-color: #6fb3ff;
+    box-shadow: 0 0 0 1px #6fb3ff;
+  }
+}
+
+/* Same "hold to peek" visual language as the live dashboard's muted-score
+ * reveal and Game Day's long-press-to-add bar -- a bottom glow bar filling
+ * over the hold duration. */
+.hint-progress {
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  border-radius: 0 999px 999px 0;
+  background: #6fb3ff;
+  box-shadow: 0 0 7px rgba(111, 179, 255, 0.72);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.match-tile.hint-armed .hint-progress {
+  opacity: 1;
+  animation: division-match-hint-progress 3000ms linear forwards;
+}
+
+.match-tile.hint-revealed .hint-progress {
+  opacity: 1;
+  width: 100%;
+}
+
+@keyframes division-match-hint-progress {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.hint-label {
+  position: relative;
+  z-index: 1;
+  margin-left: 0.15rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(111, 179, 255, 0.18);
+  color: #6fb3ff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+  .match-tile,
+  .new-round-btn,
+  .seg button {
+    min-height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match-tile { transition: none; }
+  .match-target.flash { animation: none; border-color: #ff5a5a; }
+  .match-tile.hint-armed .hint-progress { animation: none; opacity: 0; }
+}

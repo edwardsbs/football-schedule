@@ -62,6 +62,22 @@ public record FeedTeamLeaders(
     string TeamAbbreviation,
     IReadOnlyList<FeedLeader> Leaders);
 
+public record FeedInjury(
+    string Athlete,
+    string? Position,
+    string Status,
+    string? Type,
+    string? Detail,
+    string? Side,
+    DateTimeOffset? UpdatedUtc,
+    string? ReturnDate,
+    string? HeadshotUrl);
+
+public record FeedTeamInjuries(
+    string TeamExternalId,
+    string TeamAbbreviation,
+    IReadOnlyList<FeedInjury> Injuries);
+
 public record FeedGameContext(
     string? Venue,
     string? City,
@@ -106,6 +122,7 @@ public record FeedGameSummary(
     IReadOnlyList<FeedWinProbabilityPoint> WinProbability,
     IReadOnlyList<FeedTeamStatistics> TeamStatistics,
     IReadOnlyList<FeedTeamLeaders> Leaders,
+    IReadOnlyList<FeedTeamInjuries> Injuries,
     FeedGameContext? Context,
     FeedMarket? Market,
     IReadOnlyList<FeedStandingsGroup> Standings,

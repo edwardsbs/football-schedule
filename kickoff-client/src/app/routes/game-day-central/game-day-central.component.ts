@@ -19,10 +19,12 @@ import { DayGameCardComponent } from '../day-view/day-game-card.component';
 import { automaticDayPanelSize } from '../day-view/day-panel-size';
 import { buildCalendarMonth, moveCalendarMonth, startOfCalendarMonth } from '../day-view/day-calendar';
 import { GameInterestRating, gameInterest, isGettingInteresting } from './game-day-interest';
+import { GameDayFocusRailComponent } from './game-day-focus-rail.component';
 
 @Component({
   selector: 'app-game-day-central',
-  imports: [DatePipe, DayGameCardComponent, FindGamesFilterComponent, ImportantGamesTickerComponent, RouterLink],
+  host: { class: 'game-day-central-shell' },
+  imports: [DatePipe, DayGameCardComponent, FindGamesFilterComponent, GameDayFocusRailComponent, ImportantGamesTickerComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './game-day-central.component.html',
   styleUrls: ['../shared/timeline.scss'],
@@ -64,6 +66,7 @@ export class GameDayCentralComponent {
   readonly watching = computed(() => this.games().filter((game) => this.isOnGameDay(game)));
   readonly otherGames = computed(() => this.games().filter((game) => !this.isOnGameDay(game)));
   readonly watchingSize = computed(() => automaticDayPanelSize(this.watching().length));
+  readonly focusedGameId = signal<number | null>(null);
 
   readonly gameFiltersOpen = signal(false);
   readonly gameFilters = signal<GameFilters>(defaultGameFilters());
@@ -132,6 +135,10 @@ export class GameDayCentralComponent {
 
   removeFromGameDay(game: Game): void {
     this.board.demote(game.id, this.fan.isCircled(game.id));
+  }
+
+  focusGame(game: Game): void {
+    this.focusedGameId.set(game.id);
   }
 
   private isOnGameDay(game: Game): boolean {

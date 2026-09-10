@@ -311,6 +311,7 @@ function buildDemoSummary(config: DemoGameConfig, game: Game, elapsedSeconds: nu
     winProbability: [],
     teamStatistics: demoStatistics(config, elapsedSeconds),
     leaders: [],
+    injuries: [],
     context: {
       venue: config.venue,
       city: config.city,

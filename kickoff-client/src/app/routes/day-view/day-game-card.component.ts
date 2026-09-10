@@ -23,7 +23,9 @@ export class DayGameCardComponent {
   readonly game = input.required<Game>();
   readonly panelSize = input<DayPanelSize>('small');
   readonly gameDayState = input<'available' | 'selected' | null>(null);
+  readonly detailAction = input<'overlay' | 'select'>('overlay');
   readonly gameDayToggle = output<void>();
+  readonly gameSelected = output<Game>();
   private readonly scoreFeedback = trackScorePulse(this.game);
   protected readonly scorePulse = this.scoreFeedback.kind;
   protected readonly scoringSide = this.scoreFeedback.scoringSide;
@@ -48,7 +50,12 @@ export class DayGameCardComponent {
   }
 
   protected open(): void {
-    this.detail.open(this.game().id);
+    const game = this.game();
+    if (this.detailAction() === 'select') {
+      this.gameSelected.emit(game);
+      return;
+    }
+    this.detail.open(game.id);
   }
 
   protected openFromKeyboard(event: Event): void {

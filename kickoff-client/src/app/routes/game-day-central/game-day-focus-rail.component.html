@@ -1,0 +1,103 @@
+@if (selectedGame(); as game) {
+  <aside class="game-focus-rail" aria-label="Selected Game Day game details">
+    <header class="focus-head">
+      <div>
+        <span class="focus-kicker">Game focus</span>
+        <strong>{{ selectedPosition() }} of {{ games().length }}</strong>
+      </div>
+      @if (games().length > 1) {
+        <div class="focus-controls" role="group" aria-label="Game rotation controls">
+          <button type="button" aria-label="Previous Game Day game" (click)="move(-1)">‹</button>
+          <button type="button" [attr.aria-label]="paused() ? 'Resume automatic game rotation' : 'Pause automatic game rotation'" (click)="togglePause()">
+            {{ paused() ? '▶' : 'Ⅱ' }}
+          </button>
+          <button type="button" aria-label="Next Game Day game" (click)="move(1)">›</button>
+        </div>
+      }
+    </header>
+
+    @if (games().length > 1) {
+      <div class="rotation-status">
+        <span>{{ paused() ? 'Rotation paused' : 'Next game in ' + secondsRemaining() + 's' }}</span>
+        <span class="rotation-track"><span [style.width.%]="progress()"></span></span>
+      </div>
+    }
+
+    <div class="focus-scroll">
+      <section class="focus-matchup">
+        <div class="focus-status">
+          <span class="league" [class.nfl]="game.league === 'Nfl'">{{ game.league === 'Nfl' ? 'NFL' : 'NCAA' }}</span>
+          <strong [class.live]="game.status === 'Live'">{{ statusLabel(game) }}</strong>
+        </div>
+
+        <div class="focus-team">
+          <app-team-badge [name]="game.away.displayName" [logoUrl]="game.away.logoUrl" [abbreviation]="game.away.abbreviation" [rank]="game.away.currentRank" [size]="28" />
+          <span><strong>{{ game.away.displayName }}</strong><small>{{ records.label(game.away.id) }}</small></span>
+          <b>{{ score(game, 'away') }}</b>
+        </div>
+        <div class="focus-team">
+          <app-team-badge [name]="game.home.displayName" [logoUrl]="game.home.logoUrl" [abbreviation]="game.home.abbreviation" [rank]="game.home.currentRank" [size]="28" />
+          <span><strong>{{ game.home.displayName }}</strong><small>{{ records.label(game.home.id) }}</small></span>
+          <b>{{ score(game, 'home') }}</b>
+        </div>
+
+        @if (game.score?.downDistance; as situation) {
+          <div class="focus-situation">{{ situation }}</div>
+        }
+      </section>
+
+      @if (summary(); as detail) {
+        @if (detail.currentDrive || detail.lastPlay || detail.homeWinProbability !== null) {
+          <section class="focus-section pulse-section">
+            <header><h2>Game pulse</h2>@if (detail.homeWinProbability !== null) { <span>{{ game.home.abbreviation }} {{ detail.homeWinProbability * 100 | number: '1.0-0' }}%</span> }</header>
+            @if (detail.currentDrive; as drive) {
+              <p><small>Current drive</small><strong>{{ drive.description || drive.result || 'In progress' }}</strong></p>
+            }
+            @if (detail.lastPlay; as play) {
+              <p [class.alert]="play.isTurnover || play.isScoringPlay"><small>Last play</small><span>{{ play.text || play.type }}</span></p>
+            }
+          </section>
+        }
+
+        @if (statRows().length > 0) {
+          <section class="focus-section">
+            <h2>Team comparison</h2>
+            <div class="focus-stats">
+              <div class="stat-head"><b>{{ game.away.abbreviation }}</b><span></span><b>{{ game.home.abbreviation }}</b></div>
+              @for (stat of statRows(); track stat.name) {
+                <div><b>{{ stat.away }}</b><span>{{ stat.label }}</span><b>{{ stat.home }}</b></div>
+              }
+            </div>
+          </section>
+        }
+
+        @if (injuryReports().length > 0) {
+          <section class="focus-section injury-section">
+            <h2>Injury report</h2>
+            @for (report of injuryReports(); track report.teamExternalId) {
+              <h3>{{ report.teamAbbreviation }}</h3>
+              @for (injury of report.injuries.slice(0, 5); track injury.athlete) {
+                <div class="injury-row">
+                  <span><strong>{{ injury.athlete }}</strong><small>{{ injury.position || 'Player' }} · {{ injury.type || 'Undisclosed' }}</small></span>
+                  <b>{{ injury.status }}</b>
+                </div>
+              }
+              @if (report.injuries.length > 5) { <p class="more">+{{ report.injuries.length - 5 }} more</p> }
+            }
+          </section>
+        }
+
+        <section class="focus-section info-section">
+          <h2>Game info</h2>
+          <p><small>Kickoff</small><span>{{ game.kickoffUtc | date: 'EEE, MMM d · h:mm a' }}</span></p>
+          @if (game.venue || detail.context?.venue) { <p><small>Venue</small><span>{{ detail.context?.venue || game.venue }}</span></p> }
+          @if (game.broadcasts.length > 0) { <p><small>Watch</small><span>{{ game.broadcasts[0].network }}</span></p> }
+        </section>
+      } @else {
+        <div class="focus-loading">Loading game details…</div>
+      }
+    </div>
+
+    <button type="button" class="full-details" (click)="openFullDetails()">Open full details</button>
+  </aside>
+}

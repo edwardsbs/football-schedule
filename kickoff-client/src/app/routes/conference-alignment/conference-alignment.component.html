@@ -40,6 +40,9 @@
         <span class="ico">⚲</span> Find teams
         @if (activeTeamFilterCount() > 0) { <span class="badge">{{ activeTeamFilterCount() }}</span> }
       </button>
+      <a class="find-teams-trigger play-game-link" [routerLink]="['/games/division-match', a.league]">
+        <span class="ico">🎮</span> Division Match
+      </a>
     </div>
   </header>
 

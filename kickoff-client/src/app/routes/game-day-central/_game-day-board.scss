@@ -105,6 +105,7 @@ app-game-day-central {
   border-radius: 8px;
 
   &.watching { box-shadow: 0 0 0 1px rgb(201 162 39 / 26%); }
+  &.focus-selected { box-shadow: 0 0 0 2px var(--accent-gold); }
 }
 
 app-day-game-card {

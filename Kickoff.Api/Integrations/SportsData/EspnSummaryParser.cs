@@ -25,6 +25,7 @@ internal static class EspnSummaryParser
             probability,
             ParseTeamStatistics(root),
             ParseLeaders(root),
+            ParseInjuries(root),
             ParseContext(root),
             ParseMarket(root),
             ParseStandings(root),
@@ -151,6 +152,45 @@ internal static class EspnSummaryParser
                 id,
                 NestedString(entry, "team", "abbreviation") ?? "",
                 leaders));
+        }
+        return result;
+    }
+
+    private static List<FeedTeamInjuries> ParseInjuries(JsonElement root)
+    {
+        var result = new List<FeedTeamInjuries>();
+        foreach (var teamReport in Array(root, "injuries"))
+        {
+            var teamId = NestedString(teamReport, "team", "id");
+            if (teamId is null) continue;
+
+            var injuries = new List<FeedInjury>();
+            foreach (var injury in Array(teamReport, "injuries"))
+            {
+                if (!Object(injury, "athlete", out var athlete)) continue;
+                var athleteName = String(athlete, "displayName") ?? String(athlete, "fullName");
+                if (athleteName is null) continue;
+                var hasDetails = Object(injury, "details", out var details);
+
+                injuries.Add(new FeedInjury(
+                    athleteName,
+                    NestedString(athlete, "position", "abbreviation"),
+                    String(injury, "status") ?? NestedString(injury, "type", "description") ?? "Injury",
+                    hasDetails ? String(details, "type") : null,
+                    hasDetails ? SpecifiedValue(String(details, "detail")) : null,
+                    hasDetails ? SpecifiedValue(String(details, "side")) : null,
+                    Date(injury, "date"),
+                    hasDetails ? String(details, "returnDate") : null,
+                    NestedString(athlete, "headshot", "href")));
+            }
+
+            if (injuries.Count > 0)
+            {
+                result.Add(new FeedTeamInjuries(
+                    teamId,
+                    NestedString(teamReport, "team", "abbreviation") ?? "",
+                    injuries));
+            }
         }
         return result;
     }
@@ -291,4 +331,7 @@ internal static class EspnSummaryParser
 
     private static DateTimeOffset? Date(JsonElement element, string name) =>
         String(element, name) is { } raw && DateTimeOffset.TryParse(raw, out var date) ? date : null;
+
+    private static string? SpecifiedValue(string? value) =>
+        string.Equals(value, "Not Specified", StringComparison.OrdinalIgnoreCase) ? null : value;
 }

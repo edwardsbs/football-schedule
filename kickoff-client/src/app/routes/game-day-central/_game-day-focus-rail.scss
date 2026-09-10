@@ -1,0 +1,116 @@
+app-game-day-focus-rail {
+  display: contents;
+
+  .game-focus-rail {
+    position: fixed;
+    top: 4.75rem;
+    right: 5.5rem;
+    z-index: 4;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    width: 19rem;
+    max-height: calc(100dvh - 5.75rem);
+    overflow: hidden;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface, #161a22) 97%, transparent);
+    box-shadow: 0 16px 36px rgb(0 0 0 / 38%);
+    backdrop-filter: blur(9px);
+  }
+
+  .focus-head, .focus-status, .focus-section header, .focus-team, .injury-row { display: flex; align-items: center; }
+  .focus-head { justify-content: space-between; min-height: 52px; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border); }
+  .focus-head > div:first-child { display: grid; gap: 0.08rem; }
+  .focus-head strong { font-size: 0.76rem; }
+  .focus-kicker { color: var(--accent-gold); font-size: 0.56rem; font-weight: 850; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .focus-controls { display: flex; gap: 0.25rem; }
+  .focus-controls button {
+    display: grid; place-items: center; width: 36px; height: 36px; padding: 0;
+    border: 1px solid var(--border); border-radius: 7px; background: #11161e; color: var(--text); cursor: pointer;
+  }
+
+  .rotation-status { display: grid; gap: 0.28rem; padding: 0.35rem 0.7rem 0.45rem; color: var(--muted); font-size: 0.58rem; }
+  .rotation-track { height: 2px; overflow: hidden; border-radius: 99px; background: var(--border); }
+  .rotation-track span { display: block; height: 100%; background: var(--accent-gold); transition: width 1s linear; }
+  .focus-scroll { min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+  .focus-matchup { padding: 0.65rem 0.75rem 0.7rem; background: linear-gradient(135deg, rgb(201 162 39 / 7%), transparent 58%); }
+  .focus-status { justify-content: space-between; margin-bottom: 0.5rem; color: var(--muted-strong); font-size: 0.64rem; text-transform: uppercase; }
+  .focus-status strong.live { color: #ff6b70; }
+  .league { padding: 0.12rem 0.32rem; border-radius: 3px; background: #7a2226; color: white; font-weight: 800; }
+  .league.nfl { background: #013369; }
+
+  .focus-team { gap: 0.48rem; min-height: 45px; border-top: 1px solid rgb(139 147 161 / 10%); }
+  .focus-team > span { display: grid; min-width: 0; }
+  .focus-team > span strong { overflow: hidden; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+  .focus-team small { color: var(--muted); font-size: 0.58rem; }
+  .focus-team > b { margin-left: auto; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+  .focus-situation { margin-top: 0.35rem; padding: 0.35rem 0.45rem; border-radius: 6px; background: #10151c; color: #8fdbff; font-size: 0.66rem; font-weight: 750; text-align: center; }
+
+  .focus-section { padding: 0.62rem 0.75rem; border-top: 1px solid var(--border); }
+  .focus-section h2 { margin: 0 0 0.45rem; color: var(--muted-strong); font-size: 0.61rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .focus-section header { justify-content: space-between; }
+  .focus-section header span { color: var(--accent-gold); font-size: 0.65rem; font-weight: 800; }
+  .focus-section p { display: grid; gap: 0.12rem; margin: 0.35rem 0; font-size: 0.68rem; line-height: 1.35; }
+  .focus-section p small, .info-section small { color: var(--muted); font-size: 0.56rem; text-transform: uppercase; }
+  .pulse-section p.alert { color: #ffac72; }
+
+  .focus-stats > div { display: grid; grid-template-columns: 3rem 1fr 3rem; gap: 0.3rem; padding: 0.2rem 0; font-size: 0.64rem; text-align: center; }
+  .focus-stats span { color: var(--muted); }
+  .focus-stats b:first-child { text-align: left; }
+  .focus-stats b:last-child { text-align: right; }
+  .focus-stats .stat-head { padding-bottom: 0.3rem; color: var(--muted-strong); }
+
+  .injury-section h3 { margin: 0.5rem 0 0.2rem; color: var(--accent-gold); font-size: 0.64rem; }
+  .injury-row { justify-content: space-between; gap: 0.5rem; padding: 0.28rem 0; border-top: 1px solid rgb(139 147 161 / 9%); }
+  .injury-row > span { display: grid; min-width: 0; }
+  .injury-row strong { overflow: hidden; font-size: 0.66rem; text-overflow: ellipsis; white-space: nowrap; }
+  .injury-row small { color: var(--muted); font-size: 0.55rem; }
+  .injury-row > b { flex: none; max-width: 6.2rem; color: #ffb46e; font-size: 0.56rem; text-align: right; }
+  .injury-section .more { display: block; color: var(--muted); text-align: right; }
+  .info-section p { grid-template-columns: 4rem 1fr; }
+  .focus-loading { padding: 1rem; color: var(--muted); font-size: 0.68rem; text-align: center; }
+
+  .full-details {
+    min-height: 44px; border: 0; border-top: 1px solid var(--border); background: #11161e;
+    color: var(--accent-gold); font: inherit; font-size: 0.7rem; font-weight: 800; cursor: pointer;
+  }
+}
+
+@media (min-width: 1081px) {
+  app-game-day-central.game-day-central-shell:has(app-game-day-focus-rail):has(app-important-games-ticker) {
+    width: auto;
+    max-width: none;
+    margin-right: 20rem;
+    margin-left: 12rem;
+  }
+
+  /* Split the command-center rails: the existing Watch Rail stays compact on
+     the left while the deeper Game Focus rail owns the right side. */
+  app-game-day-central:has(app-game-day-focus-rail) app-important-games-ticker {
+    .watch-rail.watch-rail,
+    .show-rail.show-rail {
+      right: auto;
+      left: 1rem;
+    }
+  }
+}
+
+@media (min-width: 1081px) and (max-width: 1500px) {
+  app-game-day-central.game-day-central-shell:has(app-game-day-focus-rail):has(app-important-games-ticker) {
+    .control-board-head {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .control-board-date { justify-content: space-between; }
+  }
+}
+
+@media (max-width: 1080px) {
+  app-game-day-focus-rail {
+    display: block;
+    .game-focus-rail { position: static; width: 100%; max-height: 34rem; margin: 0.25rem 0 0.55rem; }
+  }
+}

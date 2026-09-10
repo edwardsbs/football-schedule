@@ -69,6 +69,12 @@ export const routes: Routes = [
         loadComponent: () => import('./routes/route-map/route-map.component').then((m) => m.RouteMapComponent),
       },
       {
+        path: 'games/division-match/:league',
+        title: 'Division Match · Kickoff',
+        loadComponent: () =>
+          import('./routes/division-match/division-match.component').then((m) => m.DivisionMatchComponent),
+      },
+      {
         path: 'playoffs/:league',
         title: 'Playoff Bracket · Kickoff',
         loadComponent: () =>
