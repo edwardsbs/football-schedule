@@ -86,7 +86,23 @@
 
 .controls {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 0.6rem;
+
+  .controller-badge {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--border, #262c38);
+    border-radius: 8px;
+    color: var(--muted, #8b93a1);
+    font-size: 0.78rem;
+    font-weight: 700;
+
+    &.connected {
+      border-color: rgba(201, 162, 39, 0.5);
+      color: var(--accent-gold, #c9a227);
+    }
+  }
 
   button {
     min-height: 44px;

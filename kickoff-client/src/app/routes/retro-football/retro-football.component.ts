@@ -44,14 +44,23 @@ export class RetroFootballComponent implements OnDestroy {
   readonly loadingCore = signal(false);
   readonly paused = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly controllerConnected = signal(false);
 
   private nes: NesInstance | null = null;
   private audioHandler: NesAudioHandler | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
   private imageData: ImageData | null = null;
   private animationFrameId: number | null = null;
+  private gamepadHeld: ReadonlySet<NesButtonName> = new Set();
 
   constructor() {
+    // Bluetooth pads on Android often register as a real Gamepad AND
+    // synthesize keyboard/navigation events for legacy TV-remote support --
+    // the polling loop below reads the Gamepad API directly (see runFrame),
+    // and the connect/disconnect events here are only for the on-screen badge.
+    window.addEventListener('gamepadconnected', () => this.controllerConnected.set(true));
+    window.addEventListener('gamepaddisconnected', () => this.controllerConnected.set(false));
+
     // Warm the loader in the background as soon as this route opens, so
     // there's a good chance the scripts are already in place by the time the
     // user has picked their ROM file.
@@ -173,6 +182,7 @@ export class RetroFootballComponent implements OnDestroy {
   private runFrame(): void {
     const { nes, audioHandler, ctx, imageData } = this;
     if (!nes || !audioHandler || !ctx || !imageData) return;
+    this.pollGamepad();
     nes.runFrame();
     nes.getSamples(audioHandler.sampleBuffer, audioHandler.samplesPerFrame);
     audioHandler.nextBuffer();
@@ -180,21 +190,66 @@ export class RetroFootballComponent implements OnDestroy {
     ctx.putImageData(imageData, 0, 0);
   }
 
+  /** Polled once per rendered frame rather than event-driven -- the Gamepad
+   * API only ever hands back a point-in-time snapshot, there's no
+   * "gamepadbuttondown" event to hook. `held` is diffed against the previous
+   * frame so NesJs still sees the same press/release edges the keyboard path
+   * gives it. */
+  private pollGamepad(): void {
+    if (!this.nes) return;
+    const pad = navigator.getGamepads().find((candidate): candidate is Gamepad => candidate !== null);
+    const held = pad ? this.readGamepadButtons(pad) : new Set<NesButtonName>();
+
+    for (const button of held) {
+      if (!this.gamepadHeld.has(button)) this.nes.setButtonPressed(1, this.nes.INPUT[button]);
+    }
+    for (const button of this.gamepadHeld) {
+      if (!held.has(button)) this.nes.setButtonReleased(1, this.nes.INPUT[button]);
+    }
+    this.gamepadHeld = held;
+  }
+
+  /** Standard Gamepad layout (Xbox/DualShock/Switch-Pro style pads all
+   * normalize to this in Chrome). Face buttons are doubled up on purpose --
+   * Tecmo only needs one throw/juke button and one turbo button, so whichever
+   * one the controller labels "A" or "B" still does something useful. */
+  private readGamepadButtons(pad: Gamepad): Set<NesButtonName> {
+    const held = new Set<NesButtonName>();
+    const pressed = (index: number) => pad.buttons[index]?.pressed ?? false;
+    const AXIS_DEADZONE = 0.5;
+
+    if (pressed(12) || pad.axes[1] < -AXIS_DEADZONE) held.add('UP');
+    if (pressed(13) || pad.axes[1] > AXIS_DEADZONE) held.add('DOWN');
+    if (pressed(14) || pad.axes[0] < -AXIS_DEADZONE) held.add('LEFT');
+    if (pressed(15) || pad.axes[0] > AXIS_DEADZONE) held.add('RIGHT');
+    if (pressed(0) || pressed(3)) held.add('A');
+    if (pressed(1) || pressed(2)) held.add('B');
+    if (pressed(8)) held.add('SELECT');
+    if (pressed(9)) held.add('START');
+    return held;
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (!this.nes) return;
+    // Swallow every key while a game is running, not just mapped ones --
+    // some Bluetooth pads dual-report as a gamepad AND a keyboard, and the
+    // synthesized keys (Escape/Tab/etc.) were reaching Fully Kiosk's own
+    // navigation instead of the game.
+    event.preventDefault();
+    event.stopPropagation();
     const button = KEY_MAP[event.key.toLowerCase()];
     if (button === undefined) return;
     this.nes.setButtonPressed(1, this.nes.INPUT[button]);
-    event.preventDefault();
   }
 
   @HostListener('window:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent): void {
     if (!this.nes) return;
+    event.preventDefault();
+    event.stopPropagation();
     const button = KEY_MAP[event.key.toLowerCase()];
     if (button === undefined) return;
     this.nes.setButtonReleased(1, this.nes.INPUT[button]);
-    event.preventDefault();
   }
 }
