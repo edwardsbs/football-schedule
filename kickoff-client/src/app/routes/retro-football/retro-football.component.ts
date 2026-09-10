@@ -16,6 +16,10 @@ const KEY_MAP: Record<string, NesButtonName> = {
   a: 'A',
 };
 
+/** Persisted so a Bluetooth pad that reports A/B backwards from what feels
+ * natural only has to be fixed once, not every time the game reloads. */
+const SWAP_FACE_BUTTONS_KEY = 'retro-football:swap-face-buttons';
+
 /**
  * Phase 1 of the Retro Football mini-game: NesJs wired into a real Angular
  * component. Deliberately just Tecmo Super Bowl -- selecting this game from
@@ -45,6 +49,7 @@ export class RetroFootballComponent implements OnDestroy {
   readonly paused = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly controllerConnected = signal(false);
+  readonly swapFaceButtons = signal(this.loadSwapFaceButtonsPreference());
 
   private nes: NesInstance | null = null;
   private audioHandler: NesAudioHandler | null = null;
@@ -56,7 +61,7 @@ export class RetroFootballComponent implements OnDestroy {
   constructor() {
     // Bluetooth pads on Android often register as a real Gamepad AND
     // synthesize keyboard/navigation events for legacy TV-remote support --
-    // the polling loop below reads the Gamepad API directly (see runFrame),
+    // the polling loop below reads the Gamepad API directly (see stepEmulation),
     // and the connect/disconnect events here are only for the on-screen badge.
     window.addEventListener('gamepadconnected', () => this.controllerConnected.set(true));
     window.addEventListener('gamepaddisconnected', () => this.controllerConnected.set(false));
@@ -136,8 +141,27 @@ export class RetroFootballComponent implements OnDestroy {
 
     this.ctx = ctx;
     this.imageData = ctx.createImageData(256, 240);
+    if (this.audioHandler) this.audioHandler.stepCallback = () => this.stepEmulation();
     this.audioHandler?.start();
     this.startLoop();
+  }
+
+  toggleFaceButtonSwap(): void {
+    const next = !this.swapFaceButtons();
+    this.swapFaceButtons.set(next);
+    try {
+      localStorage.setItem(SWAP_FACE_BUTTONS_KEY, String(next));
+    } catch {
+      // Private browsing / storage disabled -- the swap still works for this session.
+    }
+  }
+
+  private loadSwapFaceButtonsPreference(): boolean {
+    try {
+      return localStorage.getItem(SWAP_FACE_BUTTONS_KEY) === 'true';
+    } catch {
+      return false;
+    }
   }
 
   togglePause(): void {
@@ -165,7 +189,7 @@ export class RetroFootballComponent implements OnDestroy {
     this.stopLoop();
     this.ngZone.runOutsideAngular(() => {
       const loop = () => {
-        this.runFrame();
+        this.drawFrame();
         this.animationFrameId = requestAnimationFrame(loop);
       };
       this.animationFrameId = requestAnimationFrame(loop);
@@ -179,22 +203,32 @@ export class RetroFootballComponent implements OnDestroy {
     }
   }
 
-  private runFrame(): void {
-    const { nes, audioHandler, ctx, imageData } = this;
-    if (!nes || !audioHandler || !ctx || !imageData) return;
+  /** Called from the audio callback (see NesAudioHandler.stepCallback), not
+   * from requestAnimationFrame -- this is what keeps emulation paced to the
+   * real audio clock instead of the display's, see public/nesjs/README.md. */
+  private stepEmulation(): void {
+    const { nes, audioHandler } = this;
+    if (!nes || !audioHandler) return;
     this.pollGamepad();
     nes.runFrame();
     nes.getSamples(audioHandler.sampleBuffer, audioHandler.samplesPerFrame);
     audioHandler.nextBuffer();
+  }
+
+  /** Purely visual -- just repaints whatever frame the emulator most
+   * recently finished, decoupled from how often stepEmulation() actually ran. */
+  private drawFrame(): void {
+    const { nes, ctx, imageData } = this;
+    if (!nes || !ctx || !imageData) return;
     nes.getPixels(imageData.data);
     ctx.putImageData(imageData, 0, 0);
   }
 
-  /** Polled once per rendered frame rather than event-driven -- the Gamepad
-   * API only ever hands back a point-in-time snapshot, there's no
-   * "gamepadbuttondown" event to hook. `held` is diffed against the previous
-   * frame so NesJs still sees the same press/release edges the keyboard path
-   * gives it. */
+  /** Polled once per emulated frame (from stepEmulation) rather than
+   * event-driven -- the Gamepad API only ever hands back a point-in-time
+   * snapshot, there's no "gamepadbuttondown" event to hook. `held` is diffed
+   * against the previous frame so NesJs still sees the same press/release
+   * edges the keyboard path gives it. */
   private pollGamepad(): void {
     if (!this.nes) return;
     const pad = navigator.getGamepads().find((candidate): candidate is Gamepad => candidate !== null);
@@ -212,7 +246,10 @@ export class RetroFootballComponent implements OnDestroy {
   /** Standard Gamepad layout (Xbox/DualShock/Switch-Pro style pads all
    * normalize to this in Chrome). Face buttons are doubled up on purpose --
    * Tecmo only needs one throw/juke button and one turbo button, so whichever
-   * one the controller labels "A" or "B" still does something useful. */
+   * one the controller labels "A" or "B" still does something useful.
+   * `swapFaceButtons` flips which physical pair maps to NES A vs. B, for pads
+   * that come out feeling backwards -- there's no way to remap this on the
+   * KTC's kiosk browser itself. */
   private readGamepadButtons(pad: Gamepad): Set<NesButtonName> {
     const held = new Set<NesButtonName>();
     const pressed = (index: number) => pad.buttons[index]?.pressed ?? false;
@@ -222,8 +259,15 @@ export class RetroFootballComponent implements OnDestroy {
     if (pressed(13) || pad.axes[1] > AXIS_DEADZONE) held.add('DOWN');
     if (pressed(14) || pad.axes[0] < -AXIS_DEADZONE) held.add('LEFT');
     if (pressed(15) || pad.axes[0] > AXIS_DEADZONE) held.add('RIGHT');
-    if (pressed(0) || pressed(3)) held.add('A');
-    if (pressed(1) || pressed(2)) held.add('B');
+    const primaryFace = pressed(0) || pressed(3);
+    const secondaryFace = pressed(1) || pressed(2);
+    if (this.swapFaceButtons()) {
+      if (secondaryFace) held.add('A');
+      if (primaryFace) held.add('B');
+    } else {
+      if (primaryFace) held.add('A');
+      if (secondaryFace) held.add('B');
+    }
     if (pressed(8)) held.add('SELECT');
     if (pressed(9)) held.add('START');
     return held;

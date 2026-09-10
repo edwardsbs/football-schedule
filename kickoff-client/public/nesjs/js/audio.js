@@ -33,6 +33,10 @@ function AudioHandler() {
     this.inputBufferPos = 0;
     this.inputReadPos = 0;
 
+    // Set by the app to a function that steps the emulator by one frame
+    // (and therefore calls nextBuffer()) -- see process() below.
+    this.stepCallback = null;
+
     this.scriptNode = undefined;
     this.dummyNode = undefined;
   }
@@ -82,6 +86,19 @@ function AudioHandler() {
   }
 
   this.process = function(e) {
+    // Pull-driven: this callback fires on the audio hardware's own rock-
+    // steady clock. Asking the app to step the emulator right here, instead
+    // of relying on requestAnimationFrame to have already pushed enough
+    // samples, keeps generation paced to real playback rate by construction
+    // -- rAF drifts against this clock (worse under load), which is what
+    // caused the persistent pops the RING_SIZE bump alone couldn't fix.
+    if(this.stepCallback) {
+      let guard = 0; // safety cap -- a slow or broken callback can't spin forever
+      while(this.inputBufferPos - this.inputReadPos < CALLBACK_SIZE && guard++ < 8) {
+        this.stepCallback();
+      }
+    }
+
     if(this.inputReadPos + CALLBACK_SIZE > this.inputBufferPos) {
       // we overran the buffer
       //log("Audio buffer overran");

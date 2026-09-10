@@ -28,6 +28,10 @@ export interface NesInstance {
 export interface NesAudioHandler {
   sampleBuffer: Float64Array;
   samplesPerFrame: number;
+  /** Called from inside the audio callback (on the audio hardware's own
+   * clock) whenever it needs more queued samples -- set this to step the
+   * emulator by one frame, not driven by requestAnimationFrame. */
+  stepCallback: (() => void) | null;
   resume(): void;
   start(): void;
   stop(): void;
