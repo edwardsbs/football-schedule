@@ -105,7 +105,21 @@ app-game-day-central {
   border-radius: 8px;
 
   &.watching { box-shadow: 0 0 0 1px rgb(201 162 39 / 26%); }
-  &.focus-selected { box-shadow: 0 0 0 2px var(--accent-gold); }
+  &.focus-selected::after {
+    content: '';
+    position: absolute;
+    z-index: 8;
+    right: auto;
+    bottom: 2px;
+    left: 0;
+    width: var(--focus-progress, 100%);
+    height: 3px;
+    border-radius: 999px;
+    background: var(--accent-gold);
+    box-shadow: 0 0 6px rgb(201 162 39 / 45%);
+    transition: width 1s linear;
+    pointer-events: none;
+  }
 }
 
 app-day-game-card {

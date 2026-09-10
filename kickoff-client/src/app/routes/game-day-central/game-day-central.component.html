@@ -27,7 +27,11 @@
 <app-important-games-ticker [games]="games()" />
 
 @if (watching().length > 0) {
-  <app-game-day-focus-rail [games]="watching()" [(selectedGameId)]="focusedGameId" />
+  <app-game-day-focus-rail
+    [games]="watching()"
+    [(selectedGameId)]="focusedGameId"
+    [(rotationProgress)]="focusRotationProgress"
+  />
 }
 
 @if (calendarOpen()) {
@@ -84,7 +88,11 @@
   } @else {
     <div class="control-board-grid" [class.panels-medium]="watchingSize() === 'medium'" [class.panels-live]="watchingSize() === 'live'">
       @for (game of watching(); track game.id) {
-        <div class="game-board-card watching" [class.focus-selected]="game.id === focusedGameId()">
+        <div
+          class="game-board-card watching"
+          [class.focus-selected]="game.id === focusedGameId()"
+          [style.--focus-progress]="game.id === focusedGameId() ? focusRotationProgress() + '%' : null"
+        >
           <app-day-game-card
             [game]="game"
             [panelSize]="watchingSize()"

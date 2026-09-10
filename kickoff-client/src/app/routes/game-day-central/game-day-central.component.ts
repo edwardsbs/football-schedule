@@ -67,6 +67,7 @@ export class GameDayCentralComponent {
   readonly otherGames = computed(() => this.games().filter((game) => !this.isOnGameDay(game)));
   readonly watchingSize = computed(() => automaticDayPanelSize(this.watching().length));
   readonly focusedGameId = signal<number | null>(null);
+  readonly focusRotationProgress = signal(100);
 
   readonly gameFiltersOpen = signal(false);
   readonly gameFilters = signal<GameFilters>(defaultGameFilters());
@@ -138,6 +139,7 @@ export class GameDayCentralComponent {
   }
 
   focusGame(game: Game): void {
+    this.focusRotationProgress.set(0);
     this.focusedGameId.set(game.id);
   }
 

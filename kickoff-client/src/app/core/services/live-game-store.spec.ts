@@ -119,6 +119,37 @@ describe('LiveGameStore', () => {
     expect(store.overlay(original).score?.downDistance).toBe('1st & 10 at HOM 25');
     discardPeriodicTasks();
   }));
+
+  it('accepts a per-game summary correction until the scoreboard supplies a newer situation', fakeAsync(() => {
+    store = TestBed.inject(LiveGameStore);
+    const original = game({
+      status: 'Live',
+      score: { homeScore: 13, awayScore: 10, period: 4, clock: '2:59', possessionTeamId: 1, downDistance: 'Field Goal', homeWinProbability: null },
+    });
+
+    tick(0);
+    http.expectOne('/api/games/live').flush([original]);
+
+    store.correctSituation(1, 2, '3rd & 19 at AWY 43');
+    expect(store.overlay(original).score?.possessionTeamId).toBe(2);
+    expect(store.overlay(original).score?.downDistance).toBe('3rd & 19 at AWY 43');
+
+    tick(10_000);
+    http.expectOne('/api/games/live').flush([game({
+      status: 'Live',
+      score: { homeScore: 13, awayScore: 10, period: 4, clock: '2:16', possessionTeamId: null, downDistance: null, homeWinProbability: null },
+    })]);
+    expect(store.overlay(original).score?.clock).toBe('2:16');
+    expect(store.overlay(original).score?.downDistance).toBe('3rd & 19 at AWY 43');
+
+    tick(10_000);
+    http.expectOne('/api/games/live').flush([game({
+      status: 'Live',
+      score: { homeScore: 13, awayScore: 10, period: 4, clock: '1:51', possessionTeamId: 2, downDistance: '1st & 10 at HOM 49', homeWinProbability: null },
+    })]);
+    expect(store.overlay(original).score?.downDistance).toBe('1st & 10 at HOM 49');
+    discardPeriodicTasks();
+  }));
 });
 
 function game(overrides: Partial<Game> = {}): Game {

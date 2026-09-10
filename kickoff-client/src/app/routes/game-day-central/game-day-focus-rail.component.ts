@@ -6,6 +6,7 @@ import { Game } from '../../core/models/game.model';
 import { GameSummary } from '../../core/models/game-summary.model';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
 import { KickoffApi } from '../../core/services/kickoff-api';
+import { LiveGameStore } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 
@@ -20,9 +21,11 @@ const ROTATION_MS = 20_000;
 export class GameDayFocusRailComponent {
   readonly games = input.required<readonly Game[]>();
   readonly selectedGameId = model<number | null>(null);
+  readonly rotationProgress = model<number>(100);
 
   private readonly api = inject(KickoffApi);
   private readonly detail = inject(GameDetailOverlay);
+  private readonly live = inject(LiveGameStore);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly records = inject(TeamRecordStore);
   protected readonly paused = signal(false);
@@ -51,6 +54,10 @@ export class GameDayFocusRailComponent {
     if (this.paused() || this.games().length <= 1) return 0;
     return Math.min(100, Math.max(0, (this.now() - this.rotationStartedAt()) / ROTATION_MS * 100));
   });
+
+  private readonly selectionProgress = computed(() =>
+    this.paused() || this.games().length <= 1 ? 100 : this.progress(),
+  );
 
   protected readonly summary = toSignal(
     toObservable(this.selectedGameId).pipe(
@@ -88,6 +95,18 @@ export class GameDayFocusRailComponent {
   protected readonly injuryReports = computed(() => this.summary()?.injuries ?? []);
 
   constructor() {
+    effect(() => this.rotationProgress.set(this.selectionProgress()));
+
+    effect(() => {
+      const game = this.selectedGame();
+      const summary = this.summary();
+      if (!game || !summary) return;
+      const correction = situationCorrectionFromSummary(game, summary);
+      if (correction) {
+        this.live.correctSituation(game.id, correction.possessionTeamId, correction.downDistance);
+      }
+    });
+
     effect(() => {
       const games = this.games();
       const requested = this.selectedGameId();
@@ -157,4 +176,34 @@ export function rotatedGameId(games: readonly Game[], selectedId: number | null,
   const selectedIndex = games.findIndex((game) => game.id === selectedId);
   const currentIndex = selectedIndex < 0 ? 0 : selectedIndex;
   return games[(currentIndex + offset + games.length) % games.length].id;
+}
+
+export interface GameSituationCorrection {
+  possessionTeamId: number | null;
+  downDistance: string | null;
+}
+
+export function situationCorrectionFromSummary(
+  game: Game,
+  summary: GameSummary,
+): GameSituationCorrection | null {
+  const position = summary.lastPlay?.end ?? summary.currentDrive?.end;
+  const downDistance = position?.downDistanceText?.trim() || null;
+  const possessionExternalId = position?.teamExternalId ?? summary.currentDrive?.teamExternalId ?? null;
+  const team = possessionExternalId === null
+    ? null
+    : summary.teamStatistics.find((entry) => entry.teamExternalId === possessionExternalId)
+      ?? summary.leaders.find((entry) => entry.teamExternalId === possessionExternalId)
+      ?? summary.injuries.find((entry) => entry.teamExternalId === possessionExternalId)
+      ?? null;
+  const abbreviation = team?.teamAbbreviation.toUpperCase();
+  const possessionTeamId = abbreviation === game.home.abbreviation.toUpperCase()
+    ? game.home.id
+    : abbreviation === game.away.abbreviation.toUpperCase()
+      ? game.away.id
+      : null;
+
+  return downDistance !== null || possessionTeamId !== null
+    ? { possessionTeamId, downDistance }
+    : null;
 }

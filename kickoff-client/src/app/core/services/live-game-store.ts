@@ -37,6 +37,34 @@ export class LiveGameStore {
     this.refreshRequested.next();
   }
 
+  /**
+   * Repairs possession/down-and-distance from the richer per-game summary when
+   * the lightweight scoreboard keeps advancing the clock without a situation
+   * block. The next real scoreboard situation still replaces this normally.
+   */
+  correctSituation(gameId: number, possessionTeamId: number | null, downDistance: string | null): void {
+    const current = this.updatesById().get(gameId);
+    if (!current?.score || current.status !== 'Live') return;
+
+    const correctedPossession = possessionTeamId ?? current.score.possessionTeamId;
+    const correctedDownDistance = downDistance?.trim() || current.score.downDistance;
+    if (correctedPossession === current.score.possessionTeamId
+      && correctedDownDistance === current.score.downDistance) return;
+
+    const corrected: Game = {
+      ...current,
+      score: {
+        ...current.score,
+        possessionTeamId: correctedPossession,
+        downDistance: correctedDownDistance,
+      },
+    };
+    const next = new Map(this.updatesById());
+    next.set(gameId, corrected);
+    this.updatesById.set(next);
+    this.providerLiveGames.update((games) => games.map((game) => game.id === gameId ? corrected : game));
+  }
+
   overlay(game: Game): Game {
     const demoGame = this.demo.game(game.id);
     if (demoGame) return demoGame;
