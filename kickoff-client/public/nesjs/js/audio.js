@@ -6,17 +6,6 @@ function AudioHandler() {
   this.sampleBuffer = new Float64Array(735);
   this.samplesPerFrame = 735;
 
-  // Kickoff tuning (see kickoff-client/public/nesjs/README.md): upstream used
-  // a 4096-sample ring buffer with a 2048-sample ScriptProcessor callback,
-  // leaving only ~1 callback's worth of slack between the rAF-paced producer
-  // and the steady hardware audio clock before a correction fires below --
-  // and every correction is a hard jump in the waveform, heard as a pop.
-  // Widening both quadruples that slack, trading a bit more audio latency
-  // (harmless for a football game) for far fewer pops.
-  const RING_SIZE = 16384; // must stay a power of two -- see the `& RING_MASK` below
-  const RING_MASK = RING_SIZE - 1;
-  const CALLBACK_SIZE = 4096;
-
   if(Ac === undefined) {
     log("Audio disabled: no Web Audio API support");
     this.hasAudio = false;
@@ -29,7 +18,7 @@ function AudioHandler() {
 
     log("Audio initialized, sample rate: " + samples * 60);
 
-    this.inputBuffer = new Float64Array(RING_SIZE);
+    this.inputBuffer = new Float64Array(4096);
     this.inputBufferPos = 0;
     this.inputReadPos = 0;
 
@@ -52,7 +41,7 @@ function AudioHandler() {
       this.dummyNode.buffer = this.actx.createBuffer(1, 44100, 44100);
       this.dummyNode.loop = true;
 
-      this.scriptNode = this.actx.createScriptProcessor(CALLBACK_SIZE, 1, 1);
+      this.scriptNode = this.actx.createScriptProcessor(2048, 1, 1);
       let that = this;
       this.scriptNode.onaudioprocess = function(e) {
         that.process(e);
@@ -82,19 +71,19 @@ function AudioHandler() {
   }
 
   this.process = function(e) {
-    if(this.inputReadPos + CALLBACK_SIZE > this.inputBufferPos) {
+    if(this.inputReadPos + 2048 > this.inputBufferPos) {
       // we overran the buffer
       //log("Audio buffer overran");
-      this.inputReadPos = this.inputBufferPos - CALLBACK_SIZE;
+      this.inputReadPos = this.inputBufferPos - 2048;
     }
-    if(this.inputReadPos + RING_SIZE < this.inputBufferPos) {
+    if(this.inputReadPos + 4096 < this.inputBufferPos) {
       // we underran the buffer
       //log("Audio buffer underran");
-      this.inputReadPos += CALLBACK_SIZE;
+      this.inputReadPos += 2048;
     }
     let output = e.outputBuffer.getChannelData(0);
-    for(let i = 0; i < CALLBACK_SIZE; i++) {
-      output[i] = this.inputBuffer[(this.inputReadPos++) & RING_MASK];
+    for(let i = 0; i < 2048; i++) {
+      output[i] = this.inputBuffer[(this.inputReadPos++) & 0xfff];
     }
   }
 
@@ -102,7 +91,7 @@ function AudioHandler() {
     if(this.hasAudio) {
       for(let i = 0; i < this.samplesPerFrame; i++) {
         let val = this.sampleBuffer[i];
-        this.inputBuffer[(this.inputBufferPos++) & RING_MASK] = val;
+        this.inputBuffer[(this.inputBufferPos++) & 0xfff] = val;
       }
     }
   }

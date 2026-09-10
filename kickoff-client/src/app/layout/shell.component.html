@@ -38,19 +38,21 @@
         </button>
       }
     </div>
-    <button
-      type="button"
-      class="wake-btn"
-      [class.active]="wake.state() === 'active'"
-      [class.off]="!wake.enabled()"
-      [attr.aria-pressed]="wake.enabled()"
-      [attr.aria-label]="wake.statusDescription()"
-      [attr.title]="wake.statusDescription()"
-      (click)="wake.toggle()"
-    >
-      <span aria-hidden="true">☀</span>
-      {{ wake.statusLabel() }}
-    </button>
+    @if (wake.state() !== 'unsupported') {
+      <button
+        type="button"
+        class="wake-btn"
+        [class.active]="wake.state() === 'active'"
+        [class.off]="!wake.enabled()"
+        [attr.aria-pressed]="wake.enabled()"
+        [attr.aria-label]="wake.statusDescription()"
+        [attr.title]="wake.statusDescription()"
+        (click)="wake.toggle()"
+      >
+        <span aria-hidden="true">☀</span>
+        {{ wake.statusLabel() }}
+      </button>
+    }
     <button
       type="button"
       class="wipe-btn"
