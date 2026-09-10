@@ -233,7 +233,7 @@ app-day-game-card {
     .control-board-grid,
     .control-board-grid.panels-medium,
     .control-board-grid.panels-live {
-      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)) !important;
       gap: 0.42rem;
     }
 
