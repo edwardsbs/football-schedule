@@ -20,6 +20,15 @@ describe('RouteRecognitionComponent', () => {
     expect(component.pool().length).toBe(9);
     expect(component.question()?.choices.length).toBe(4);
     expect(fixture.nativeElement.querySelector('.recognition-field svg')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.route-answer-panel .quiz-choices')).not.toBeNull();
+  });
+
+  it('keeps the feedback and next action beside the route diagram', () => {
+    component.answer(component.question()!.correct);
+    fixture.detectChanges();
+    const answerPanel = fixture.nativeElement.querySelector('.route-answer-panel');
+    expect(answerPanel.querySelector('.quiz-feedback')).not.toBeNull();
+    expect(answerPanel.querySelector('.quiz-feedback button').textContent).toContain('Next Route');
   });
 
   it('includes advanced routes and concepts in full playbook mode', () => {

@@ -1,4 +1,4 @@
-:is(app-whos-missing, app-logo-blitz, app-route-recognition) {
+:is(app-whos-missing, app-logo-blitz, app-route-recognition, app-stadium-recognition) {
   display: block;
 
   .quiz-page { max-width: 1180px; margin: 0 auto; padding: 1.35rem 1.25rem 3rem; }
@@ -60,9 +60,22 @@
   .hero-logo { min-height: 250px; display: grid; place-items: center; padding: 1.2rem; background: radial-gradient(circle, rgb(255 255 255 / 7%), transparent 55%); user-select: none; -webkit-user-select: none; }
   .hero-logo app-team-badge { pointer-events: none; }
 
-  .route-quiz { max-width: 760px; margin: 0 auto; }
-  .recognition-field { width: min(100%, 520px); margin: 0 auto; padding: 1rem 1rem 0; }
-  .recognition-field svg { display: block; width: 100%; max-height: 47vh; }
+  .stadium-quiz { max-width: 900px; margin: 0 auto; }
+  .stadium-marquee { min-height: 210px; display: grid; place-items: center; align-content: center; gap: 0.4rem; padding: 1.4rem; background: radial-gradient(circle, rgb(201 162 39 / 13%), transparent 58%); text-align: center; user-select: none; -webkit-user-select: none; }
+  .stadium-marquee > span { font-size: 3rem; }
+  .stadium-marquee strong { max-width: 720px; font-size: clamp(1.55rem, 4vw, 2.65rem); line-height: 1.12; }
+  .stadium-marquee small { color: var(--muted-strong, #aab2c0); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
+  .stadium-choices button { min-height: 68px; }
+
+  .route-quiz { max-width: 980px; margin: 0 auto; }
+  .route-question-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(270px, 0.85fr); align-items: stretch; }
+  .recognition-field { width: 100%; margin: 0; padding: 0.85rem; border-right: 1px solid var(--border, #262c38); }
+  .recognition-field svg { display: block; width: 100%; max-height: 52vh; }
+  .route-answer-panel { min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 0.85rem; }
+  .route-answer-panel .quiz-choices { grid-template-columns: 1fr; padding: 0; }
+  .route-answer-panel .quiz-feedback { align-items: stretch; flex-direction: column; margin-top: 0.75rem; padding: 0.75rem; border: 1px solid rgb(255 117 111 / 35%); border-radius: 10px; }
+  .route-answer-panel .quiz-feedback.success { border-color: rgb(98 245 154 / 35%); }
+  .route-answer-panel .quiz-feedback button { width: 100%; }
   .recognition-field .grass-a { fill: #173b2a; }
   .recognition-field .grass-b { fill: #1a422e; }
   .recognition-field .yard-line { stroke: rgb(255 255 255 / 24%); stroke-width: 2; }
@@ -79,18 +92,20 @@
 }
 
 @media (max-width: 760px) {
-  :is(app-whos-missing, app-logo-blitz, app-route-recognition) {
+  :is(app-whos-missing, app-logo-blitz, app-route-recognition, app-stadium-recognition) {
     .quiz-head { align-items: start; flex-direction: column; }
     .quiz-game-nav { justify-content: flex-start; }
     .quiz-stats { order: 3; width: 100%; justify-content: space-between; }
     .quiz-feedback { align-items: flex-start; flex-wrap: wrap; }
     .quiz-feedback > span { flex-basis: 60%; }
     .hero-logo { min-height: 210px; }
+    .route-question-layout { grid-template-columns: 1fr; }
+    .recognition-field { width: min(100%, 520px); margin: 0 auto; border-right: 0; border-bottom: 1px solid var(--border, #262c38); }
   }
 }
 
 @media (max-width: 520px) {
-  :is(app-whos-missing, app-logo-blitz, app-route-recognition) {
+  :is(app-whos-missing, app-logo-blitz, app-route-recognition, app-stadium-recognition) {
     .quiz-page { padding-inline: 0.75rem; }
     .quiz-choices { grid-template-columns: 1fr; }
     .roster-grid { grid-template-columns: 1fr; max-height: 47vh; overflow-y: auto; }
@@ -100,12 +115,12 @@
 }
 
 @media (pointer: coarse) {
-  :is(app-whos-missing, app-logo-blitz, app-route-recognition) {
+  :is(app-whos-missing, app-logo-blitz, app-route-recognition, app-stadium-recognition) {
     .quiz-game-nav a, .quiz-league-switch a, .quiz-reset, .quiz-segments button, .quiz-feedback button, .quiz-finish button { min-height: 48px; }
     .quiz-choices button { min-height: 62px; }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :is(app-whos-missing, app-logo-blitz, app-route-recognition) .quiz-progress span { transition: none; }
+  :is(app-whos-missing, app-logo-blitz, app-route-recognition, app-stadium-recognition) .quiz-progress span { transition: none; }
 }

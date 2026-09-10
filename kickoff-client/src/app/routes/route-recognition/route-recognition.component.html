@@ -9,7 +9,8 @@
     <nav class="quiz-game-nav" aria-label="Choose a mini-game">
       <a routerLink="/games/whos-missing/nfl">Who’s Missing?</a>
       <a routerLink="/games/logo-blitz/nfl">Logo Blitz</a>
-      <a class="active" routerLink="/games/route-recognition">Route Recognition</a>
+      <a routerLink="/games/stadium-recognition/nfl">Stadiums</a>
+      <a class="active" routerLink="/games/route-recognition">Routes</a>
     </nav>
   </header>
 
@@ -39,7 +40,8 @@
         <span>Route {{ questionNumber() }} of {{ roundLength }}</span>
         <h2>What route is drawn?</h2>
       </div>
-      <figure class="recognition-field">
+      <div class="route-question-layout">
+        <figure class="recognition-field">
         <svg viewBox="0 0 440 350" role="img" aria-label="Mystery receiver route diagram">
           <defs>
             <pattern id="quiz-grass-stripes" width="80" height="80" patternUnits="userSpaceOnUse">
@@ -69,21 +71,24 @@
             <path [attr.d]="current.correct.pathData" class="route-path" />
           }
         </svg>
-      </figure>
-      <div class="quiz-choices compact" aria-label="Answer choices">
-        @for (route of current.choices; track route.number) {
-          <button type="button" [class]="choiceClass(route)" [disabled]="selectedNumber() !== null" (click)="answer(route)">
-            <span>{{ route.name }}</span>
-          </button>
-        }
-      </div>
-      @if (selectedNumber() !== null) {
-        <div class="quiz-feedback" [class.success]="selectedNumber() === current.correct.number" aria-live="polite">
-          <strong>{{ selectedNumber() === current.correct.number ? 'Correct read!' : 'That’s ' + current.correct.name + '.' }}</strong>
-          <span>{{ current.correct.summary }}</span>
-          <button type="button" (click)="next()">{{ questionNumber() === roundLength ? 'See Results' : 'Next Route' }} →</button>
+        </figure>
+        <div class="route-answer-panel">
+          <div class="quiz-choices compact" aria-label="Answer choices">
+            @for (route of current.choices; track route.number) {
+              <button type="button" [class]="choiceClass(route)" [disabled]="selectedNumber() !== null" (click)="answer(route)">
+                <span>{{ route.name }}</span>
+              </button>
+            }
+          </div>
+          @if (selectedNumber() !== null) {
+            <div class="quiz-feedback" [class.success]="selectedNumber() === current.correct.number" aria-live="polite">
+              <strong>{{ selectedNumber() === current.correct.number ? 'Correct read!' : 'That’s ' + current.correct.name + '.' }}</strong>
+              <span>{{ current.correct.summary }}</span>
+              <button type="button" (click)="next()">{{ questionNumber() === roundLength ? 'See Results' : 'Next Route' }} →</button>
+            </div>
+          }
         </div>
-      }
+      </div>
     </section>
   }
 </main>

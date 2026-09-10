@@ -104,6 +104,14 @@ export const routes: Routes = [
           import('./routes/route-recognition/route-recognition.component').then((m) => m.RouteRecognitionComponent),
       },
       {
+        path: 'games/stadium-recognition/:league',
+        title: 'Stadium Recognition · Kickoff',
+        loadComponent: () =>
+          import('./routes/stadium-recognition/stadium-recognition.component').then(
+            (m) => m.StadiumRecognitionComponent,
+          ),
+      },
+      {
         path: 'playoffs/:league',
         title: 'Playoff Bracket · Kickoff',
         loadComponent: () =>

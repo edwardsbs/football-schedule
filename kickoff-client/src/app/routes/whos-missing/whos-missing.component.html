@@ -9,7 +9,8 @@
     <nav class="quiz-game-nav" aria-label="Choose a mini-game">
       <a class="active" [routerLink]="['/games/whos-missing', matchLeague()]">Who’s Missing?</a>
       <a [routerLink]="['/games/logo-blitz', matchLeague()]">Logo Blitz</a>
-      <a routerLink="/games/route-recognition">Route Recognition</a>
+      <a [routerLink]="['/games/stadium-recognition', matchLeague()]">Stadiums</a>
+      <a routerLink="/games/route-recognition">Routes</a>
     </nav>
   </header>
 
