@@ -50,6 +50,10 @@ app-game-day-central {
   }
 
   .watching-board { border-top: 3px solid var(--accent-gold); }
+  .inactive-watching-board {
+    border-top: 3px solid #455061;
+    background: rgb(18 22 29 / 66%);
+  }
   .other-board { border-top: 3px solid #455061; }
 
   .control-board-section-head, .board-head-meta { display: flex; align-items: center; gap: 0.55rem; }
@@ -72,6 +76,7 @@ app-game-day-central {
   .control-board-grid.panels-medium { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
   .control-board-grid.panels-live { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 0.85rem; }
   .other-grid .game-board-card:not(.getting-interesting) { opacity: 0.84; }
+  .inactive-watching-board .game-board-card:not(.focus-selected) { opacity: 0.88; }
 
   .interesting-flag {
     position: absolute; z-index: 4; top: 0.28rem; left: 50%; transform: translateX(-50%);

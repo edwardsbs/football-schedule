@@ -32,31 +32,50 @@ export class GameDayFocusRailComponent {
   private readonly now = signal(Date.now());
   private readonly rotationStartedAt = signal(Date.now());
   private lastSelection: number | null = null;
+  private lastSelectionWasActive = false;
+
+  protected readonly rotationGames = computed(() => gameDayRotationGames(this.games()));
 
   protected readonly selectedGame = computed(() => {
     const games = this.games();
-    return games.find((game) => game.id === this.selectedGameId()) ?? games[0] ?? null;
+    return games.find((game) => game.id === this.selectedGameId())
+      ?? this.rotationGames()[0]
+      ?? games[0]
+      ?? null;
   });
 
-  protected readonly selectedPosition = computed(() => {
+  protected readonly selectedRotationPosition = computed(() => {
     const selected = this.selectedGame();
-    const index = selected ? this.games().findIndex((game) => game.id === selected.id) : -1;
+    const index = selected ? this.rotationGames().findIndex((game) => game.id === selected.id) : -1;
     return index < 0 ? 0 : index + 1;
   });
 
+  protected readonly selectedIsActive = computed(() => this.selectedRotationPosition() > 0);
+
+  protected readonly autoRotationEnabled = computed(() => {
+    const activeCount = this.rotationGames().length;
+    return activeCount > 1 || (activeCount === 1 && !this.selectedIsActive());
+  });
+
+  protected readonly selectionLabel = computed(() => {
+    const activeCount = this.rotationGames().length;
+    if (this.selectedIsActive()) return `Active ${this.selectedRotationPosition()} of ${activeCount}`;
+    return activeCount === 0 ? 'Manual view · no active games' : `Manual view · ${activeCount} active`;
+  });
+
   protected readonly secondsRemaining = computed(() => {
-    if (this.paused() || this.games().length <= 1) return 20;
+    if (this.paused() || !this.autoRotationEnabled()) return 20;
     const elapsed = Math.max(0, this.now() - this.rotationStartedAt());
     return Math.max(0, Math.ceil((ROTATION_MS - elapsed) / 1_000));
   });
 
   protected readonly progress = computed(() => {
-    if (this.paused() || this.games().length <= 1) return 0;
+    if (this.paused() || !this.autoRotationEnabled()) return 0;
     return Math.min(100, Math.max(0, (this.now() - this.rotationStartedAt()) / ROTATION_MS * 100));
   });
 
   private readonly selectionProgress = computed(() =>
-    this.paused() || this.games().length <= 1 ? 100 : this.progress(),
+    this.paused() || !this.autoRotationEnabled() ? 100 : this.progress(),
   );
 
   protected readonly summary = toSignal(
@@ -136,21 +155,37 @@ export class GameDayFocusRailComponent {
 
     effect(() => {
       const games = this.games();
+      const rotationGames = this.rotationGames();
       const requested = this.selectedGameId();
-      const resolved = games.some((game) => game.id === requested) ? requested : games[0]?.id ?? null;
+      const resolved = games.some((game) => game.id === requested)
+        ? requested
+        : rotationGames[0]?.id ?? games[0]?.id ?? null;
       if (resolved !== requested) {
         this.selectedGameId.set(resolved);
         return;
       }
+
+      const selectionIsActive = rotationGames.some((game) => game.id === resolved);
+      if (resolved !== null
+        && resolved === this.lastSelection
+        && this.lastSelectionWasActive
+        && !selectionIsActive
+        && rotationGames.length > 0) {
+        this.selectedGameId.set(rotationGames[0].id);
+        return;
+      }
       if (resolved !== this.lastSelection) {
         this.lastSelection = resolved;
+        this.lastSelectionWasActive = selectionIsActive;
         this.restartRotation();
+      } else {
+        this.lastSelectionWasActive = selectionIsActive;
       }
     });
 
     timer(0, 1_000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.now.set(Date.now());
-      if (!this.paused() && this.games().length > 1
+      if (!this.paused() && this.autoRotationEnabled()
         && this.now() - this.rotationStartedAt() >= ROTATION_MS) {
         this.move(1);
       }
@@ -158,7 +193,7 @@ export class GameDayFocusRailComponent {
   }
 
   protected move(offset: number): void {
-    const games = this.games();
+    const games = this.rotationGames();
     const nextId = rotatedGameId(games, this.selectedGameId(), offset);
     if (nextId === null) return;
     this.selectedGameId.set(nextId);
@@ -211,6 +246,10 @@ export function rotatedGameId(games: readonly Game[], selectedId: number | null,
   const selectedIndex = games.findIndex((game) => game.id === selectedId);
   const currentIndex = selectedIndex < 0 ? 0 : selectedIndex;
   return games[(currentIndex + offset + games.length) % games.length].id;
+}
+
+export function gameDayRotationGames(games: readonly Game[]): Game[] {
+  return games.filter((game) => game.status === 'Live');
 }
 
 export interface GameSituationCorrection {

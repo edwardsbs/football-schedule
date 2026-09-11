@@ -71,13 +71,13 @@
   </div>
 }
 
-<section class="control-board-section watching-board">
+<section class="control-board-section watching-board active-watching-board">
   <header class="control-board-section-head">
     <div>
       <span class="board-kicker">Priority board</span>
-      <h2>Watching</h2>
+      <h2>Active Games</h2>
     </div>
-    <span class="board-count">{{ watching().length }}</span>
+    <span class="board-count">{{ activeWatching().length }}</span>
   </header>
 
   @if (watching().length === 0) {
@@ -85,9 +85,14 @@
       <strong>Your top board is ready.</strong>
       <span>Promote a game from below, or add one from the <a routerLink="/day">Day schedule</a>.</span>
     </div>
+  } @else if (activeWatching().length === 0) {
+    <div class="board-empty">
+      <strong>No selected games are live right now.</strong>
+      <span>They will move here automatically when they kick off.</span>
+    </div>
   } @else {
-    <div class="control-board-grid" [class.panels-medium]="watchingSize() === 'medium'" [class.panels-live]="watchingSize() === 'live'">
-      @for (game of watching(); track game.id) {
+    <div class="control-board-grid" [class.panels-medium]="activeWatchingSize() === 'medium'" [class.panels-live]="activeWatchingSize() === 'live'">
+      @for (game of activeWatching(); track game.id) {
         <div
           class="game-board-card watching"
           [class.focus-selected]="game.id === focusedGameId()"
@@ -95,7 +100,7 @@
         >
           <app-day-game-card
             [game]="game"
-            [panelSize]="watchingSize()"
+            [panelSize]="activeWatchingSize()"
             gameDayState="selected"
             detailAction="select"
             (gameDayToggle)="removeFromGameDay(game)"
@@ -106,6 +111,37 @@
     </div>
   }
 </section>
+
+@if (inactiveWatching().length > 0) {
+  <section class="control-board-section inactive-watching-board">
+    <header class="control-board-section-head">
+      <div>
+        <span class="board-kicker">Selected games</span>
+        <h2>Not Active</h2>
+      </div>
+      <span class="board-count">{{ inactiveWatching().length }}</span>
+    </header>
+
+    <div class="control-board-grid" [class.panels-medium]="inactiveWatchingSize() === 'medium'" [class.panels-live]="inactiveWatchingSize() === 'live'">
+      @for (game of inactiveWatching(); track game.id) {
+        <div
+          class="game-board-card watching inactive"
+          [class.focus-selected]="game.id === focusedGameId()"
+          [style.--focus-progress]="game.id === focusedGameId() ? focusRotationProgress() + '%' : null"
+        >
+          <app-day-game-card
+            [game]="game"
+            [panelSize]="inactiveWatchingSize()"
+            gameDayState="selected"
+            detailAction="select"
+            (gameDayToggle)="removeFromGameDay(game)"
+            (gameSelected)="focusGame(game)"
+          />
+        </div>
+      }
+    </div>
+  </section>
+}
 
 <section class="control-board-section other-board">
   <header class="control-board-section-head">

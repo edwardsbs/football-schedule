@@ -1,6 +1,6 @@
 import { Game } from '../../core/models/game.model';
 import { GameSummary } from '../../core/models/game-summary.model';
-import { rotatedGameId, situationCorrectionFromSummary } from './game-day-focus-rail.component';
+import { gameDayRotationGames, rotatedGameId, situationCorrectionFromSummary } from './game-day-focus-rail.component';
 
 describe('GameDayFocusRailComponent rotation', () => {
   const games = [game(10), game(20), game(30)];
@@ -16,6 +16,19 @@ describe('GameDayFocusRailComponent rotation', () => {
 
   it('returns null when there are no Game Day selections', () => {
     expect(rotatedGameId([], null, 1)).toBeNull();
+  });
+
+  it('includes only live games in automatic rotation', () => {
+    const selectedGames = [
+      game(10, 'Upcoming'),
+      game(20, 'Live'),
+      game(30, 'Final'),
+      game(40, 'Live'),
+    ];
+
+    expect(gameDayRotationGames(selectedGames).map((entry) => entry.id)).toEqual([20, 40]);
+    expect(rotatedGameId(gameDayRotationGames(selectedGames), 20, 1)).toBe(40);
+    expect(rotatedGameId(gameDayRotationGames(selectedGames), 40, 1)).toBe(20);
   });
 
   it('prefers the current drive over a retained scoring play when repairing the live situation', () => {
@@ -51,7 +64,7 @@ describe('GameDayFocusRailComponent rotation', () => {
   });
 });
 
-function game(id: number): Game {
+function game(id: number, status: Game['status'] = 'Upcoming'): Game {
   return {
     id,
     league: 'Ncaa',
@@ -60,7 +73,7 @@ function game(id: number): Game {
     kickoffUtc: new Date(2026, 8, 9, 18).toISOString(),
     venue: null,
     broadcasts: [],
-    status: 'Upcoming',
+    status,
     isMuted: false,
     muteType: null,
     score: null,

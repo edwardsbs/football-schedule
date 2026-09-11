@@ -64,8 +64,11 @@ export class GameDayCentralComponent {
     return this.live.overlayRange(this.loadedGames(), range.from, range.to);
   });
   readonly watching = computed(() => this.games().filter((game) => this.isOnGameDay(game)));
+  readonly activeWatching = computed(() => this.watching().filter((game) => game.status === 'Live'));
+  readonly inactiveWatching = computed(() => this.watching().filter((game) => game.status !== 'Live'));
   readonly otherGames = computed(() => this.games().filter((game) => !this.isOnGameDay(game)));
-  readonly watchingSize = computed(() => automaticDayPanelSize(this.watching().length));
+  readonly activeWatchingSize = computed(() => automaticDayPanelSize(this.activeWatching().length));
+  readonly inactiveWatchingSize = computed(() => automaticDayPanelSize(this.inactiveWatching().length));
   readonly focusedGameId = signal<number | null>(null);
   readonly focusRotationProgress = signal(100);
 

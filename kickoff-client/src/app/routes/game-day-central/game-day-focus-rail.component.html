@@ -3,22 +3,22 @@
     <header class="focus-head">
       <div>
         <span class="focus-kicker">Game focus</span>
-        <strong>{{ selectedPosition() }} of {{ games().length }}</strong>
+        <strong>{{ selectionLabel() }}</strong>
       </div>
-      @if (games().length > 1) {
+      @if (autoRotationEnabled()) {
         <div class="focus-controls" role="group" aria-label="Game rotation controls">
-          <button type="button" aria-label="Previous Game Day game" (click)="move(-1)">‹</button>
+          <button type="button" aria-label="Previous active Game Day game" (click)="move(-1)">‹</button>
           <button type="button" [attr.aria-label]="paused() ? 'Resume automatic game rotation' : 'Pause automatic game rotation'" (click)="togglePause()">
             {{ paused() ? '▶' : 'Ⅱ' }}
           </button>
-          <button type="button" aria-label="Next Game Day game" (click)="move(1)">›</button>
+          <button type="button" aria-label="Next active Game Day game" (click)="move(1)">›</button>
         </div>
       }
     </header>
 
-    @if (games().length > 1) {
+    @if (autoRotationEnabled()) {
       <div class="rotation-status">
-        <span>{{ paused() ? 'Rotation paused' : 'Next game in ' + secondsRemaining() + 's' }}</span>
+        <span>{{ paused() ? 'Rotation paused' : (selectedIsActive() ? 'Next active game in ' : 'Returning to active games in ') + secondsRemaining() + 's' }}</span>
         <span class="rotation-track"><span [style.width.%]="progress()"></span></span>
       </div>
     }
