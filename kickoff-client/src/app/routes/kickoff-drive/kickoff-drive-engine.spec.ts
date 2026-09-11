@@ -1,5 +1,6 @@
 import {
   advanceSeries,
+  customRouteFromPoints,
   distanceBetween,
   DRIVE_PLAYS,
   fieldGoalIsGood,
@@ -15,6 +16,32 @@ describe('Kickoff Drive engine', () => {
     expect(DRIVE_PLAYS.length).toBe(4);
     expect(DRIVE_PLAYS.every((play) => play.routes.x.path.startsWith('M'))).toBeTrue();
     expect(DRIVE_PLAYS.find((play) => play.id === 'slant')?.routes.y.pointAt(1)).toEqual({ x: 304, y: 112 });
+  });
+
+  it('builds a playable route from a drawn trace', () => {
+    const start = { x: 202, y: 88 };
+    const route = customRouteFromPoints(start, [
+      { x: 235, y: 90 },
+      { x: 285, y: 122 },
+      { x: 350, y: 172 },
+    ]);
+
+    expect(route).not.toBeNull();
+    expect(route!.path).toContain('M202.0 88.0 L235.0 90.0');
+    expect(route!.pointAt(0)).toEqual(start);
+    expect(route!.pointAt(1)).toEqual({ x: 350, y: 172 });
+    expect(route!.pointAt(0.5).x).toBeGreaterThan(235);
+  });
+
+  it('rejects tiny route edits and clamps drawings to the playable field', () => {
+    expect(customRouteFromPoints({ x: 202, y: 88 }, [{ x: 210, y: 90 }])).toBeNull();
+
+    const route = customRouteFromPoints({ x: 202, y: 88 }, [
+      { x: 260, y: -100 },
+      { x: 900, y: 900 },
+    ]);
+    expect(route).not.toBeNull();
+    expect(route!.pointAt(1)).toEqual({ x: 650, y: 386 });
   });
 
   it('normalizes joystick movement and limits it to the control radius', () => {

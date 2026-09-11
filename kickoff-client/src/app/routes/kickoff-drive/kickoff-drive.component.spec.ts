@@ -34,6 +34,26 @@ describe('KickoffDriveComponent', () => {
     expect(component.ball().visible).toBeTrue();
   });
 
+  it('selects eligible receivers for pre-snap route editing', () => {
+    component.selectRouteReceiver('x');
+    fixture.detectChanges();
+
+    expect(component.editingReceiver()).toBe('x');
+    expect(component.prompt()).toContain('X selected');
+    expect(fixture.nativeElement.querySelector('.drive-receiver.route-selected')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.drive-route-controls')).not.toBeNull();
+  });
+
+  it('does not offer route editing on run plays', () => {
+    component.selectPlay('zone');
+    component.selectRouteReceiver('x');
+    fixture.detectChanges();
+
+    expect(component.editingReceiver()).toBeNull();
+    expect(component.canEditRoutes()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.drive-route-controls')).toBeNull();
+  });
+
   it('resets the scoreboard and series for a new game', () => {
     component.score.set(14);
     component.gameClock.set(3);
@@ -45,4 +65,3 @@ describe('KickoffDriveComponent', () => {
     expect(component.phase()).toBe('ready');
   });
 });
-

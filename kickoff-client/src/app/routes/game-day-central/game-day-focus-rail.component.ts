@@ -180,6 +180,14 @@ export class GameDayFocusRailComponent {
     return String(side === 'home' ? game.score.homeScore : game.score.awayScore);
   }
 
+  /** "Brock Purdy" -> "B. Purdy" -- keeps everything after the first name
+   * (so a suffix like "Jr." stays attached to the last name) to save width
+   * in the two-column leaders grid. */
+  protected shortName(athlete: string): string {
+    const parts = athlete.trim().split(/\s+/);
+    return parts.length < 2 ? athlete : `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
+  }
+
   protected statusLabel(game: Game): string {
     if (game.status === 'Live') {
       const period = game.score?.period ? `Q${game.score.period}` : 'Live';

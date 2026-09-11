@@ -58,7 +58,17 @@
         </div>
 
         <div class="drive-field-wrap">
-          <svg class="drive-field" viewBox="0 0 760 420" role="img" aria-label="Top-down football field with animated players">
+          <svg
+            class="drive-field"
+            [class.route-edit-mode]="canEditRoutes()"
+            viewBox="0 0 760 420"
+            role="img"
+            aria-label="Top-down football field with animated players"
+            (pointerdown)="startRouteDraw($event)"
+            (pointermove)="moveRouteDraw($event)"
+            (pointerup)="finishRouteDraw($event)"
+            (pointercancel)="cancelRouteDraw()"
+          >
             <defs>
               <linearGradient id="kickoffDriveTurf" x1="0" x2="1">
                 <stop offset="0" stop-color="#0d5a43" />
@@ -91,8 +101,13 @@
             <line class="drive-first-down" x1="284" x2="284" y1="20" y2="400" />
 
             <g class="drive-routes" [class.hidden]="phase() !== 'ready' && selectedPlay().kind === 'run'">
-              <path [attr.d]="routePath('x')" /><path [attr.d]="routePath('y')" /><path [attr.d]="routePath('r')" />
+              <path [class.custom]="isCustomRoute('x')" [class.editing]="isEditingRoute('x')" [attr.d]="routePath('x')" />
+              <path [class.custom]="isCustomRoute('y')" [class.editing]="isEditingRoute('y')" [attr.d]="routePath('y')" />
+              <path [class.custom]="isCustomRoute('r')" [class.editing]="isEditingRoute('r')" [attr.d]="routePath('r')" />
             </g>
+            @if (draftRoutePath()) {
+              <path class="drive-route-draft" [attr.d]="draftRoutePath()" />
+            }
             @if (selectedPlay().kind === 'kick' && (phase() === 'ready' || phase() === 'kick-ready')) {
               <g class="drive-kick-aim"><path d="M187 210 C370 150 548 162 704 210" /><circle cx="704" cy="210" r="22" /></g>
             }
@@ -104,19 +119,19 @@
             </g>
 
             <g class="drive-offense" filter="url(#kickoffDriveShadow)">
-              <g class="drive-receiver" [class.open]="isReceiverOpen('x')" [class.catch-target]="isCatchTarget('x')" [attr.transform]="playerTransform('x')" role="button" tabindex="0" aria-label="Throw to X receiver" (click)="receiverAction('x')" (keydown.enter)="receiverAction('x')" (keydown.space)="receiverAction('x'); $event.preventDefault()">
+              <g class="drive-receiver" [class.open]="isReceiverOpen('x')" [class.catch-target]="isCatchTarget('x')" [class.route-selected]="isEditingRoute('x')" [attr.transform]="playerTransform('x')" [attr.aria-pressed]="isEditingRoute('x')" role="button" tabindex="0" aria-label="X receiver. Tap or drag to edit route" (pointerdown)="startReceiverRoute('x', $event)" (click)="receiverAction('x')" (keydown.enter)="receiverAction('x')" (keydown.space)="receiverAction('x'); $event.preventDefault()">
                 <circle r="15" /><text>X</text><circle class="target-ring" r="23" />
               </g>
-              <g class="drive-receiver" [class.open]="isReceiverOpen('y')" [class.catch-target]="isCatchTarget('y')" [attr.transform]="playerTransform('y')" role="button" tabindex="0" aria-label="Throw to Y receiver" (click)="receiverAction('y')" (keydown.enter)="receiverAction('y')" (keydown.space)="receiverAction('y'); $event.preventDefault()">
+              <g class="drive-receiver" [class.open]="isReceiverOpen('y')" [class.catch-target]="isCatchTarget('y')" [class.route-selected]="isEditingRoute('y')" [attr.transform]="playerTransform('y')" [attr.aria-pressed]="isEditingRoute('y')" role="button" tabindex="0" aria-label="Y receiver. Tap or drag to edit route" (pointerdown)="startReceiverRoute('y', $event)" (click)="receiverAction('y')" (keydown.enter)="receiverAction('y')" (keydown.space)="receiverAction('y'); $event.preventDefault()">
                 <circle r="15" /><text>Y</text><circle class="target-ring" r="23" />
               </g>
               <g class="drive-lineman" transform="translate(205 185)"><circle r="12" /></g>
               <g class="drive-lineman" transform="translate(205 210)"><circle r="12" /></g>
               <g class="drive-lineman" transform="translate(205 235)"><circle r="12" /></g>
-              <g class="drive-receiver" [class.open]="isReceiverOpen('r')" [class.catch-target]="isCatchTarget('r')" [attr.transform]="playerTransform('r')" role="button" tabindex="0" aria-label="Throw to running back" (click)="receiverAction('r')" (keydown.enter)="receiverAction('r')" (keydown.space)="receiverAction('r'); $event.preventDefault()">
+              <g class="drive-receiver" [class.open]="isReceiverOpen('r')" [class.catch-target]="isCatchTarget('r')" [class.route-selected]="isEditingRoute('r')" [attr.transform]="playerTransform('r')" [attr.aria-pressed]="isEditingRoute('r')" role="button" tabindex="0" aria-label="Running back. Tap or drag to edit route" (pointerdown)="startReceiverRoute('r', $event)" (click)="receiverAction('r')" (keydown.enter)="receiverAction('r')" (keydown.space)="receiverAction('r'); $event.preventDefault()">
                 <circle r="15" /><text>R</text><circle class="target-ring" r="23" />
               </g>
-              <g class="drive-quarterback" [attr.transform]="playerTransform('qb')" role="button" tabindex="0" aria-label="Tap quarterback to snap" (click)="snap()" (keydown.enter)="snap()" (keydown.space)="snap(); $event.preventDefault()">
+              <g class="drive-quarterback" [attr.transform]="playerTransform('qb')" role="button" tabindex="0" aria-label="Tap quarterback to snap" (pointerdown)="$event.stopPropagation()" (click)="snap()" (keydown.enter)="snap()" (keydown.space)="snap(); $event.preventDefault()">
                 <circle r="18" /><text>QB</text><circle class="qb-ring" r="27" />
               </g>
             </g>
@@ -136,7 +151,8 @@
             <button type="button" class="drive-snap" (click)="snap()"><span>SNAP</span><small>tap QB</small></button>
           }
           <div class="drive-field-status" aria-live="polite">
-            @if (phase() === 'ready') { Routes are hot. Read the defense. }
+            @if (canEditRoutes()) { {{ routeEditMessage() }} }
+            @else if (phase() === 'ready') { Routes are hot. Read the defense. }
             @else if (phase() === 'routes') { Tap X, Y, or R—or steer the QB across the line to scramble. }
             @else if (phase() === 'passing') { {{ passFeedback() }} · Pass in flight. }
             @else if (phase() === 'catch-window') { Tap the receiver or the CATCH button before the ring closes. }
@@ -171,7 +187,13 @@
             <small><b>{{ passFeedback() || phase().toUpperCase() }}</b><span>BALL · {{ fieldPositionLabel() }}</span></small>
           </div>
 
-          @if (phase() === 'catch-window') {
+          @if (canEditRoutes()) {
+            <div class="drive-route-controls" aria-label="Route editing controls">
+              <span><b>{{ editingReceiver()?.toUpperCase() || 'ROUTE' }}</b><small>DRAW</small></span>
+              <button type="button" [disabled]="routeHistoryDepth() === 0" (click)="undoRoute()">↶ Undo</button>
+              <button type="button" [disabled]="!hasCustomRoutes()" (click)="resetRoutes()">Reset</button>
+            </div>
+          } @else if (phase() === 'catch-window') {
             <button type="button" class="drive-catch-button" (click)="attemptCatch()">
               <span>CATCH</span><small>Tap now</small><i [style.transform]="'scaleX(' + catchProgress() + ')'"> </i>
             </button>

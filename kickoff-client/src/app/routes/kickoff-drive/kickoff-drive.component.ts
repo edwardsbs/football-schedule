@@ -5,9 +5,12 @@ import {
   DrivePlay,
   DrivePlayId,
   DrivePoint,
+  DriveRoute,
   OFFENSE_STARTS,
   ReceiverId,
   advanceSeries,
+  constrainCustomRoutePoint,
+  customRouteFromPoints,
   distanceBetween,
   fieldGoalIsGood,
   isOutOfBounds,
@@ -15,11 +18,13 @@ import {
   passChances,
   PassOutcome,
   resolvePass,
+  routePathFromPoints,
   tackleOccurs,
 } from './kickoff-drive-engine';
 
 type DrivePhase = 'ready' | 'snap' | 'routes' | 'passing' | 'catch-window' | 'running' | 'qb-running' | 'yac' | 'kick-ready' | 'kicking' | 'complete' | 'game-over';
 type OffensivePositions = Record<ReceiverId | 'qb', DrivePoint>;
+type CustomRoutes = Record<ReceiverId, DriveRoute | null>;
 
 interface BallState extends DrivePoint {
   visible: boolean;
@@ -42,6 +47,7 @@ const cloneOffense = (): OffensivePositions => ({
   y: { ...OFFENSE_STARTS.y }, r: { ...OFFENSE_STARTS.r },
 });
 const cloneDefense = (): Defender[] => DEFENSE_STARTS.map((defender) => ({ ...defender }));
+const blankCustomRoutes = (): CustomRoutes => ({ x: null, y: null, r: null });
 const clamp = (value: number, minimum: number, maximum: number): number => Math.min(maximum, Math.max(minimum, value));
 
 @Component({
@@ -74,6 +80,14 @@ export class KickoffDriveComponent implements OnDestroy {
   readonly demoRunning = signal(false);
   readonly sprinting = signal(false);
   readonly stick = signal<DrivePoint>({ x: 0, y: 0 });
+  readonly customRoutes = signal<CustomRoutes>(blankCustomRoutes());
+  readonly editingReceiver = signal<ReceiverId | null>(null);
+  readonly draftRoutePoints = signal<DrivePoint[]>([]);
+  readonly routeEditMessage = signal('Tap X, Y, or R, then draw on the field');
+  readonly routeHistoryDepth = signal(0);
+  readonly canEditRoutes = computed(() => this.phase() === 'ready' && this.selectedPlay().kind === 'pass');
+  readonly hasCustomRoutes = computed(() => Object.values(this.customRoutes()).some((route) => route !== null));
+  readonly draftRoutePath = computed(() => routePathFromPoints(this.draftRoutePoints()));
   readonly clockLabel = computed(() => {
     const seconds = Math.max(0, Math.ceil(this.gameClock()));
     return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -81,7 +95,11 @@ export class KickoffDriveComponent implements OnDestroy {
   readonly downLabel = computed(() => `${this.ordinal(this.down())} & ${this.yardsToGo()}`);
   readonly prompt = computed(() => {
     switch (this.phase()) {
-      case 'ready': return 'Tap the QB to snap';
+      case 'ready': return this.selectedPlay().kind === 'pass'
+        ? this.editingReceiver()
+          ? `${this.editingReceiver()!.toUpperCase()} selected · draw the new route`
+          : 'Tap a receiver to edit, or the QB to snap'
+        : this.selectedPlay().kind === 'kick' ? 'Tap the QB, then swipe to kick' : 'Tap the QB to hand it off';
       case 'snap': return 'Ball live';
       case 'routes': return 'Tap an open receiver';
       case 'passing': return 'Pass in flight';
@@ -119,6 +137,8 @@ export class KickoffDriveComponent implements OnDestroy {
   private kickPowerValue = 0;
   private kickDrift = 0;
   private kickStart: DrivePoint | null = null;
+  private routePointerId: number | null = null;
+  private routeHistory: Array<{ receiver: ReceiverId; previous: DriveRoute | null }> = [];
 
   ngOnDestroy(): void {
     this.stopAnimation();
@@ -135,6 +155,8 @@ export class KickoffDriveComponent implements OnDestroy {
 
   snap(): void {
     if (this.phase() !== 'ready') return;
+    this.cancelRouteDraw();
+    this.editingReceiver.set(null);
     this.phase.set('snap');
     this.result.set('');
     this.resultDetail.set('');
@@ -192,8 +214,88 @@ export class KickoffDriveComponent implements OnDestroy {
   }
 
   receiverAction(receiver: ReceiverId): void {
-    if (this.isCatchTarget(receiver)) this.attemptCatch();
+    if (this.canEditRoutes()) this.selectRouteReceiver(receiver);
+    else if (this.isCatchTarget(receiver)) this.attemptCatch();
     else this.throwTo(receiver);
+  }
+
+  selectRouteReceiver(receiver: ReceiverId): void {
+    if (!this.canEditRoutes()) return;
+    const changed = this.editingReceiver() !== receiver;
+    this.editingReceiver.set(receiver);
+    if (changed) this.routeEditMessage.set(`${receiver.toUpperCase()} selected · drag a route from the player`);
+  }
+
+  startReceiverRoute(receiver: ReceiverId, event: PointerEvent): void {
+    if (!this.canEditRoutes()) return;
+    event.stopPropagation();
+    this.selectRouteReceiver(receiver);
+    const field = (event.currentTarget as SVGGraphicsElement).ownerSVGElement;
+    if (field) this.beginRouteDraw(field, event);
+  }
+
+  startRouteDraw(event: PointerEvent): void {
+    const receiver = this.editingReceiver();
+    if (!receiver || !this.canEditRoutes()) return;
+    const target = event.target as Element | null;
+    if (target?.closest('.drive-quarterback')) return;
+    this.beginRouteDraw(event.currentTarget as SVGSVGElement, event);
+  }
+
+  moveRouteDraw(event: PointerEvent): void {
+    if (event.pointerId !== this.routePointerId) return;
+    const field = event.currentTarget as SVGSVGElement;
+    const receiver = this.editingReceiver();
+    if (!receiver) return;
+    const next = constrainCustomRoutePoint(OFFENSE_STARTS[receiver], this.fieldPoint(field, event));
+    this.draftRoutePoints.update((points) => {
+      const previous = points[points.length - 1];
+      return previous && distanceBetween(previous, next) < 4 ? points : [...points, next];
+    });
+  }
+
+  finishRouteDraw(event: PointerEvent): void {
+    if (event.pointerId !== this.routePointerId) return;
+    const field = event.currentTarget as SVGSVGElement;
+    const receiver = this.editingReceiver();
+    if (!receiver) return;
+    const endpoint = constrainCustomRoutePoint(OFFENSE_STARTS[receiver], this.fieldPoint(field, event));
+    const trace = [...this.draftRoutePoints(), endpoint];
+    const route = customRouteFromPoints(OFFENSE_STARTS[receiver], trace);
+    if (field.hasPointerCapture(event.pointerId)) field.releasePointerCapture(event.pointerId);
+    this.routePointerId = null;
+    this.draftRoutePoints.set([]);
+
+    if (!route) {
+      this.routeEditMessage.set('Draw farther downfield to save the route');
+      return;
+    }
+
+    this.routeHistory.push({ receiver, previous: this.customRoutes()[receiver] });
+    this.routeHistoryDepth.set(this.routeHistory.length);
+    this.customRoutes.update((routes) => ({ ...routes, [receiver]: route }));
+    this.routeEditMessage.set(`${receiver.toUpperCase()} route saved · edit another or snap`);
+  }
+
+  cancelRouteDraw(): void {
+    this.routePointerId = null;
+    this.draftRoutePoints.set([]);
+  }
+
+  undoRoute(): void {
+    if (!this.canEditRoutes()) return;
+    const change = this.routeHistory.pop();
+    if (!change) return;
+    this.customRoutes.update((routes) => ({ ...routes, [change.receiver]: change.previous }));
+    this.routeHistoryDepth.set(this.routeHistory.length);
+    this.editingReceiver.set(change.receiver);
+    this.routeEditMessage.set(`${change.receiver.toUpperCase()} route change undone`);
+  }
+
+  resetRoutes(): void {
+    if (!this.canEditRoutes()) return;
+    this.clearCustomRoutes();
+    this.routeEditMessage.set('Original play routes restored');
   }
 
   attemptCatch(): void {
@@ -299,7 +401,15 @@ export class KickoffDriveComponent implements OnDestroy {
   }
 
   routePath(receiver: ReceiverId): string {
-    return this.selectedPlay().routes[receiver].path;
+    return this.routeFor(receiver).path;
+  }
+
+  isCustomRoute(receiver: ReceiverId): boolean {
+    return this.customRoutes()[receiver] !== null;
+  }
+
+  isEditingRoute(receiver: ReceiverId): boolean {
+    return this.canEditRoutes() && this.editingReceiver() === receiver;
   }
 
   playerTransform(player: ReceiverId | 'qb'): string {
@@ -386,7 +496,6 @@ export class KickoffDriveComponent implements OnDestroy {
 
   private animateRoutes(elapsed: number, delta: number): void {
     const progress = clamp(elapsed / 2.75, 0, 1);
-    const play = this.selectedPlay();
     const currentQuarterback = this.offense().qb;
     const quarterback = {
       x: clamp(currentQuarterback.x + this.stick().x * 72 * delta - (Math.abs(this.stick().x) < 0.05 ? 5 * delta : 0), 122, 228),
@@ -394,9 +503,9 @@ export class KickoffDriveComponent implements OnDestroy {
     };
     this.offense.set({
       qb: quarterback,
-      x: play.routes.x.pointAt(progress),
-      y: play.routes.y.pointAt(progress),
-      r: play.routes.r.pointAt(progress),
+      x: this.routeFor('x').pointAt(progress),
+      y: this.routeFor('y').pointAt(progress),
+      r: this.routeFor('r').pointAt(progress),
     });
     const currentDefense = this.defense();
     this.defense.set(DEFENSE_STARTS.map((defender, index) => {
@@ -587,7 +696,49 @@ export class KickoffDriveComponent implements OnDestroy {
     this.jukeUntil = 0;
     this.stick.set({ x: 0, y: 0 });
     this.sprinting.set(false);
+    this.clearCustomRoutes();
+    this.routeEditMessage.set('Tap X, Y, or R, then draw on the field');
     this.phase.set(this.gameClock() <= 0 ? 'game-over' : 'ready');
+  }
+
+  private beginRouteDraw(field: SVGSVGElement, event: PointerEvent): void {
+    const receiver = this.editingReceiver();
+    if (!receiver) return;
+    event.preventDefault();
+    field.setPointerCapture(event.pointerId);
+    this.routePointerId = event.pointerId;
+    const start = OFFENSE_STARTS[receiver];
+    const pointer = constrainCustomRoutePoint(start, this.fieldPoint(field, event));
+    this.draftRoutePoints.set(distanceBetween(start, pointer) >= 4 ? [{ ...start }, pointer] : [{ ...start }]);
+    this.routeEditMessage.set(`Drawing ${receiver.toUpperCase()} route…`);
+  }
+
+  private fieldPoint(field: SVGSVGElement, event: PointerEvent): DrivePoint {
+    const matrix = field.getScreenCTM();
+    if (matrix) {
+      const point = field.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      const transformed = point.matrixTransform(matrix.inverse());
+      return { x: transformed.x, y: transformed.y };
+    }
+    const rect = field.getBoundingClientRect();
+    return {
+      x: (event.clientX - rect.left) * 760 / Math.max(1, rect.width),
+      y: (event.clientY - rect.top) * 420 / Math.max(1, rect.height),
+    };
+  }
+
+  private routeFor(receiver: ReceiverId): DriveRoute {
+    return this.customRoutes()[receiver] ?? this.selectedPlay().routes[receiver];
+  }
+
+  private clearCustomRoutes(): void {
+    this.cancelRouteDraw();
+    this.customRoutes.set(blankCustomRoutes());
+    this.editingReceiver.set(null);
+    this.routeHistory = [];
+    this.routeHistoryDepth.set(0);
   }
 
   private stopAnimation(): void {

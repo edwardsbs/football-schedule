@@ -54,6 +54,69 @@ export const OFFENSE_STARTS: Record<ReceiverId | 'qb', DrivePoint> = {
 
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 const point = (x: number, y: number): DrivePoint => ({ x, y });
+const CUSTOM_ROUTE_MIN_LENGTH = 48;
+const CUSTOM_ROUTE_MIN_DEPTH = 18;
+const CUSTOM_ROUTE_POINT_SPACING = 6;
+const CUSTOM_ROUTE_MAX_POINTS = 56;
+
+export function constrainCustomRoutePoint(start: DrivePoint, candidate: DrivePoint): DrivePoint {
+  return point(
+    Math.max(start.x - 24, Math.min(650, candidate.x)),
+    Math.max(34, Math.min(386, candidate.y)),
+  );
+}
+
+export function routePathFromPoints(points: readonly DrivePoint[]): string {
+  if (points.length === 0) return '';
+  return points
+    .map((routePoint, index) => `${index === 0 ? 'M' : 'L'}${routePoint.x.toFixed(1)} ${routePoint.y.toFixed(1)}`)
+    .join(' ');
+}
+
+/**
+ * Converts a finger/mouse trace into a route the animation engine can follow.
+ * Points are sampled, clamped to the playable field, and travelled at even
+ * speed by distance (rather than one raw pointer event per animation step).
+ */
+export function customRouteFromPoints(start: DrivePoint, trace: readonly DrivePoint[]): DriveRoute | null {
+  const points: DrivePoint[] = [{ ...start }];
+  for (const candidate of trace) {
+    const constrained = constrainCustomRoutePoint(start, candidate);
+    const previous = points[points.length - 1];
+    if (distanceBetween(previous, constrained) < CUSTOM_ROUTE_POINT_SPACING) continue;
+    points.push(constrained);
+    if (points.length >= CUSTOM_ROUTE_MAX_POINTS) break;
+  }
+
+  const segments = points.slice(1).map((end, index) => ({
+    start: points[index],
+    end,
+    length: distanceBetween(points[index], end),
+  }));
+  const totalLength = segments.reduce((total, segment) => total + segment.length, 0);
+  const depth = Math.max(...points.map((routePoint) => routePoint.x)) - start.x;
+  if (totalLength < CUSTOM_ROUTE_MIN_LENGTH || depth < CUSTOM_ROUTE_MIN_DEPTH) return null;
+
+  return {
+    path: routePathFromPoints(points),
+    pointAt: (rawProgress) => {
+      const targetDistance = clamp01(rawProgress) * totalLength;
+      let travelled = 0;
+      for (const segment of segments) {
+        if (travelled + segment.length < targetDistance) {
+          travelled += segment.length;
+          continue;
+        }
+        const segmentProgress = segment.length === 0 ? 1 : (targetDistance - travelled) / segment.length;
+        return point(
+          segment.start.x + (segment.end.x - segment.start.x) * segmentProgress,
+          segment.start.y + (segment.end.y - segment.start.y) * segmentProgress,
+        );
+      }
+      return { ...points[points.length - 1] };
+    },
+  };
+}
 
 export const DRIVE_PLAYS: readonly DrivePlay[] = [
   {

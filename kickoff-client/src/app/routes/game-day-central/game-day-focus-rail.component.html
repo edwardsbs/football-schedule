@@ -74,26 +74,28 @@
         @if (leaderTeams().length > 0) {
           <section class="focus-section leader-section">
             <h2>Game leaders</h2>
-            @for (team of leaderTeams(); track team.teamExternalId) {
-              <div class="focus-leader-team">
-                <h3>{{ team.teamAbbreviation }}</h3>
-                @for (leader of team.offense; track leader.category) {
-                  <div class="focus-leader-line">
-                    <small>{{ leader.label }}</small>
-                    <span><strong>{{ leader.athlete }}</strong><em>{{ leader.displayValue }}</em></span>
-                  </div>
-                }
-                @if (team.defense.length > 0) {
-                  <div class="defense-label">Defense</div>
-                  @for (leader of team.defense; track leader.category) {
-                    <div class="focus-leader-line defense">
-                      <small>DEF</small>
-                      <span><strong>{{ leader.athlete }}</strong><em>{{ leader.displayValue }}</em></span>
+            <div class="leader-teams-grid">
+              @for (team of leaderTeams(); track team.teamExternalId) {
+                <div class="focus-leader-team">
+                  <h3>{{ team.teamAbbreviation }}</h3>
+                  @for (leader of team.offense; track leader.category) {
+                    <div class="focus-leader-line">
+                      <small>{{ leader.label }}</small>
+                      <span><strong>{{ shortName(leader.athlete) }}</strong><em>{{ leader.displayValue }}</em></span>
                     </div>
                   }
-                }
-              </div>
-            }
+                  @if (team.defense.length > 0) {
+                    <div class="defense-label">Defense</div>
+                    @for (leader of team.defense; track leader.category) {
+                      <div class="focus-leader-line defense">
+                        <small>DEF</small>
+                        <span><strong>{{ shortName(leader.athlete) }}</strong><em>{{ leader.displayValue }}</em></span>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+            </div>
           </section>
         }
 
