@@ -94,6 +94,33 @@ export class GameDayFocusRailComponent {
 
   protected readonly injuryReports = computed(() => this.summary()?.injuries ?? []);
 
+  protected readonly leaderTeams = computed(() => {
+    const summary = this.summary();
+    const game = this.selectedGame();
+    if (!summary || !game) return [];
+
+    return [game.away.abbreviation, game.home.abbreviation].flatMap((abbreviation) => {
+      const team = summary.leaders.find((entry) =>
+        entry.teamAbbreviation.toUpperCase() === abbreviation.toUpperCase());
+      if (!team) return [];
+
+      const offensiveCategories = ['passingYards', 'rushingYards', 'receivingYards'];
+      const offense = offensiveCategories.flatMap((category) => {
+        const leader = team.leaders.find((entry) => entry.category === category);
+        if (!leader) return [];
+        const label = category === 'passingYards' ? 'Pass' : category === 'rushingYards' ? 'Rush' : 'Rec';
+        return [{ ...leader, label }];
+      });
+      const defense = team.leaders
+        .filter((leader) => leader.category.startsWith('defensiveImpact:'))
+        .slice(0, 2);
+
+      return offense.length || defense.length
+        ? [{ teamExternalId: team.teamExternalId, teamAbbreviation: team.teamAbbreviation, offense, defense }]
+        : [];
+    });
+  });
+
   constructor() {
     effect(() => this.rotationProgress.set(this.selectionProgress()));
 

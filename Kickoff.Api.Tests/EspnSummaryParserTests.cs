@@ -74,4 +74,72 @@ public class EspnSummaryParserTests
         Assert.Equal("Left", injury.Side);
         Assert.Equal("2026-09-14", injury.ReturnDate);
     }
+
+    [Fact]
+    public void Parse_MapsOffensiveAndDefensiveGameLeaders()
+    {
+        using var document = JsonDocument.Parse("""
+        {
+          "leaders": [{
+            "team": { "id": "12", "abbreviation": "KC" },
+            "leaders": [
+              {
+                "name": "passingYards",
+                "displayName": "Passing Yards",
+                "leaders": [{
+                  "displayValue": "18/24, 245 YDS, 2 TD",
+                  "athlete": { "displayName": "Test Quarterback", "position": { "abbreviation": "QB" } }
+                }]
+              },
+              {
+                "name": "totalTackles",
+                "displayName": "Tackles",
+                "leaders": [{ "displayValue": "8", "athlete": { "displayName": "Test Linebacker" } }]
+              }
+            ]
+          }],
+          "boxscore": {
+            "players": [{
+              "team": { "id": "12", "abbreviation": "KC" },
+              "statistics": [
+                {
+                  "name": "defensive",
+                  "keys": ["totalTackles", "soloTackles", "sacks", "tacklesForLoss", "passesDefended", "QBHits", "forcedFumbles"],
+                  "athletes": [
+                    { "athlete": { "displayName": "Test Linebacker" }, "stats": ["8", "5", "1", "2", "0", "1", "1"] },
+                    { "athlete": { "displayName": "Test Corner" }, "stats": ["4", "3", "0", "0", "2", "0", "0"] }
+                  ]
+                },
+                {
+                  "name": "interceptions",
+                  "keys": ["interceptions", "interceptionYards", "interceptionTouchdowns"],
+                  "athletes": [
+                    { "athlete": { "displayName": "Test Corner" }, "stats": ["1", "18", "0"] }
+                  ]
+                }
+              ]
+            }]
+          }
+        }
+        """);
+
+        var summary = EspnSummaryParser.Parse(document.RootElement, DateTimeOffset.UtcNow);
+
+        var team = Assert.Single(summary.Leaders);
+        Assert.Contains(team.Leaders, leader =>
+            leader.Category == "passingYards"
+            && leader.Athlete == "Test Quarterback"
+            && leader.DisplayValue == "18/24, 245 YDS, 2 TD");
+        Assert.DoesNotContain(team.Leaders, leader => leader.Category == "totalTackles");
+
+        var defense = team.Leaders.Where(leader => leader.Category.StartsWith("defensiveImpact:")).ToList();
+        Assert.Equal(2, defense.Count);
+        Assert.Equal("Test Linebacker", defense[0].Athlete);
+        Assert.Contains("8 TOT", defense[0].DisplayValue);
+        Assert.Contains("1 SACK", defense[0].DisplayValue);
+        Assert.Contains("2 TFL", defense[0].DisplayValue);
+        Assert.Contains("1 FF", defense[0].DisplayValue);
+        Assert.Equal("Test Corner", defense[1].Athlete);
+        Assert.Contains("1 INT", defense[1].DisplayValue);
+    }
 }

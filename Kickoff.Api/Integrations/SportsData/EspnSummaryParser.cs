@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Globalization;
 using Kickoff.Api.Integrations.SportsData.Contracts;
 
 namespace Kickoff.Api.Integrations.SportsData;
@@ -153,7 +154,166 @@ internal static class EspnSummaryParser
                 NestedString(entry, "team", "abbreviation") ?? "",
                 leaders));
         }
+
+        foreach (var defense in ParseDefensiveLeaders(root))
+        {
+            var index = result.FindIndex(team => team.TeamExternalId == defense.TeamExternalId);
+            if (index < 0)
+            {
+                result.Add(defense);
+                continue;
+            }
+
+            // ESPN's top-level leader block sometimes contains only a tackle
+            // leader (and an empty sacks row). Replace those shallow defensive
+            // entries with the richer, player-box-score-derived impact lines.
+            var offenseAndSpecialTeams = result[index].Leaders
+                .Where(leader => !IsDefensiveLeaderCategory(leader.Category))
+                .Concat(defense.Leaders)
+                .ToList();
+            result[index] = result[index] with { Leaders = offenseAndSpecialTeams };
+        }
+
         return result;
+    }
+
+    private static List<FeedTeamLeaders> ParseDefensiveLeaders(JsonElement root)
+    {
+        if (!Object(root, "boxscore", out var boxscore)) return [];
+        var result = new List<FeedTeamLeaders>();
+
+        foreach (var teamEntry in Array(boxscore, "players"))
+        {
+            var teamId = NestedString(teamEntry, "team", "id");
+            if (teamId is null) continue;
+
+            var candidates = new Dictionary<string, DefensiveLeaderCandidate>(StringComparer.OrdinalIgnoreCase);
+            foreach (var category in Array(teamEntry, "statistics"))
+            {
+                var categoryName = String(category, "name");
+                if (categoryName is not ("defensive" or "interceptions" or "fumbles")) continue;
+
+                var keys = Array(category, "keys")
+                    .Select(value => value.ValueKind == JsonValueKind.String ? value.GetString() ?? "" : "")
+                    .ToList();
+
+                foreach (var row in Array(category, "athletes"))
+                {
+                    if (!Object(row, "athlete", out var athlete)) continue;
+                    var athleteName = String(athlete, "displayName") ?? String(athlete, "shortName");
+                    if (athleteName is null) continue;
+
+                    if (!candidates.TryGetValue(athleteName, out var candidate))
+                    {
+                        candidate = new DefensiveLeaderCandidate(
+                            athleteName,
+                            NestedString(athlete, "position", "abbreviation"),
+                            NestedString(athlete, "headshot", "href"));
+                        candidates.Add(athleteName, candidate);
+                    }
+
+                    var values = Array(row, "stats")
+                        .Select(value => value.ValueKind == JsonValueKind.String ? value.GetString() ?? "" : value.ToString())
+                        .ToList();
+                    for (var i = 0; i < Math.Min(keys.Count, values.Count); i++)
+                    {
+                        if (DefensiveStatLabel(categoryName, keys[i]) is not { } label) continue;
+                        if (StatNumber(values[i]) is not { } number || number <= 0) continue;
+                        candidate.Add(keys[i], label, values[i], number);
+                    }
+                }
+            }
+
+            var leaders = candidates.Values
+                .Where(candidate => candidate.Stats.Count > 0)
+                .OrderByDescending(candidate => candidate.ImpactScore)
+                .ThenByDescending(candidate => candidate.Value("totalTackles"))
+                .ThenBy(candidate => candidate.Athlete)
+                .Take(3)
+                .Select((candidate, index) => new FeedLeader(
+                    $"defensiveImpact:{index}",
+                    "Defense",
+                    candidate.Athlete,
+                    candidate.Position,
+                    candidate.DisplayValue(),
+                    candidate.HeadshotUrl))
+                .ToList();
+
+            if (leaders.Count > 0)
+            {
+                result.Add(new FeedTeamLeaders(
+                    teamId,
+                    NestedString(teamEntry, "team", "abbreviation") ?? "",
+                    leaders));
+            }
+        }
+
+        return result;
+    }
+
+    private static bool IsDefensiveLeaderCategory(string category) =>
+        category.StartsWith("defensiveImpact:", StringComparison.OrdinalIgnoreCase)
+        || category is "sacks" or "totalTackles" or "tacklesForLoss" or "interceptions" or "forcedFumbles";
+
+    private static string? DefensiveStatLabel(string category, string key) => key switch
+    {
+        "totalTackles" => "TOT",
+        "soloTackles" => "SOLO",
+        "sacks" => "SACK",
+        "tacklesForLoss" => "TFL",
+        "passesDefended" => "PD",
+        "QBHits" => "QBH",
+        "hurries" => "HUR",
+        "interceptions" when category == "interceptions" => "INT",
+        "forcedFumbles" => "FF",
+        "fumblesRecovered" when category == "fumbles" => "FR",
+        "defensiveTouchdowns" or "interceptionTouchdowns" => "TD",
+        _ => null,
+    };
+
+    private static double? StatNumber(string value) =>
+        double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : null;
+
+    private sealed class DefensiveLeaderCandidate(string athlete, string? position, string? headshotUrl)
+    {
+        private static readonly string[] DisplayOrder =
+        [
+            "totalTackles", "sacks", "tacklesForLoss", "interceptions", "forcedFumbles",
+            "fumblesRecovered", "passesDefended", "QBHits", "hurries", "defensiveTouchdowns",
+            "interceptionTouchdowns", "soloTackles",
+        ];
+
+        public string Athlete { get; } = athlete;
+        public string? Position { get; } = position;
+        public string? HeadshotUrl { get; } = headshotUrl;
+        public Dictionary<string, (string Label, string DisplayValue, double Number)> Stats { get; } = [];
+
+        public double ImpactScore =>
+            Value("totalTackles")
+            + 4 * Value("sacks")
+            + 2 * Value("tacklesForLoss")
+            + 1.5 * Value("passesDefended")
+            + Value("QBHits")
+            + Value("hurries")
+            + 6 * Value("interceptions")
+            + 4 * Value("forcedFumbles")
+            + 4 * Value("fumblesRecovered")
+            + 10 * (Value("defensiveTouchdowns") + Value("interceptionTouchdowns"));
+
+        public void Add(string key, string label, string displayValue, double number) =>
+            Stats[key] = (label, displayValue, number);
+
+        public double Value(string key) => Stats.TryGetValue(key, out var stat) ? stat.Number : 0;
+
+        public string DisplayValue()
+        {
+            var selected = DisplayOrder
+                .Where(Stats.ContainsKey)
+                .Where(key => key != "soloTackles" || !Stats.ContainsKey("totalTackles"))
+                .Take(4)
+                .Select(key => $"{Stats[key].DisplayValue} {Stats[key].Label}");
+            return string.Join(" · ", selected);
+        }
     }
 
     private static List<FeedTeamInjuries> ParseInjuries(JsonElement root)
