@@ -79,7 +79,7 @@ export class LiveGameStore {
       status: update.status,
       score: game.isMuted
         ? null
-        : retainLiveSituation(game.score, update.score, update.status, update.home.id, update.away.id),
+        : update.score,
     };
   }
 
@@ -197,6 +197,17 @@ function retainLiveSituation(
     };
   }
 
+  // Highlight labels are deliberately ephemeral. If the next sequential poll
+  // has no situation block, clear the highlight instead of retaining it as if
+  // it were a real down-and-distance value.
+  if (isHighlightSituation(previous.downDistance)) {
+    return {
+      ...current,
+      possessionTeamId: current.possessionTeamId,
+      downDistance: current.downDistance?.trim() ? current.downDistance : null,
+    };
+  }
+
   return {
     ...current,
     possessionTeamId: current.possessionTeamId ?? previous.possessionTeamId,
@@ -210,6 +221,11 @@ function isKickoffSituation(situation: string | null): boolean {
 
 function isScoreOrKickoffSituation(situation: string | null): boolean {
   return /^(?:touchdown|field goal|(?:pat|extra point)(?: attempt| good| no good)?|(?:2-pt conv\.|two-point conversion)(?: good| failed| successful| unsuccessful)?|kickoff)$/i
+    .test(situation?.trim() ?? '');
+}
+
+function isHighlightSituation(situation: string | null): boolean {
+  return /^(?:touchdown|field goal|safety|interception|sack|4th down stop)$/i
     .test(situation?.trim() ?? '');
 }
 

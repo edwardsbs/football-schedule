@@ -69,7 +69,6 @@ public class ScoreSyncService(IKickoffContext db, TimeProvider? timeProvider = n
             var u = byExt[game.ExternalId!];
             var homeIncrease = game.HomeScore is { } oldHome ? u.Score.HomeScore - oldHome : 0;
             var awayIncrease = game.AwayScore is { } oldAway ? u.Score.AwayScore - oldAway : 0;
-            var scoringSituation = u.Score.LastScoringPlay ?? InferScoringSituation(homeIncrease, awayIncrease);
             int? scoringTeamId = homeIncrease > 0 && awayIncrease <= 0
                 ? game.HomeTeamId
                 : awayIncrease > 0 && homeIncrease <= 0
@@ -85,6 +84,15 @@ public class ScoreSyncService(IKickoffContext db, TimeProvider? timeProvider = n
                 && possessionTeamIds.TryGetValue(possessionExternalId, out var mappedPossessionTeamId)
                     ? mappedPossessionTeamId
                     : null;
+            var incomingDownDistance = ActualDownDistance(u.Score.DownDistance);
+            var scoringSituation = ResolveHighlight(
+                u.Score.LastScoringPlay,
+                homeIncrease,
+                awayIncrease,
+                previous.DownDistance,
+                incomingDownDistance,
+                previous.PossessionTeamId,
+                resolvedPossessionTeamId);
 
             // ESPN briefly omits the whole situation block between plays, during
             // timeouts, and while changing quarters. Keep the last complete live
@@ -105,8 +113,10 @@ public class ScoreSyncService(IKickoffContext db, TimeProvider? timeProvider = n
                 {
                     if (resolvedPossessionTeamId is not null)
                         game.PossessionTeamId = resolvedPossessionTeamId;
-                    if (!string.IsNullOrWhiteSpace(u.Score.DownDistance))
-                        game.DownDistance = u.Score.DownDistance;
+                    if (IsHighlight(previous.DownDistance))
+                        game.DownDistance = incomingDownDistance;
+                    else if (incomingDownDistance is not null)
+                        game.DownDistance = incomingDownDistance;
                 }
             }
             else
@@ -146,5 +156,46 @@ public class ScoreSyncService(IKickoffContext db, TimeProvider? timeProvider = n
         if (increase >= 6) return "Touchdown";
         return null;
     }
+
+    private static string? ResolveHighlight(
+        string? providerHighlight,
+        int homeIncrease,
+        int awayIncrease,
+        string? previousDownDistance,
+        string? incomingDownDistance,
+        int? previousPossessionTeamId,
+        int? incomingPossessionTeamId)
+    {
+        var increase = Math.Max(homeIncrease, awayIncrease);
+        if (increase >= 2)
+            return providerHighlight ?? InferScoringSituation(homeIncrease, awayIncrease);
+
+        // ESPN may keep the prior touchdown/field goal in situation.lastPlay
+        // through later polls. A scoring label is new only when the score moves.
+        if (providerHighlight is null || IsScoringHighlight(providerHighlight)) return null;
+        if (IsHighlight(previousDownDistance)) return null;
+
+        // Non-scoring impact plays are shown only when the resulting football
+        // situation advances; this prevents a persistent lastPlay from being
+        // promoted as a fresh sack/interception on every poll.
+        var downChanged = incomingDownDistance is not null
+            && !string.Equals(incomingDownDistance, previousDownDistance, StringComparison.OrdinalIgnoreCase);
+        var possessionChanged = incomingPossessionTeamId is not null
+            && incomingPossessionTeamId != previousPossessionTeamId;
+        return downChanged || possessionChanged ? providerHighlight : null;
+    }
+
+    private static string? ActualDownDistance(string? value)
+    {
+        var trimmed = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        return IsHighlight(trimmed) ? null : trimmed;
+    }
+
+    private static bool IsScoringHighlight(string? value) =>
+        value is not null && value.Trim() is "Touchdown" or "Field Goal" or "Safety";
+
+    private static bool IsHighlight(string? value) =>
+        value is not null && value.Trim() is
+            "Touchdown" or "Field Goal" or "Safety" or "Interception" or "Sack" or "4th Down Stop";
 
 }

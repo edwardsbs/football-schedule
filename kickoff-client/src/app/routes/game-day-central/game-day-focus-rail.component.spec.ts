@@ -1,5 +1,6 @@
 import { Game } from '../../core/models/game.model';
-import { rotatedGameId } from './game-day-focus-rail.component';
+import { GameSummary } from '../../core/models/game-summary.model';
+import { rotatedGameId, situationCorrectionFromSummary } from './game-day-focus-rail.component';
 
 describe('GameDayFocusRailComponent rotation', () => {
   const games = [game(10), game(20), game(30)];
@@ -15,6 +16,38 @@ describe('GameDayFocusRailComponent rotation', () => {
 
   it('returns null when there are no Game Day selections', () => {
     expect(rotatedGameId([], null, 1)).toBeNull();
+  });
+
+  it('prefers the current drive over a retained scoring play when repairing the live situation', () => {
+    const selected = game(10);
+    const summary = {
+      currentDrive: {
+        teamExternalId: 'home-external',
+        start: null,
+        end: {
+          downDistanceText: '2nd & 7 at H10 32',
+          teamExternalId: 'home-external',
+        },
+      },
+      lastPlay: {
+        start: null,
+        end: {
+          downDistanceText: 'Touchdown',
+          teamExternalId: 'away-external',
+        },
+      },
+      teamStatistics: [
+        { teamExternalId: 'home-external', teamAbbreviation: 'H10', statistics: [] },
+        { teamExternalId: 'away-external', teamAbbreviation: 'A10', statistics: [] },
+      ],
+      leaders: [],
+      injuries: [],
+    } as unknown as GameSummary;
+
+    expect(situationCorrectionFromSummary(selected, summary)).toEqual({
+      possessionTeamId: selected.home.id,
+      downDistance: '2nd & 7 at H10 32',
+    });
   });
 });
 

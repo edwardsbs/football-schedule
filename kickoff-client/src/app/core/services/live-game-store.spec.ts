@@ -150,6 +150,63 @@ describe('LiveGameStore', () => {
     expect(store.overlay(original).score?.downDistance).toBe('1st & 10 at HOM 49');
     discardPeriodicTasks();
   }));
+
+  it('does not repeatedly infer a touchdown from an old page-load score', fakeAsync(() => {
+    store = TestBed.inject(LiveGameStore);
+    const pageLoad = game({
+      status: 'Live',
+      score: { homeScore: 7, awayScore: 7, period: 2, clock: '8:00', possessionTeamId: 2, downDistance: '2nd & 5 at AWY 40', homeWinProbability: null },
+    });
+
+    tick(0);
+    http.expectOne('/api/games/live').flush([pageLoad]);
+
+    tick(10_000);
+    http.expectOne('/api/games/live').flush([game({
+      status: 'Live',
+      score: { homeScore: 7, awayScore: 14, period: 2, clock: '7:42', possessionTeamId: 2, downDistance: null, homeWinProbability: null },
+    })]);
+    expect(store.overlay(pageLoad).score?.downDistance).toBe('Touchdown');
+
+    tick(10_000);
+    http.expectOne('/api/games/live').flush([game({
+      status: 'Live',
+      score: { homeScore: 7, awayScore: 14, period: 2, clock: '7:30', possessionTeamId: 1, downDistance: '1st & 10 at HOM 25', homeWinProbability: null },
+    })]);
+
+    const afterRestart = store.overlay(pageLoad).score;
+    expect(afterRestart?.clock).toBe('7:30');
+    expect(afterRestart?.possessionTeamId).toBe(1);
+    expect(afterRestart?.downDistance).toBe('1st & 10 at HOM 25');
+    discardPeriodicTasks();
+  }));
+
+  it('clears an ephemeral highlight when the next poll has no situation', fakeAsync(() => {
+    store = TestBed.inject(LiveGameStore);
+    const pageLoad = game({
+      status: 'Live',
+      score: { homeScore: 7, awayScore: 7, period: 2, clock: '8:00', possessionTeamId: 2, downDistance: '2nd & 5 at AWY 40', homeWinProbability: null },
+    });
+
+    tick(0);
+    http.expectOne('/api/games/live').flush([pageLoad]);
+
+    tick(10_000);
+    http.expectOne('/api/games/live').flush([game({
+      status: 'Live',
+      score: { homeScore: 14, awayScore: 7, period: 2, clock: '7:42', possessionTeamId: null, downDistance: null, homeWinProbability: null },
+    })]);
+    expect(store.overlay(pageLoad).score?.downDistance).toBe('Touchdown');
+
+    tick(10_000);
+    http.expectOne('/api/games/live').flush([game({
+      status: 'Live',
+      score: { homeScore: 14, awayScore: 7, period: 2, clock: '7:31', possessionTeamId: null, downDistance: null, homeWinProbability: null },
+    })]);
+    expect(store.overlay(pageLoad).score?.downDistance).toBeNull();
+    expect(store.overlay(pageLoad).score?.possessionTeamId).toBeNull();
+    discardPeriodicTasks();
+  }));
 });
 
 function game(overrides: Partial<Game> = {}): Game {

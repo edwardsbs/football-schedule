@@ -163,6 +163,17 @@ public class SyncPipelineTests
         Assert.Equal(game.HomeTeamId, game.PossessionTeamId);
         Assert.Equal("Touchdown", game.DownDistance);
 
+        // ESPN can retain the scoring play in situation.lastPlay after the
+        // next series has begun. The real down-and-distance must replace the
+        // ephemeral highlight even while that stale label is still present.
+        await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.InProgress,
+            new ScoreSnapshot(
+                17, 7, 2, "4:02", null, "1st & 10 at AWY 25", null, "Touchdown"))]);
+
+        Assert.Equal("1st & 10 at AWY 25", game.DownDistance);
+
         await scores.ApplyAsync(League.Nfl, [new GameScoreUpdate(
             game.ExternalId!,
             GameStatus.InProgress,

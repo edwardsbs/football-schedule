@@ -222,9 +222,19 @@ export function situationCorrectionFromSummary(
   game: Game,
   summary: GameSummary,
 ): GameSituationCorrection | null {
-  const position = summary.lastPlay?.end ?? summary.currentDrive?.end;
-  const downDistance = position?.downDistanceText?.trim() || null;
-  const possessionExternalId = position?.teamExternalId ?? summary.currentDrive?.teamExternalId ?? null;
+  // The current drive is newer than the last completed drive. Immediately
+  // after a score ESPN can retain that scoring play while already publishing
+  // the next possession's drive, so prefer each current-drive field
+  // independently instead of letting a stale end object mask newer data.
+  const drivePosition = summary.currentDrive?.end ?? summary.currentDrive?.start;
+  const lastPlayPosition = summary.lastPlay?.end ?? summary.lastPlay?.start;
+  const downDistance = drivePosition?.downDistanceText?.trim()
+    || lastPlayPosition?.downDistanceText?.trim()
+    || null;
+  const possessionExternalId = drivePosition?.teamExternalId
+    ?? summary.currentDrive?.teamExternalId
+    ?? lastPlayPosition?.teamExternalId
+    ?? null;
   const team = possessionExternalId === null
     ? null
     : summary.teamStatistics.find((entry) => entry.teamExternalId === possessionExternalId)
