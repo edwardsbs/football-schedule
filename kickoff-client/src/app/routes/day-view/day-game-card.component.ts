@@ -4,6 +4,7 @@ import { isAcrossMidfield, isInFieldGoalRange, isInRedZone } from '../../core/fi
 import { scoreEventLabel, trackScorePulse } from '../../core/score-pulse';
 import { FanStore } from '../../core/services/fan-store';
 import { GameDetailOverlay } from '../../core/services/game-detail-overlay';
+import { LiveFeedHealth } from '../../core/services/live-game-store';
 import { TeamRecordStore } from '../../core/services/team-record-store';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
 import { DayPanelSize } from './day-panel-size';
@@ -23,6 +24,7 @@ export class DayGameCardComponent {
   readonly game = input.required<Game>();
   readonly panelSize = input<DayPanelSize>('small');
   readonly gameDayState = input<'available' | 'selected' | null>(null);
+  readonly feedHealth = input<LiveFeedHealth | null>(null);
   readonly detailAction = input<'overlay' | 'select'>('overlay');
   readonly gameDayToggle = output<void>();
   readonly gameSelected = output<Game>();
@@ -146,6 +148,7 @@ export class DayGameCardComponent {
       return score?.clock ? `Q${score.period} · ${score.clock}` : 'Live';
     }
     if (game.status === 'Final') return 'Final';
+    if (game.status === 'Delayed') return 'Delayed';
     if (game.status === 'Postponed') return 'PPD';
     if (game.status === 'Canceled') return 'Off';
     return new Date(game.kickoffUtc).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });

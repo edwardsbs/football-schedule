@@ -33,6 +33,7 @@ public static class GameProjections
                let hideScore = muted && !revealMuted
                let started = g.Status == GameStatus.InProgress
                           || g.Status == GameStatus.Halftime
+                          || g.Status == GameStatus.Delayed
                           || g.Status == GameStatus.Final
                select new GameDto(
                    g.Id,
@@ -55,6 +56,7 @@ public static class GameProjections
                    g.Status == GameStatus.Scheduled ? GameSafeStatus.Upcoming
                        : g.Status == GameStatus.Postponed ? GameSafeStatus.Postponed
                        : g.Status == GameStatus.Canceled ? GameSafeStatus.Canceled
+                       : g.Status == GameStatus.Delayed ? GameSafeStatus.Delayed
                        : hideScore ? GameSafeStatus.Live
                        : g.Status == GameStatus.Final ? GameSafeStatus.Final
                        : GameSafeStatus.Live,
@@ -72,6 +74,7 @@ public static class GameProjections
                            g.DownDistance,
                            g.HomeWinProbability)
                        : null,
+                   g.LastUpdatedUtc,
                    // Highlighting flags — a favorited team on either side, or a circled game.
                    db.UserFavoriteTeams.Any(f =>
                        f.UserId == userId && (f.TeamId == g.HomeTeamId || f.TeamId == g.AwayTeamId)),

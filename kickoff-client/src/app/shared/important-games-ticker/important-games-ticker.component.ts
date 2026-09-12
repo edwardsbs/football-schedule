@@ -108,6 +108,7 @@ export class ImportantGamesTickerComponent {
       return score.clock ? `${period} · ${score.clock}` : period;
     }
     if (game.status === 'Final') return 'Final';
+    if (game.status === 'Delayed') return 'Delayed';
     if (game.status === 'Postponed') return 'Postponed';
     if (game.status === 'Canceled') return 'Canceled';
     return new Date(game.kickoffUtc).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -229,10 +230,11 @@ export function sortImportantGames(
 ): Game[] {
   const statusOrder: Record<Game['status'], number> = {
     Live: 0,
-    Upcoming: 1,
-    Postponed: 1,
-    Final: 2,
-    Canceled: 3,
+    Delayed: 1,
+    Upcoming: 2,
+    Postponed: 2,
+    Final: 3,
+    Canceled: 4,
   };
   return [...games].sort((a, b) => {
     const statusDifference = statusOrder[a.status] - statusOrder[b.status];

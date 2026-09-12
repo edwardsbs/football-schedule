@@ -51,6 +51,10 @@ export class GameDayFocusRailComponent {
   });
 
   protected readonly selectedIsActive = computed(() => this.selectedRotationPosition() > 0);
+  protected readonly selectedFeedHealth = computed(() => {
+    const game = this.selectedGame();
+    return game ? this.live.health(game) : null;
+  });
 
   protected readonly autoRotationEnabled = computed(() => {
     const activeCount = this.rotationGames().length;
@@ -229,6 +233,7 @@ export class GameDayFocusRailComponent {
       return game.score?.clock ? `${period} · ${game.score.clock}` : period;
     }
     if (game.status === 'Final') return 'Final';
+    if (game.status === 'Delayed') return 'Delayed';
     if (game.status === 'Postponed') return 'Postponed';
     if (game.status === 'Canceled') return 'Canceled';
     return new Date(game.kickoffUtc).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });

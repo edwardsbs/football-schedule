@@ -39,6 +39,9 @@
   }
   <span class="card-meta">
     <span class="status" [class.live-text]="game().status === 'Live'">{{ statusLabel() }}</span>
+    @if (feedHealth(); as health) {
+      <span class="feed-health" [class.quiet]="health.level === 'quiet'" [class.stale]="health.level === 'stale'" [title]="health.description">{{ health.label }}</span>
+    }
     <span class="network">
       @if (game().broadcasts.length) { 📺 {{ game().broadcasts[0].network }} }
       @else { {{ game().league === 'Ncaa' ? 'NCAA' : 'NFL' }} }

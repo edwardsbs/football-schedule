@@ -207,6 +207,58 @@ describe('LiveGameStore', () => {
     expect(store.overlay(pageLoad).score?.possessionTeamId).toBeNull();
     discardPeriodicTasks();
   }));
+
+  it('reports the age of a quiet feed and hides stale situation fields', fakeAsync(() => {
+    store = TestBed.inject(LiveGameStore);
+    const lastChange = new Date(Date.now() - 6 * 60_000).toISOString();
+    const frozen = game({
+      status: 'Live',
+      lastUpdatedUtc: lastChange,
+      score: {
+        homeScore: 28,
+        awayScore: 0,
+        period: 2,
+        clock: '11:33',
+        possessionTeamId: 1,
+        downDistance: '2nd & Goal at AWY 1',
+        homeWinProbability: null,
+      },
+    });
+
+    tick(0);
+    http.expectOne('/api/games/live').flush([frozen]);
+
+    expect(store.health(frozen)?.level).toBe('stale');
+    expect(store.health(frozen)?.label).toContain('6m');
+    expect(store.overlay(frozen).score?.homeScore).toBe(28);
+    expect(store.overlay(frozen).score?.clock).toBe('11:33');
+    expect(store.overlay(frozen).score?.possessionTeamId).toBeNull();
+    expect(store.overlay(frozen).score?.downDistance).toBeNull();
+    discardPeriodicTasks();
+  }));
+
+  it('does not mark a normal halftime pause as a stale feed', fakeAsync(() => {
+    store = TestBed.inject(LiveGameStore);
+    const halftime = game({
+      status: 'Live',
+      lastUpdatedUtc: new Date(Date.now() - 12 * 60_000).toISOString(),
+      score: {
+        homeScore: 14,
+        awayScore: 10,
+        period: 2,
+        clock: '0:00',
+        possessionTeamId: null,
+        downDistance: null,
+        homeWinProbability: null,
+      },
+    });
+
+    tick(0);
+    http.expectOne('/api/games/live').flush([halftime]);
+
+    expect(store.health(halftime)).toBeNull();
+    discardPeriodicTasks();
+  }));
 });
 
 function game(overrides: Partial<Game> = {}): Game {

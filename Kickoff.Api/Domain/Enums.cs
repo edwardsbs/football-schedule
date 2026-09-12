@@ -13,7 +13,8 @@ public enum GameStatus
     Halftime,
     Final,
     Postponed,
-    Canceled
+    Canceled,
+    Delayed
 }
 
 /// <summary>

@@ -51,6 +51,7 @@ export function groupMyGames(games: readonly Game[], now: Date): MyGamesGroup[] 
 export function myGameCountdown(game: Game, nowMs: number): string {
   if (game.status === 'Live') return 'Live now';
   if (game.status === 'Final') return 'Final';
+  if (game.status === 'Delayed') return 'Delayed';
   if (game.status === 'Postponed') return 'Postponed';
   if (game.status === 'Canceled') return 'Canceled';
 

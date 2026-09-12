@@ -130,7 +130,7 @@ public class EspnHttpClient(
             foreach (var e in events.EnumerateArray())
             {
                 if (!TryParseGame(e, out var game)) continue;
-                if (game.Status is GameStatus.InProgress or GameStatus.Halftime or GameStatus.Final
+                if (game.Status is GameStatus.InProgress or GameStatus.Halftime or GameStatus.Delayed or GameStatus.Final
                     && game.Score is not null)
                 {
                     updates.Add(new GameScoreUpdate(game.ExternalId, game.Status, game.Score));
@@ -717,7 +717,8 @@ public class EspnHttpClient(
         {
             "STATUS_SCHEDULED" or "STATUS_PREGAME" => GameStatus.Scheduled,
             "STATUS_HALFTIME" => GameStatus.Halftime,
-            "STATUS_IN_PROGRESS" or "STATUS_END_PERIOD" or "STATUS_DELAYED" or "STATUS_RAIN_DELAY" => GameStatus.InProgress,
+            "STATUS_IN_PROGRESS" or "STATUS_END_PERIOD" => GameStatus.InProgress,
+            "STATUS_DELAYED" or "STATUS_RAIN_DELAY" => GameStatus.Delayed,
             "STATUS_FINAL" or "STATUS_FULL_TIME" => GameStatus.Final,
             "STATUS_POSTPONED" => GameStatus.Postponed,
             "STATUS_CANCELED" or "STATUS_CANCELLED" => GameStatus.Canceled,

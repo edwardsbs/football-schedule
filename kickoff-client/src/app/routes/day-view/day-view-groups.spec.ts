@@ -2,13 +2,13 @@ import { Game, GameSafeStatus, LeagueName } from '../../core/models/game.model';
 import { groupDayGames } from './day-view-groups';
 
 describe('Day view grouping', () => {
-  it('defaults status-style grouping to live, upcoming, then completed order', () => {
-    const games = [game(1, 'Final'), game(2, 'Upcoming'), game(3, 'Live')];
+  it('separates delayed games from live games and completed games', () => {
+    const games = [game(1, 'Final'), game(2, 'Upcoming'), game(3, 'Live'), game(4, 'Delayed')];
 
     const groups = groupDayGames(games, 'status');
 
-    expect(groups.map((group) => group.key)).toEqual(['live', 'upcoming', 'completed']);
-    expect(groups.map((group) => group.games[0].id)).toEqual([3, 2, 1]);
+    expect(groups.map((group) => group.key)).toEqual(['live', 'delayed', 'upcoming', 'completed']);
+    expect(groups.map((group) => group.games[0].id)).toEqual([3, 4, 2, 1]);
   });
 
   it('separates kickoff windows using local kickoff hour', () => {

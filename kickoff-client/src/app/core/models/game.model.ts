@@ -1,5 +1,5 @@
 export type LeagueName = 'Nfl' | 'Ncaa';
-export type GameSafeStatus = 'Upcoming' | 'Live' | 'Final' | 'Postponed' | 'Canceled';
+export type GameSafeStatus = 'Upcoming' | 'Live' | 'Final' | 'Postponed' | 'Canceled' | 'Delayed';
 export type MuteType = 'Muted' | 'WatchLater';
 
 export interface TeamSummary {
@@ -48,6 +48,8 @@ export interface Game {
   isMuted: boolean;
   muteType: MuteType | null;
   score: Score | null;
+  /** Last meaningful provider scoreboard change; identical polls do not advance it. */
+  lastUpdatedUtc?: string | null;
   hasFavorite: boolean;
   hasInterest: boolean;
   isCircled: boolean;

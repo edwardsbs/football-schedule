@@ -6,6 +6,15 @@ import { KickoffApi } from './kickoff-api';
 import { DemoGameStore } from './demo-game-store';
 
 const POLL_MS = 10_000;
+const QUIET_FEED_MS = 2 * 60_000;
+const STALE_FEED_MS = 5 * 60_000;
+
+export interface LiveFeedHealth {
+  level: 'fresh' | 'quiet' | 'stale';
+  ageMs: number;
+  label: string;
+  description: string;
+}
 
 /**
  * One app-wide live-game feed. Schedule pages load their normal date range once,
@@ -65,6 +74,42 @@ export class LiveGameStore {
     this.providerLiveGames.update((games) => games.map((game) => game.id === gameId ? corrected : game));
   }
 
+  /**
+   * Reports the age of the last actual scoreboard change, rather than the age
+   * of the latest identical HTTP response. That distinction exposes a provider
+   * feed frozen on an old play even while polling itself is still succeeding.
+   */
+  health(game: Game, now = Date.now()): LiveFeedHealth | null {
+    if (game.status !== 'Live' || isHalftime(game.score)) return null;
+    const updatedAt = game.lastUpdatedUtc ? new Date(game.lastUpdatedUtc).getTime() : Number.NaN;
+    if (!Number.isFinite(updatedAt)) return null;
+
+    const ageMs = Math.max(0, now - updatedAt);
+    const age = compactAge(ageMs);
+    if (ageMs >= STALE_FEED_MS) {
+      return {
+        level: 'stale',
+        ageMs,
+        label: `Stale ${age}`,
+        description: `No real scoreboard change for ${age}. Possession and down-and-distance are hidden until the feed advances.`,
+      };
+    }
+    if (ageMs >= QUIET_FEED_MS) {
+      return {
+        level: 'quiet',
+        ageMs,
+        label: `Quiet ${age}`,
+        description: `No real scoreboard change for ${age}. The feed is still being checked.`,
+      };
+    }
+    return {
+      level: 'fresh',
+      ageMs,
+      label: `Feed ${age}`,
+      description: `Scoreboard changed ${age} ago.`,
+    };
+  }
+
   overlay(game: Game): Game {
     const demoGame = this.demo.game(game.id);
     if (demoGame) return demoGame;
@@ -77,9 +122,10 @@ export class LiveGameStore {
       venue: update.venue,
       broadcasts: update.broadcasts,
       status: update.status,
+      lastUpdatedUtc: update.lastUpdatedUtc,
       score: game.isMuted
         ? null
-        : update.score,
+        : hideStaleSituation(update, this.health(update)),
     };
   }
 
@@ -146,6 +192,24 @@ export class LiveGameStore {
     }
     this.updatesById.set(next);
   }
+}
+
+function hideStaleSituation(game: Game, health: LiveFeedHealth | null): Score | null {
+  if (!game.score || health?.level !== 'stale') return game.score;
+  return {
+    ...game.score,
+    possessionTeamId: null,
+    downDistance: null,
+  };
+}
+
+function isHalftime(score: Score | null): boolean {
+  return score?.period === 2 && /^0{1,2}:00$/.test(score.clock?.trim() ?? '');
+}
+
+function compactAge(ageMs: number): string {
+  if (ageMs < 60_000) return `${Math.max(0, Math.floor(ageMs / 1_000))}s`;
+  return `${Math.floor(ageMs / 60_000)}m`;
 }
 
 function mergeUniqueGames(first: readonly Game[], second: readonly Game[]): Game[] {

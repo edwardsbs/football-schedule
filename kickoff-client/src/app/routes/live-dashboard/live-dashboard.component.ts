@@ -126,6 +126,8 @@ export class LiveDashboardComponent {
         return s?.clock ? `Q${s.period} · ${s.clock}` : 'LIVE';
       case 'Final':
         return 'FINAL';
+      case 'Delayed':
+        return 'DELAYED';
       case 'Postponed':
         return 'PPD';
       case 'Canceled':

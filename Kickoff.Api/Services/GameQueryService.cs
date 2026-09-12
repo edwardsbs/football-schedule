@@ -15,7 +15,9 @@ public class GameQueryService(IKickoffContext db)
     /// <summary>Live dashboard: every in-progress game across both leagues.</summary>
     public Task<List<GameDto>> GetLiveAsync(int userId, CancellationToken ct = default) =>
         db.Games
-            .Where(g => g.Status == GameStatus.InProgress || g.Status == GameStatus.Halftime)
+            .Where(g => g.Status == GameStatus.InProgress
+                || g.Status == GameStatus.Halftime
+                || g.Status == GameStatus.Delayed)
             .OrderBy(g => g.KickoffUtc)
             .ToGameDtos(db, userId)
             .ToListAsync(ct);

@@ -45,9 +45,12 @@ function statusGroups(games: readonly Game[]) {
       return { key: 'live', label: 'Live now', order: 0, kind: 'live' };
     }
     if (game.status === 'Upcoming') {
-      return { key: 'upcoming', label: 'Upcoming', order: 1, kind: 'upcoming' };
+      return { key: 'upcoming', label: 'Upcoming', order: 2, kind: 'upcoming' };
     }
-    return { key: 'completed', label: 'Completed', order: 2, kind: 'completed' };
+    if (game.status === 'Delayed') {
+      return { key: 'delayed', label: 'Delayed', order: 1, kind: 'upcoming' };
+    }
+    return { key: 'completed', label: 'Completed', order: 3, kind: 'completed' };
   });
 }
 

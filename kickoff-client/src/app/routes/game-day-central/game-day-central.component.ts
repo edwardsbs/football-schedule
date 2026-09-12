@@ -146,6 +146,10 @@ export class GameDayCentralComponent {
     this.focusedGameId.set(game.id);
   }
 
+  feedHealth(game: Game) {
+    return this.live.health(game);
+  }
+
   private isOnGameDay(game: Game): boolean {
     return this.board.isWatching(game.id, this.fan.isCircled(game.id));
   }

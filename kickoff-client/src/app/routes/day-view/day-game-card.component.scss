@@ -65,6 +65,17 @@
 
   .live-text { color: #ff5e63; }
   .status { white-space: nowrap; }
+  .feed-health {
+    grid-column: 2;
+    justify-self: end;
+    color: #78d5a4;
+    font-size: 0.5rem;
+    white-space: nowrap;
+
+    &::before { content: '●'; margin-right: 0.2rem; }
+    &.quiet { color: #e2bd55; }
+    &.stale { color: #ff7579; }
+  }
   .network { grid-column: 3; opacity: 0.72; white-space: nowrap; }
 }
 

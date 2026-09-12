@@ -38,6 +38,21 @@ app-game-day-focus-rail {
   .focus-matchup { padding: 0.65rem 0.75rem 0.7rem; background: linear-gradient(135deg, rgb(201 162 39 / 7%), transparent 58%); }
   .focus-status { justify-content: space-between; margin-bottom: 0.5rem; color: var(--muted-strong); font-size: 0.64rem; text-transform: uppercase; }
   .focus-status strong.live { color: #ff6b70; }
+  .focus-feed-health {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.3rem;
+    margin: -0.15rem 0 0.45rem;
+    color: #78d5a4;
+    font-size: 0.55rem;
+
+    > span { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    > strong { white-space: nowrap; }
+    > small { overflow: hidden; color: var(--muted); font-size: 0.5rem; text-overflow: ellipsis; white-space: nowrap; }
+    &.quiet { color: #e2bd55; }
+    &.stale { color: #ff7579; }
+  }
   .league { padding: 0.12rem 0.32rem; border-radius: 3px; background: #7a2226; color: white; font-weight: 800; }
   .league.nfl { background: #013369; }
 

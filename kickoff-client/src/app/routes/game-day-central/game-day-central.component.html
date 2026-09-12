@@ -101,6 +101,7 @@
           <app-day-game-card
             [game]="game"
             [panelSize]="activeWatchingSize()"
+            [feedHealth]="feedHealth(game)"
             gameDayState="selected"
             detailAction="select"
             (gameDayToggle)="removeFromGameDay(game)"
@@ -132,6 +133,7 @@
           <app-day-game-card
             [game]="game"
             [panelSize]="inactiveWatchingSize()"
+            [feedHealth]="feedHealth(game)"
             gameDayState="selected"
             detailAction="select"
             (gameDayToggle)="removeFromGameDay(game)"

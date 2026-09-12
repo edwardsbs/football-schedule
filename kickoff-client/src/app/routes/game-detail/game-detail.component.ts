@@ -144,6 +144,8 @@ export class GameDetailComponent {
         return s?.clock ? `Q${s.period} · ${s.clock}` : 'LIVE';
       case 'Final':
         return 'FINAL';
+      case 'Delayed':
+        return 'DELAYED';
       case 'Upcoming':
         return 'UPCOMING';
       case 'Postponed':

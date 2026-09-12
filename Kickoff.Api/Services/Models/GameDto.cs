@@ -10,6 +10,7 @@ public enum GameSafeStatus
     Final,
     Postponed,
     Canceled,
+    Delayed,
 }
 
 public record TeamSummaryDto(
@@ -61,6 +62,7 @@ public record GameDto(
     bool IsMuted,
     MuteType? MuteType,
     ScoreDto? Score,
+    DateTimeOffset? LastUpdatedUtc,
     bool HasFavorite,
     bool HasInterest,
     bool IsCircled,

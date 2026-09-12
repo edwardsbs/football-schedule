@@ -210,6 +210,28 @@ public class SyncPipelineTests
     }
 
     [Fact]
+    public async Task Delayed_status_clears_the_last_live_situation_but_keeps_the_score_and_clock()
+    {
+        using var ctx = TestDb.NewContext();
+        var clock = new FakeTimeProvider(T0);
+        var (game, home, _) = await SeedStaleGameAsync(ctx, clock.GetUtcNow());
+        var scores = new ScoreSyncService(ctx, clock);
+
+        await scores.ApplyAsync(League.Ncaa, [new GameScoreUpdate(
+            game.ExternalId!,
+            GameStatus.Delayed,
+            new ScoreSnapshot(28, 0, 2, "11:33", home.ExternalId, "2nd & Goal at RICH 1", null))]);
+
+        Assert.Equal(GameStatus.Delayed, game.Status);
+        Assert.Equal(28, game.HomeScore);
+        Assert.Equal(0, game.AwayScore);
+        Assert.Equal(2, game.Period);
+        Assert.Equal("11:33", game.Clock);
+        Assert.Null(game.PossessionTeamId);
+        Assert.Null(game.DownDistance);
+    }
+
+    [Fact]
     public async Task Stale_recovery_finalizes_a_game_missing_from_the_rolling_scoreboard()
     {
         using var ctx = TestDb.NewContext();

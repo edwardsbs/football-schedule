@@ -74,6 +74,45 @@ public class EspnHttpClientTests
     }
 
     [Theory]
+    [InlineData("STATUS_DELAYED")]
+    [InlineData("STATUS_RAIN_DELAY")]
+    public async Task Live_poll_preserves_a_provider_delay_as_its_own_status(string providerStatus)
+    {
+        var json = $$"""
+            {
+              "events": [{
+                "id": "401858222",
+                "date": "2026-09-11T22:00:00Z",
+                "competitions": [{
+                  "status": {
+                    "period": 2,
+                    "displayClock": "11:33",
+                    "type": { "name": "{{providerStatus}}", "state": "in", "completed": false }
+                  },
+                  "situation": {
+                    "possession": "257",
+                    "downDistanceText": "2nd & Goal at RICH 1"
+                  },
+                  "competitors": [
+                    { "homeAway": "home", "score": "28", "team": { "id": "152" } },
+                    { "homeAway": "away", "score": "0", "team": { "id": "257" } }
+                  ]
+                }]
+              }]
+            }
+            """;
+        var handler = new RecordingHandler(json);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var update = Assert.Single(await sut.GetLiveScoresAsync(League.Ncaa));
+
+        Assert.Equal(GameStatus.Delayed, update.Status);
+    }
+
+    [Theory]
     [InlineData("Sack", "Quarterback sacked for a loss", "Sack")]
     [InlineData("Pass Interception Return", "Pass intercepted at the 35", "Interception")]
     [InlineData("Safety", "Runner tackled in the end zone for a safety", "Safety")]

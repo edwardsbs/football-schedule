@@ -29,6 +29,11 @@
           <span class="league" [class.nfl]="game.league === 'Nfl'">{{ game.league === 'Nfl' ? 'NFL' : 'NCAA' }}</span>
           <strong [class.live]="game.status === 'Live'">{{ statusLabel(game) }}</strong>
         </div>
+        @if (selectedFeedHealth(); as health) {
+          <div class="focus-feed-health" [class.quiet]="health.level === 'quiet'" [class.stale]="health.level === 'stale'" [title]="health.description">
+            <span></span><strong>{{ health.label }}</strong><small>{{ health.description }}</small>
+          </div>
+        }
 
         <div class="focus-team">
           <app-team-badge [name]="game.away.displayName" [logoUrl]="game.away.logoUrl" [abbreviation]="game.away.abbreviation" [rank]="game.away.currentRank" [size]="28" />

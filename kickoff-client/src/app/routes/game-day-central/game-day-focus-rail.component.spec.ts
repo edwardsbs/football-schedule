@@ -24,6 +24,7 @@ describe('GameDayFocusRailComponent rotation', () => {
       game(20, 'Live'),
       game(30, 'Final'),
       game(40, 'Live'),
+      game(50, 'Delayed'),
     ];
 
     expect(gameDayRotationGames(selectedGames).map((entry) => entry.id)).toEqual([20, 40]);
