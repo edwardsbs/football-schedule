@@ -8,5 +8,6 @@ public class User
     public ICollection<UserFavoriteTeam> FavoriteTeams { get; set; } = [];
     public ICollection<UserTeamInterest> TeamsOfInterest { get; set; } = [];
     public ICollection<CircledGame> CircledGames { get; set; } = [];
+    public ICollection<GameDayPreference> GameDayPreferences { get; set; } = [];
     public ICollection<GameMute> Mutes { get; set; } = [];
 }

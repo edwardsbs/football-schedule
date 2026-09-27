@@ -6,6 +6,11 @@ import { GameSummary } from '../models/game-summary.model';
 import { NcaaRankings } from '../models/ranking.model';
 import { DemoGameStore } from './demo-game-store';
 
+export interface GameDayBoard {
+  watchedGameIds: number[];
+  autoExcludedGameIds: number[];
+}
+
 /**
  * All Kickoff API calls. Uses relative `/api/...` URLs — proxied to the API in
  * dev (proxy.conf.json) and served under the same origin in prod.
@@ -103,6 +108,20 @@ export class KickoffApi {
   uncircle(id: number): Observable<void> {
     if (this.demo.isDemoGame(id)) return of(void 0);
     return this.http.delete<void>(`/api/games/${id}/circle`);
+  }
+
+  // --- Game Day board ---
+
+  getGameDayBoard(): Observable<GameDayBoard> {
+    return this.http.get<GameDayBoard>('/api/game-day');
+  }
+
+  setGameDayPreference(id: number, watching: boolean, suppressAutomatic: boolean): Observable<GameDayBoard> {
+    return this.http.put<GameDayBoard>(`/api/game-day/games/${id}`, { watching, suppressAutomatic });
+  }
+
+  importGameDayBoard(watchedGameIds: readonly number[], autoExcludedGameIds: readonly number[]): Observable<GameDayBoard> {
+    return this.http.post<GameDayBoard>('/api/game-day/import', { watchedGameIds, autoExcludedGameIds });
   }
 
   // --- teams ---

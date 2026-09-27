@@ -82,6 +82,63 @@ public class FavoritesCircledTests
         Assert.Empty(await circled.ListAsync(UserId));
     }
 
+    [Fact]
+    public async Task Game_day_choices_are_persistent_and_user_scoped()
+    {
+        using var ctx = TestDb.NewContext();
+        var (gameId, _, _) = Seed(ctx);
+        var gameDay = new GameDayService(ctx);
+
+        var selected = await gameDay.SetAsync(UserId, gameId, watching: true, suppressAutomatic: false);
+        Assert.NotNull(selected);
+        Assert.Equal([gameId], selected.WatchedGameIds);
+        Assert.Empty(selected.AutoExcludedGameIds);
+
+        var otherUser = new User { Name = "Other" };
+        ctx.Users.Add(otherUser);
+        await ctx.SaveChangesAsync();
+        Assert.Empty((await gameDay.GetAsync(otherUser.Id)).WatchedGameIds);
+
+        var excluded = await gameDay.SetAsync(UserId, gameId, watching: false, suppressAutomatic: true);
+        Assert.NotNull(excluded);
+        Assert.Empty(excluded.WatchedGameIds);
+        Assert.Equal([gameId], excluded.AutoExcludedGameIds);
+
+        var removed = await gameDay.SetAsync(UserId, gameId, watching: false, suppressAutomatic: false);
+        Assert.NotNull(removed);
+        Assert.Empty(removed.WatchedGameIds);
+        Assert.Empty(removed.AutoExcludedGameIds);
+    }
+
+    [Fact]
+    public async Task Game_day_import_combines_local_choices_without_overwriting_server_choices()
+    {
+        using var ctx = TestDb.NewContext();
+        var (firstGameId, homeTeamId, awayTeamId) = Seed(ctx);
+        var week = await ctx.Weeks.SingleAsync();
+        var second = new Game
+        {
+            Week = week,
+            League = League.Nfl,
+            HomeTeamId = homeTeamId,
+            AwayTeamId = awayTeamId,
+            KickoffUtc = new DateTimeOffset(2026, 9, 20, 17, 0, 0, TimeSpan.Zero),
+            Status = GameStatus.Scheduled,
+        };
+        ctx.Games.Add(second);
+        await ctx.SaveChangesAsync();
+        var gameDay = new GameDayService(ctx);
+        await gameDay.SetAsync(UserId, firstGameId, watching: false, suppressAutomatic: true);
+
+        var imported = await gameDay.ImportAsync(
+            UserId,
+            [firstGameId, second.Id, 9999],
+            []);
+
+        Assert.Equal([second.Id], imported.WatchedGameIds);
+        Assert.Equal([firstGameId], imported.AutoExcludedGameIds);
+    }
+
     private static Task<GameDto> Dto(KickoffContext ctx, int gameId) =>
         ctx.Games.Where(g => g.Id == gameId).ToGameDtos(ctx, UserId).FirstAsync();
 

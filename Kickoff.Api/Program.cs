@@ -25,6 +25,7 @@ builder.Services.AddScoped<MuteService>();
 builder.Services.AddScoped<FavoritesService>();
 builder.Services.AddScoped<TeamInterestsService>();
 builder.Services.AddScoped<CircledService>();
+builder.Services.AddScoped<GameDayService>();
 builder.Services.AddScoped<StandingsService>();
 builder.Services.AddScoped<GameSummaryService>();
 builder.Services.AddMemoryCache();

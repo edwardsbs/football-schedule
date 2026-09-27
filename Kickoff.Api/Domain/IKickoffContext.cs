@@ -20,6 +20,7 @@ public interface IKickoffContext
     DbSet<UserFavoriteTeam> UserFavoriteTeams { get; }
     DbSet<UserTeamInterest> UserTeamInterests { get; }
     DbSet<CircledGame> CircledGames { get; }
+    DbSet<GameDayPreference> GameDayPreferences { get; }
     DbSet<GameMute> GameMutes { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

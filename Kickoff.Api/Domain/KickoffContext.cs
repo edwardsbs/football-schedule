@@ -20,6 +20,7 @@ public class KickoffContext(DbContextOptions<KickoffContext> options)
     public DbSet<UserFavoriteTeam> UserFavoriteTeams => Set<UserFavoriteTeam>();
     public DbSet<UserTeamInterest> UserTeamInterests => Set<UserTeamInterest>();
     public DbSet<CircledGame> CircledGames => Set<CircledGame>();
+    public DbSet<GameDayPreference> GameDayPreferences => Set<GameDayPreference>();
     public DbSet<GameMute> GameMutes => Set<GameMute>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
