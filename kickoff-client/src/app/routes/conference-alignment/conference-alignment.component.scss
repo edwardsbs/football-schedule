@@ -236,3 +236,14 @@
     grid-template-columns: 1fr;
   }
 }
+.ranking-team,
+.team-name {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.ranking-team:hover,
+a.team-name:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}

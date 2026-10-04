@@ -139,6 +139,31 @@ public class FavoritesCircledTests
         Assert.Equal([firstGameId], imported.AutoExcludedGameIds);
     }
 
+    [Fact]
+    public async Task Team_schedule_returns_the_latest_season_with_spoiler_protection()
+    {
+        using var ctx = TestDb.NewContext();
+        var (gameId, homeTeamId, _) = Seed(ctx);
+        var game = await ctx.Games.FindAsync(gameId);
+        Assert.NotNull(game);
+        game.Status = GameStatus.Final;
+        game.HomeScore = 24;
+        game.AwayScore = 17;
+        await ctx.SaveChangesAsync();
+        await new MuteService(ctx).MuteAsync(gameId, UserId, MuteType.Muted);
+
+        var schedule = await new TeamScheduleService(ctx).GetAsync(homeTeamId, UserId);
+
+        Assert.NotNull(schedule);
+        Assert.Equal(homeTeamId, schedule.Team.Id);
+        Assert.Equal(League.Nfl, schedule.League);
+        Assert.Equal(2026, schedule.SeasonYear);
+        var scheduledGame = Assert.Single(schedule.Games);
+        Assert.True(scheduledGame.IsMuted);
+        Assert.Null(scheduledGame.Score);
+        Assert.Equal(GameSafeStatus.Live, scheduledGame.Status);
+    }
+
     private static Task<GameDto> Dto(KickoffContext ctx, int gameId) =>
         ctx.Games.Where(g => g.Id == gameId).ToGameDtos(ctx, UserId).FirstAsync();
 

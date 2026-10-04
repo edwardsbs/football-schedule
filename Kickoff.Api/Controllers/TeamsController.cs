@@ -8,7 +8,11 @@ namespace Kickoff.Api.Controllers;
 
 [ApiController]
 [Route("api/teams")]
-public class TeamsController(IKickoffContext db, StandingsService standings) : ControllerBase
+public class TeamsController(
+    IKickoffContext db,
+    StandingsService standings,
+    TeamScheduleService schedules,
+    ICurrentUser user) : ControllerBase
 {
     /// <summary>Every known team for a league, real ids included -- lets the
     /// client resolve a favorite-able team id for any team it already knows
@@ -30,4 +34,14 @@ public class TeamsController(IKickoffContext db, StandingsService standings) : C
         [FromQuery] int? seasonYear,
         CancellationToken ct) =>
         standings.GetRecordsAsync(league, seasonYear, ct);
+
+    /// <summary>One team's complete spoiler-safe schedule for a season.</summary>
+    [HttpGet("{teamId:int}/schedule")]
+    public async Task<ActionResult<TeamScheduleDto>> Schedule(
+        int teamId,
+        [FromQuery] int? seasonYear,
+        CancellationToken ct) =>
+        await schedules.GetAsync(teamId, user.Id, seasonYear, ct) is { } schedule
+            ? schedule
+            : NotFound();
 }

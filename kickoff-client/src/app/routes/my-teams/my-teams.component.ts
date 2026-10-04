@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FanStore } from '../../core/services/fan-store';
 import { FavoriteTeam, TeamInterest } from '../../core/models/game.model';
 import { TeamBadgeComponent } from '../../shared/team-badge/team-badge.component';
@@ -11,7 +12,7 @@ interface TeamCollection {
 
 @Component({
   selector: 'app-my-teams',
-  imports: [TeamBadgeComponent],
+  imports: [RouterLink, TeamBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="head">
@@ -40,9 +41,12 @@ interface TeamCollection {
                   [class.interest-team]="collection.kind === 'interest'"
                   [class.ranked-team]="team.currentRank !== null"
                 >
-                  <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [rank]="team.currentRank" [reserveRankSpace]="true" [size]="28" />
-                  <span class="name">{{ team.displayName }}</span>
-                  <span class="league">{{ team.league === 'Nfl' ? 'NFL' : 'NCAA' }}</span>
+                  <a [routerLink]="['/team', team.teamId]" [attr.aria-label]="'Open ' + team.displayName + ' schedule'">
+                    <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [rank]="team.currentRank" [reserveRankSpace]="true" [size]="28" />
+                    <span class="name">{{ team.displayName }}</span>
+                    <span class="league">{{ team.league === 'Nfl' ? 'NFL' : 'NCAA' }}</span>
+                    <span class="open" aria-hidden="true">›</span>
+                  </a>
                 </li>
               }
             </ul>
@@ -71,14 +75,20 @@ interface TeamCollection {
       .group h2 .interest-symbol { color: #49b8b8; }
       .teams { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
       .teams li {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.45rem 0.6rem;
         background: var(--surface, #161a22);
         border: 1px solid var(--border, #262c38);
         border-radius: 8px;
       }
+      .teams a {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        min-height: 44px;
+        padding: 0.45rem 0.6rem;
+        color: inherit;
+        text-decoration: none;
+      }
+      .teams a:hover { background: var(--surface-2, #1c212b); }
       .teams .name { font-weight: 600; }
       .teams .league {
         margin-left: auto;
@@ -86,6 +96,7 @@ interface TeamCollection {
         font-size: 0.62rem;
         font-weight: 800;
       }
+      .teams .open { color: var(--muted, #8b93a1); font-size: 1.2rem; }
     `,
   ],
 })

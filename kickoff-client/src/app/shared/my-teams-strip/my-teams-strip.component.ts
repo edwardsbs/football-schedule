@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FanStore } from '../../core/services/fan-store';
 import { TeamBadgeComponent } from '../team-badge/team-badge.component';
 
@@ -12,7 +13,7 @@ import { TeamBadgeComponent } from '../team-badge/team-badge.component';
  */
 @Component({
   selector: 'app-my-teams-strip',
-  imports: [TeamBadgeComponent],
+  imports: [RouterLink, TeamBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.inline]': 'inline()' },
   template: `
@@ -21,10 +22,10 @@ import { TeamBadgeComponent } from '../team-badge/team-badge.component';
         <span class="label">Mine</span>
         <div class="chips">
           @for (team of fan.favorites(); track team.teamId) {
-            <span class="chip">
+            <a class="chip" [routerLink]="['/team', team.teamId]" [attr.aria-label]="'Open ' + team.displayName + ' schedule'">
               <app-team-badge [name]="team.displayName" [logoUrl]="team.logoUrl" [abbreviation]="team.abbreviation" [rank]="team.currentRank" [size]="16" />
               <span class="abbr">{{ team.abbreviation }}</span>
-            </span>
+            </a>
           }
         </div>
       } @else {
@@ -69,6 +70,8 @@ import { TeamBadgeComponent } from '../team-badge/team-badge.component';
         border: 1px solid var(--border, #262c38);
         border-radius: 999px;
         white-space: nowrap;
+        color: inherit;
+        text-decoration: none;
 
         .abbr { font-size: 0.76rem; font-weight: 700; }
       }

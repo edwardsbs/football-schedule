@@ -74,3 +74,10 @@ export interface TeamInterest {
   logoUrl: string | null;
   currentRank: number | null;
 }
+
+export interface TeamSchedule {
+  team: TeamSummary;
+  league: LeagueName;
+  seasonYear: number;
+  games: Game[];
+}

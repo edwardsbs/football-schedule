@@ -59,6 +59,12 @@ export const routes: Routes = [
         loadComponent: () => import('./routes/game-detail/game-detail.component').then((m) => m.GameDetailComponent),
       },
       {
+        path: 'team/:id',
+        title: 'Team Schedule · Kickoff',
+        loadComponent: () =>
+          import('./routes/team-schedule/team-schedule.component').then((m) => m.TeamScheduleComponent),
+      },
+      {
         path: 'games',
         title: 'Mini-Games · Kickoff',
         loadComponent: () => import('./routes/mini-games/mini-games.component').then((m) => m.MiniGamesComponent),

@@ -1,0 +1,91 @@
+:host {
+  display: block;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+}
+
+.team-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1.4rem;
+  padding: 1rem;
+  background: var(--surface, #161a22);
+  border: 1px solid var(--border, #262c38);
+  border-radius: 14px;
+}
+
+.back {
+  grid-column: 1 / -1;
+  width: fit-content;
+  color: var(--muted, #8b93a1);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.identity h1 {
+  margin: 0.1rem 0;
+  font-size: clamp(1.45rem, 4vw, 2.25rem);
+}
+
+.league,
+.record {
+  color: var(--muted, #8b93a1);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.team-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.team-actions button {
+  min-height: 42px;
+  padding: 0.45rem 0.75rem;
+  color: var(--muted, #8b93a1);
+  background: var(--surface-2, #1c212b);
+  border: 1px solid var(--border, #262c38);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.team-actions button.on { color: var(--accent-gold, #c9a227); }
+.team-actions button.interest.on { color: #49b8b8; }
+
+.schedule { display: grid; gap: 0.9rem; }
+.week-group {
+  overflow: hidden;
+  background: var(--surface, #161a22);
+  border: 1px solid var(--border, #262c38);
+  border-radius: 12px;
+}
+.week-head,
+.day-head { padding: 0.55rem 0.75rem; }
+.week-head { background: var(--surface-2, #1c212b); }
+.week-head h2,
+.day-head h3 { margin: 0; }
+.week-head h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.day-head h3 { color: var(--muted, #8b93a1); font-size: 0.75rem; font-weight: 700; }
+.rows { padding: 0 0.35rem 0.35rem; }
+.loading,
+.empty,
+.not-found { padding: 3rem 1rem; text-align: center; color: var(--muted, #8b93a1); }
+.not-found a { color: var(--accent-gold, #c9a227); }
+
+@media (max-width: 680px) {
+  .team-head { grid-template-columns: 1fr; align-items: start; }
+  .team-actions { flex-wrap: wrap; }
+  .team-actions button { flex: 1; }
+}

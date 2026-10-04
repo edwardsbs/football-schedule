@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { FavoriteTeam, Game, MuteType, TeamInterest, TeamRecord, TeamSummary } from '../models/game.model';
+import { FavoriteTeam, Game, MuteType, TeamInterest, TeamRecord, TeamSchedule, TeamSummary } from '../models/game.model';
 import { GameSummary } from '../models/game-summary.model';
 import { NcaaRankings } from '../models/ranking.model';
 import { DemoGameStore } from './demo-game-store';
@@ -135,6 +135,11 @@ export class KickoffApi {
   /** Overall W/L/T records from completed games in the active football season. */
   getTeamRecords(league: 'Nfl' | 'Ncaa'): Observable<TeamRecord[]> {
     return this.http.get<TeamRecord[]>('/api/teams/records', { params: { league } });
+  }
+
+  getTeamSchedule(teamId: number, seasonYear?: number): Observable<TeamSchedule> {
+    const params = seasonYear === undefined ? undefined : { seasonYear };
+    return this.http.get<TeamSchedule>(`/api/teams/${teamId}/schedule`, { params });
   }
 
   /** AP and, once available, CFP poll snapshots for an NCAA season week. */

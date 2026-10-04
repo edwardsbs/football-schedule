@@ -98,10 +98,10 @@
                   [abbreviation]="row.abbreviation"
                   [size]="28"
                 />
-                <span class="ranking-team">
+                <a class="ranking-team" [routerLink]="['/team', row.teamId]" [attr.aria-label]="'Open ' + row.displayName + ' schedule'">
                   <strong>{{ row.abbreviation }}</strong>
                   <span [attr.aria-label]="rankingRecordAriaLabel(row)">{{ rankingRecord(row) }}</span>
-                </span>
+                </a>
                 <span
                   class="ranking-movement"
                   [class]="'ranking-movement ' + movement.kind"
@@ -236,7 +236,11 @@
                           [rank]="teamRank(team)"
                           [size]="26"
                         />
-                        <span class="team-name">{{ team.name }}</span>
+                        @if (teamId(team); as id) {
+                          <a class="team-name" [routerLink]="['/team', id]">{{ team.name }}</a>
+                        } @else {
+                          <span class="team-name">{{ team.name }}</span>
+                        }
                       </th>
                       <td [attr.aria-label]="record(team) ? record(team)!.wins + ' wins' : 'Wins unavailable'">{{ record(team)?.wins ?? '—' }}</td>
                       <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
@@ -321,7 +325,11 @@
                               [reserveRankSpace]="true"
                               [size]="26"
                             />
-                            <span class="team-name">{{ team.name }}</span>
+                            @if (teamId(team); as id) {
+                              <a class="team-name" [routerLink]="['/team', id]">{{ team.name }}</a>
+                            } @else {
+                              <span class="team-name">{{ team.name }}</span>
+                            }
                           </th>
                           <td [attr.aria-label]="record(team) ? record(team)!.wins + ' wins' : 'Wins unavailable'">{{ record(team)?.wins ?? '—' }}</td>
                           <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
@@ -398,7 +406,11 @@
                         [reserveRankSpace]="true"
                         [size]="26"
                       />
-                      <span class="team-name">{{ team.name }}</span>
+                      @if (teamId(team); as id) {
+                        <a class="team-name" [routerLink]="['/team', id]">{{ team.name }}</a>
+                      } @else {
+                        <span class="team-name">{{ team.name }}</span>
+                      }
                     </th>
                     <td [attr.aria-label]="record(team) ? record(team)!.wins + ' wins' : 'Wins unavailable'">{{ record(team)?.wins ?? '—' }}</td>
                     <td [attr.aria-label]="record(team) ? record(team)!.losses + ' losses' : 'Losses unavailable'">{{ record(team)?.losses ?? '—' }}</td>
