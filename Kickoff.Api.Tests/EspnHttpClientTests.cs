@@ -407,6 +407,58 @@ public class EspnHttpClientTests
         Assert.False(game.Home.IsFcs);
     }
 
+    [Fact]
+    public async Task Ncaa_schedule_fetches_each_day_and_merges_duplicate_events()
+    {
+        const string calendarJson = """
+            {
+              "leagues": [{
+                "calendar": [{
+                  "label": "Regular Season",
+                  "entries": [{ "startDate": "2026-08-22T00:00:00Z" }]
+                }]
+              }]
+            }
+            """;
+        const string groupsJson = "{ \"items\": [] }";
+        const string scheduleJson = """
+            {
+              "events": [{
+                "id": "same-game",
+                "date": "2026-09-05T16:00:00Z",
+                "competitions": [{
+                  "status": { "type": { "name": "STATUS_SCHEDULED", "state": "pre", "completed": false } },
+                  "competitors": [
+                    { "homeAway": "home", "team": { "id": "1", "displayName": "Home", "abbreviation": "HOM" } },
+                    { "homeAway": "away", "team": { "id": "2", "displayName": "Away", "abbreviation": "AWY" } }
+                  ]
+                }]
+              }]
+            }
+            """;
+
+        var handler = new RoutingHandler(uri =>
+            uri.AbsoluteUri.Contains("/groups/81/children", StringComparison.Ordinal)
+                ? groupsJson
+                : uri.Query.Contains("dates=", StringComparison.Ordinal)
+                    ? scheduleJson
+                    : calendarJson);
+        var sut = new EspnHttpClient(
+            new HttpClient(handler),
+            Options.Create(new SportsDataOptions()),
+            NullLogger<EspnHttpClient>.Instance);
+
+        var feed = await sut.GetWeekScheduleAsync(League.Ncaa, 2026, 1);
+
+        Assert.Single(feed.Games);
+        var scheduleRequests = handler.RequestUris
+            .Where(uri => uri.Query.Contains("dates=", StringComparison.Ordinal))
+            .ToArray();
+        Assert.Equal(7, scheduleRequests.Length);
+        Assert.All(scheduleRequests, uri => Assert.Contains("groups=80", uri.Query));
+        Assert.DoesNotContain(scheduleRequests, uri => uri.Query.Contains('-', StringComparison.Ordinal));
+    }
+
     private sealed class RecordingHandler(string json = "{\"events\":[]}") : HttpMessageHandler
     {
         public Uri? RequestUri { get; private set; }
@@ -425,12 +477,17 @@ public class EspnHttpClientTests
 
     private sealed class RoutingHandler(Func<Uri, string> responseFor) : HttpMessageHandler
     {
+        public List<Uri> RequestUris { get; } = [];
+
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            CancellationToken cancellationToken)
+        {
+            RequestUris.Add(request.RequestUri!);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(responseFor(request.RequestUri!), Encoding.UTF8, "application/json"),
             });
+        }
     }
 }

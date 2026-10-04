@@ -60,7 +60,9 @@ public class ScheduleSyncWorker(
         var import = scope.ServiceProvider.GetRequiredService<ScheduleImportService>();
         var rankingsSync = scope.ServiceProvider.GetRequiredService<RankingsSyncService>();
 
-        var today = DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime);
+        var now = time.GetUtcNow();
+        var today = DateOnly.FromDateTime(now.UtcDateTime);
+        var refreshFrom = now.AddDays(-7);
 
         foreach (var league in leagues)
         {
@@ -78,10 +80,13 @@ public class ScheduleSyncWorker(
                 }
             }
 
-            // Only weeks that haven't fully concluded -- history doesn't need
-            // re-pulling, which keeps the daily call count small.
+            // Prefer the stored week boundary, but also use game kickoffs so a
+            // week whose dates were damaged by an old empty provider response
+            // is selected and repairs itself on the next successful sync.
             var pendingWeeks = await db.Weeks
-                .Where(w => w.Season.League == league && w.EndDate >= today)
+                .Where(w => w.Season.League == league
+                    && w.Season.EndDate >= today
+                    && (w.EndDate >= today || w.Games.Any(g => g.KickoffUtc >= refreshFrom)))
                 .OrderBy(w => w.Number)
                 .Select(w => new { w.Number, w.Season.Year })
                 .ToListAsync(ct);

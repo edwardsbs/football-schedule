@@ -14,6 +14,37 @@ namespace Kickoff.Api.Tests;
 /// </summary>
 public class SyncPipelineTests
 {
+    [Fact]
+    public async Task Empty_schedule_refresh_does_not_damage_an_existing_week()
+    {
+        using var ctx = TestDb.NewContext();
+        var season = new Season
+        {
+            League = League.Ncaa,
+            Year = 2026,
+            Name = "2026 NCAA Season",
+            StartDate = new DateOnly(2026, 8, 1),
+            EndDate = new DateOnly(2027, 2, 15),
+        };
+        var week = new Week
+        {
+            Season = season,
+            Number = 5,
+            Label = "Week 5",
+            StartDate = new DateOnly(2026, 9, 29),
+            EndDate = new DateOnly(2026, 10, 5),
+        };
+        ctx.Weeks.Add(week);
+        await ctx.SaveChangesAsync();
+        var import = new ScheduleImportService(ctx);
+
+        var result = await import.ImportAsync(new ScheduleFeed(League.Ncaa, 2026, 5, []));
+
+        Assert.Equal(new DateOnly(2026, 9, 29), week.StartDate);
+        Assert.Equal(new DateOnly(2026, 10, 5), week.EndDate);
+        Assert.Equal(new ScheduleImportResult(0, 0, 0), result);
+    }
+
     private static readonly DateTimeOffset T0 = new(2026, 9, 13, 17, 0, 0, TimeSpan.Zero);
 
     [Fact]

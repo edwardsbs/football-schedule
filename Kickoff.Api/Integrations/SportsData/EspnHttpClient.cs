@@ -25,10 +25,12 @@ namespace Kickoff.Api.Integrations.SportsData;
 /// Sep 7 as ONE block -- which is actually two real-world weeks (fans' "Week
 /// 0" and "Week 1"), confirmed by the fact that trusting it as one window
 /// made several teams appear to play twice in what was supposedly a single
-/// week. So NCAA schedule pulls query by date range using boundaries this
-/// client computes itself (real Tuesday-Monday weeks, same convention as the
-/// merged week view), anchored to the season's actual start date from ESPN's
-/// calendar -- not ESPN's own (evidently unreliable) per-week calendar entries.
+/// week. So NCAA schedule pulls query each date in boundaries this client
+/// computes itself (real Tuesday-Monday weeks, same convention as the merged
+/// week view), anchored to the season's actual start date from ESPN's calendar
+/// -- not ESPN's own (evidently unreliable) per-week calendar entries. ESPN's
+/// former date-range request now returns HTTP 400, while individual date
+/// requests remain reliable; `groups=80` also avoids the default 25-event cap.
 /// </summary>
 public class EspnHttpClient(
     HttpClient http,
@@ -45,7 +47,7 @@ public class EspnHttpClient(
     public async Task<ScheduleFeed> GetWeekScheduleAsync(
         League league, int seasonYear, int week, CancellationToken ct = default)
     {
-        string url;
+        IReadOnlyList<string> urls;
         if (league == League.Ncaa)
         {
             var week0Start = await GetNcaaWeek0StartAsync(league, ct);
@@ -55,30 +57,37 @@ public class EspnHttpClient(
                 return new ScheduleFeed(league, seasonYear, week, []);
             }
             var start = week0Start.Value.AddDays(7 * week);
-            var end = start.AddDays(6);
-            url = $"{BaseUrl}/{Sport(league)}/scoreboard?dates={start:yyyyMMdd}-{end:yyyyMMdd}";
+            urls = Enumerable.Range(0, 7)
+                .Select(offset => start.AddDays(offset))
+                .Select(day => $"{BaseUrl}/{Sport(league)}/scoreboard?dates={day:yyyyMMdd}&groups=80")
+                .ToArray();
         }
         else
         {
             var seasonType = MapSeasonType(_opt.SeasonType);
-            url = $"{BaseUrl}/{Sport(league)}/scoreboard?seasontype={seasonType}&week={week}&dates={seasonYear}";
+            urls = [$"{BaseUrl}/{Sport(league)}/scoreboard?seasontype={seasonType}&week={week}&dates={seasonYear}"];
         }
 
         var fcsConferenceIds = league == League.Ncaa
             ? await GetNcaaFcsConferenceIdsAsync(seasonYear, ct)
             : null;
-        using var doc = await GetJsonAsync(url, ct);
-
-        var games = new List<FeedGame>();
-        if (doc is not null && doc.RootElement.TryGetProperty("events", out var events))
+        var games = new Dictionary<string, FeedGame>(StringComparer.Ordinal);
+        foreach (var url in urls)
         {
+            using var doc = await GetJsonAsync(url, ct);
+            if (doc is null || !doc.RootElement.TryGetProperty("events", out var events)) continue;
+
             foreach (var e in events.EnumerateArray())
             {
-                if (TryParseGame(e, out var game, fcsConferenceIds)) games.Add(game);
+                if (TryParseGame(e, out var game, fcsConferenceIds)) games[game.ExternalId] = game;
             }
         }
 
-        return new ScheduleFeed(league, seasonYear, week, games);
+        return new ScheduleFeed(
+            league,
+            seasonYear,
+            week,
+            games.Values.OrderBy(game => game.KickoffUtc).ToArray());
     }
 
     /// <summary>

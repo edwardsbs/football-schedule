@@ -19,6 +19,12 @@ public class ScheduleImportService(IKickoffContext db, TimeProvider? timeProvide
 
     public async Task<ScheduleImportResult> ImportAsync(ScheduleFeed feed, CancellationToken ct = default)
     {
+        // A provider failure is normalized to an empty feed. Treat that as a
+        // failed refresh, not an authoritative empty week: deriving dates from
+        // an empty collection would otherwise overwrite the week with year 1
+        // and prevent the background worker from ever selecting it again.
+        if (feed.Games.Count == 0) return new ScheduleImportResult(0, 0, 0);
+
         var season = await GetOrCreateSeasonAsync(feed.League, feed.SeasonYear, ct);
         var week = await GetOrCreateWeekAsync(season, feed, ct);
 
